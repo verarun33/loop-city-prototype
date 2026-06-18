@@ -12,6 +12,13 @@ const checks = [
   ["city tape logo markup is used across splash auth and header", /splash-logo[\s\S]*logo-card-mark[\s\S]*auth-brand[\s\S]*logo-card-mark[\s\S]*wordmark[\s\S]*logo-card-mark/],
   ["city tape logo styles define card bands", /\.logo-card-mark[\s\S]*\.logo-band\.is-blue[\s\S]*\.logo-band\.is-orange/],
   ["favicon uses the city tape logo direction", /city-tape-favicon/],
+  ["mobile viewport disables user scaling for app-like demo", /name="viewport"\s+content="[^"]*maximum-scale=1\.0[^"]*user-scalable=no/],
+  ["app shell disables text selection and touch callout", /user-select:\s*none[\s\S]*-webkit-user-select:\s*none[\s\S]*-webkit-touch-callout:\s*none/],
+  ["app shell disables copy paste selection browser gestures", /installAppInteractionGuards[\s\S]*\["copy",\s*"cut",\s*"paste",\s*"selectstart",\s*"contextmenu",\s*"dragstart"\][\s\S]*gesturestart[\s\S]*dblclick/],
+  ["prototype storage resets for rich demo data", /LOOP_DATA_VERSION[\s\S]*20260618-rich-demo-v1/],
+  ["demo account is seeded with rich records and pass orders", /function demoUserSnapshot[\s\S]*records:\s*defaultRecords\(\)[\s\S]*featuredPasses:\s*demoFeaturedPasses\(\)[\s\S]*completedRouteIds:\s*demoCompletedRouteIds\(\)/],
+  ["demo data includes active completed and expired city pass states", /demoFeaturedPasses[\s\S]*"active"[\s\S]*"completed"[\s\S]*"expired"/],
+  ["default simulated records include at least forty demo entries", /function defaultRecords\(\)[\s\S]*金桥周末宠物友好线/],
   ["city pass category is defined before 秘境探索", /id:\s*"featured"[\s\S]*?name:\s*"城市通行证"[\s\S]*?id:\s*"quest"[\s\S]*?name:\s*"秘境探索"/],
   ["city pass category has distinct styling hooks", /featuredLayerVisual|is-featured-layer|--featured-accent/],
   ["featured map pass data includes multi-city issues", /featuredPassMaps[\s\S]*?shanghai[\s\S]*?chengdu[\s\S]*?abudhabi/],
@@ -117,7 +124,7 @@ const checks = [
   ["home route reveal remains visible through the staged animation", /revealTimer\s*=\s*setTimeout\([\s\S]*\},\s*1050\)/],
   ["home route reveal avoids the old scan-strip loader", { not: /route-scan|routeScan/ }],
   ["old envelope route reveal markup is removed", { not: /envelope-back|envelope-fold|envelope-flap|tear-line|pull-tab/ }],
-  ["local prototype data uses a reset version", /LOOP_DATA_VERSION[\s\S]*20260616-profile-records-v2[\s\S]*resetPrototypeStorageIfNeeded/],
+  ["local prototype data uses a reset version", /LOOP_DATA_VERSION[\s\S]*20260618-rich-demo-v1[\s\S]*resetPrototypeStorageIfNeeded/],
   ["default simulated records are varied and not duplicated filler", /defaultRecords\(\)[\s\S]*上海低光夜游地图[\s\S]*凌晨便利店霓虹短线[\s\S]*阿布扎比海风白墙记录/],
   ["profile ongoing city passes are compact and horizontally paged", /profile-pass-list[\s\S]*grid-auto-flow:\s*column[\s\S]*grid-auto-columns|profile-pass-list\.is-compact/],
   ["profile city pass more opens categorized pass library", /passMapButton[\s\S]*看更多|openAccountSheet\("passes"\)|renderPassLibraryPanel|pass-library-tabs/],
@@ -151,7 +158,7 @@ const checks = [
   ["pre-purchase screen does not show purchase-to-redeem buttons", { not: /购买后核销/ }],
   ["there is no continue payment or saved pending state", { not: /继续支付|pending_payment|待支付订单|未支付/ }],
   ["featured pass styles exist", /\.featured-pass|\.pass-stop|\.profile-pass/],
-  ["stylesheet cache key changed", /styles\.css\?v=20260618-city-tape-logo/]
+  ["stylesheet cache key changed", /styles\.css\?v=20260618-rich-demo-v1/]
 ];
 
 const combined = `${index}\n${script}\n${styles}\n${favicon}`;

@@ -8,7 +8,7 @@ const palette = {
 
 const AUTH_USERS_KEY = "loop-city-users";
 const AUTH_SESSION_KEY = "loop-city-session";
-const LOOP_DATA_VERSION = "20260616-profile-records-v2";
+const LOOP_DATA_VERSION = "20260618-rich-demo-v1";
 const LOOP_DATA_VERSION_KEY = "loop-city-data-version";
 const DEMO_ACCOUNT = "demo@loop.city";
 const DEMO_PASSWORD = "loop2026";
@@ -1164,8 +1164,92 @@ function defaultRecords() {
     recordSeed(-31, "苏州河桥边反光", "photography", true, "18:42", "反光练习", ["浙江路桥", "苏州河步道", "四行仓库外侧"], { duration: "1.6h", budget: "¥0", photoSource: "拍照", note: "只为了练几张反光照片，反而记录下一个很具体的傍晚。" }),
     recordSeed(-42, "麓湖 A4 展厅和湖边", "art", true, "16:06", "湖边展览", ["麓湖 A4 美术馆", "湖边咖啡", "麓镇小路"], { city: "chengdu", duration: "3h", budget: "¥126", photoSource: "上传照片", note: "展厅、湖面和低饱和街区很适合放进全年记录。" }),
     recordSeed(-58, "Saadiyat 白色展厅午后", "art", true, "14:20", "安静展厅", ["Louvre Abu Dhabi 外侧", "Saadiyat 白色展厅", "海边车站"], { city: "abudhabi", duration: "半日", budget: "AED 120", photoSource: "拍照", note: "展厅外墙、海边车站和午后的强光，组成一条不吵的路线。" }),
-    recordSeed(-86, "外滩源冬天橱窗", "fashion", true, "19:02", "冷空气和玻璃", ["外滩源橱窗", "圆明园路口", "虎丘路旧楼"], { duration: "1.5h", budget: "¥46", photoSource: "拍照", note: "玻璃、冷空气和旧楼之间，城市显得更清楚。" })
+    recordSeed(-86, "外滩源冬天橱窗", "fashion", true, "19:02", "冷空气和玻璃", ["外滩源橱窗", "圆明园路口", "虎丘路旧楼"], { duration: "1.5h", budget: "¥46", photoSource: "拍照", note: "玻璃、冷空气和旧楼之间，城市显得更清楚。" }),
+    recordSeed(-96, "龙华会旧厂区早餐线", "citywalk", true, "09:18", "早起城市", ["龙华会入口", "旧厂房转角", "街边豆浆店"], { duration: "1.4h", budget: "¥28", photoSource: "拍照", note: "早餐摊和旧厂区在同一个清晨出现，适合做成一条很轻的城市样本。" }),
+    recordSeed(-103, "静安雕塑公园午休短线", "wellness", false, "12:42", "午休换气", ["静安雕塑公园", "石门二路咖啡窗口", "南京西路背街"], { duration: "38min", budget: "¥36", note: "午休没有走远，只把公园阴影和一杯外带咖啡留进记录。" }),
+    recordSeed(-111, "北外滩风口摄影", "photography", true, "17:36", "江面风很大", ["北外滩滨江", "提篮桥老街", "公平路码头"], { duration: "1.7h", budget: "¥0", photoSource: "拍照", note: "风口、桥墩和老街招牌让照片有了更硬一点的城市边界。" }),
+    recordSeed(-119, "番禺路小酒和书页", "drink", true, "20:48", "轻微社交", ["番禺路小酒馆", "幸福路转角", "上生新所夜门"], { duration: "2h", budget: "¥176", photoSource: "拍照", note: "没有安排很满，一杯酒、一页书和夜门口的光就够了。" }),
+    recordSeed(-128, "前滩蓝色玻璃路线", "architecture", false, "16:20", "新城区采样", ["前滩太古里外侧", "东方体育中心步道", "黄浦江边台阶"], { duration: "2.3h", budget: "¥42", note: "新城区不一定无聊，玻璃反光和空台阶让尺度变得清楚。" }),
+    recordSeed(-139, "徐家汇唱片店补给", "vintage", true, "18:12", "旧物时间", ["衡山坊唱片角", "徐家汇天桥", "小路咖啡"], { duration: "1.8h", budget: "¥152", photoSource: "上传照片", note: "为了找一张黑胶多走了两条小路，最后把天桥晚光也收进来了。" }),
+    recordSeed(-151, "南翔古镇非游客线", "quest", true, "10:56", "远一点的上海", ["南翔老街背面", "檀园外墙", "河边茶座"], { duration: "半日", budget: "¥88", photoSource: "拍照", note: "绕开最热闹的入口，古镇背面反而更像一段城市外延。" }),
+    recordSeed(-166, "成都望江楼竹影茶线", "tea", true, "14:05", "盖碗茶影", ["望江楼公园", "竹影茶座", "河边慢走"], { city: "chengdu", duration: "2.5h", budget: "¥58", photoSource: "拍照", note: "茶碗、竹影和河边风一起把下午拉慢。" }),
+    recordSeed(-179, "成都奎星楼开放麦夜", "comedy", false, "21:34", "笑完再散步", ["奎星楼开放麦", "小通巷夜路", "深夜甜品窗口"], { city: "chengdu", duration: "2h", budget: "¥96", note: "笑完以后没有马上打车，沿着小通巷又走了十几分钟。" }),
+    recordSeed(-193, "东郊记忆旧厂房声场", "music", true, "19:26", "现场残响", ["东郊记忆旧厂房", "演出入口", "厂区咖啡"], { city: "chengdu", duration: "3h", budget: "¥168", photoSource: "拍照", note: "旧厂房的回声和演出前人群，比正式开场还像一条路线。" }),
+    recordSeed(-207, "Abu Dhabi Mina 市场生活线", "market", true, "11:12", "真实市场", ["Mina Market", "港口边界", "421 Arts Campus"], { city: "abudhabi", duration: "3h", budget: "AED 72", photoSource: "拍照", note: "市场声音、港口边界和艺术园区之间，是比景点更真实的一段城市。" }),
+    recordSeed(-221, "Abu Dhabi Corniche 夜风", "night", false, "22:18", "海边夜色", ["Ray's Bar", "Corniche 夜风", "海湾夜色"], { city: "abudhabi", duration: "2.5h", budget: "AED 260", note: "高处一杯之后去海边走路，夜晚就没有那么像游客行程。" }),
+    recordSeed(-236, "Saadiyat 白色边界慢走", "architecture", true, "08:45", "强光边界", ["Saadiyat 白墙", "Mamsha 海边", "Louvre 外侧"], { city: "abudhabi", duration: "2h", budget: "AED 48", photoSource: "拍照", note: "白墙和海风让路线非常干净，像一张没有写满的城市卡。" }),
+    recordSeed(-258, "浦东美术馆和江边台阶", "art", true, "15:50", "展后发呆", ["浦东美术馆", "滨江台阶", "陆家嘴背街咖啡"], { duration: "3h", budget: "¥118", photoSource: "上传照片", note: "展览之后在江边坐了一会儿，比展厅本身更像今天的重点。" }),
+    recordSeed(-284, "金桥周末宠物友好线", "pet", true, "13:28", "带狗慢走", ["金桥宠物友好咖啡", "碧云社区公园", "面包店外摆"], { duration: "2.2h", budget: "¥92", photoSource: "拍照", note: "宠物友好店、公园和外摆座位让周末变成很容易开始的一条线。" })
   ];
+}
+
+function demoFeaturedPasses() {
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+  return [
+    demoPass("sh-pass-coffee-01", "active", now - 2 * day, 3),
+    demoPass("sh-pass-night-01", "completed", now - 11 * day),
+    demoPass("cd-pass-art-01", "active", now - 4 * day, 1),
+    demoPass("ad-pass-coffee-01", "completed", now - 19 * day),
+    demoPass("ad-pass-art-01", "expired", now - 28 * day, 1)
+  ].filter(Boolean);
+}
+
+function demoPass(routeId, status, createdAt, redeemedCount = 0) {
+  const routeItem = featuredRouteById(routeId);
+  if (!routeItem) return null;
+  const allBenefitIds = routeItem.benefits.map((item) => item.id);
+  const redeemed = status === "completed"
+    ? allBenefitIds
+    : allBenefitIds.slice(0, Math.min(redeemedCount, allBenefitIds.length - 1));
+  const expiresAt = status === "expired"
+    ? Date.now() - 2 * 24 * 60 * 60 * 1000
+    : createdAt + routeItem.validDays * 24 * 60 * 60 * 1000;
+  return {
+    id: `demo-pass-${routeId}`,
+    orderNo: orderNumberForPass(routeItem),
+    routeId,
+    city: routeItem.city || "shanghai",
+    status,
+    createdAt,
+    paidAt: createdAt,
+    purchasedAt: createdAt,
+    completedAt: status === "completed" ? createdAt + 2 * 60 * 60 * 1000 : null,
+    expiresAt,
+    redeemed
+  };
+}
+
+function demoCompletedRouteIds() {
+  return ["sh-r1", "sh-r3", "sh-r5", "sh-r7", "cd-r4", "cd-r10", "ad-r5", "ad-r13"];
+}
+
+function demoUserSnapshot(seedUser = {}) {
+  return {
+    ...seedUser,
+    name: "Vera",
+    account: DEMO_ACCOUNT,
+    password: encodePassword(DEMO_PASSWORD),
+    city: "shanghai",
+    interests: ["coffee", "art", "quest", "featured", "bookstore", "music", "night", "architecture", "market", "photography"],
+    role: "creative",
+    routine: "flexible",
+    onboardingComplete: true,
+    demoDataVersion: LOOP_DATA_VERSION,
+    records: defaultRecords(),
+    featuredPasses: demoFeaturedPasses(),
+    completedRouteIds: demoCompletedRouteIds(),
+    explorationState: {
+      active: true,
+      routeId: "sh-r12",
+      city: "shanghai",
+      routeProgress: 1,
+      routeStopFocus: 1,
+      photoTaken: true,
+      startedAt: Date.now() - 46 * 60 * 1000
+    },
+    updatedAt: new Date().toISOString()
+  };
 }
 
 function secret(code, title, clue, mode, duration, distance = 1.2, area = "附近") {
@@ -1970,20 +2054,17 @@ function showAuthGate(mode = "login") {
 
 function ensureDemoUser() {
   const existing = findUser(DEMO_ACCOUNT);
-  if (existing) return existing;
+  if (existing?.demoDataVersion === LOOP_DATA_VERSION) return existing;
   const users = readUsers();
-  const user = {
+  if (existing) {
+    const upgraded = demoUserSnapshot(existing);
+    saveUsers(users.map((user) => user.id === existing.id ? upgraded : user));
+    return upgraded;
+  }
+  const user = demoUserSnapshot({
     id: `loop-${Date.now()}`,
-    name: "城市探索者",
-    account: DEMO_ACCOUNT,
-    password: encodePassword(DEMO_PASSWORD),
-    city: "shanghai",
-    interests: ["coffee", "art", "quest"],
-    role: "creative",
-    routine: "flexible",
-    onboardingComplete: true,
     createdAt: new Date().toISOString()
-  };
+  });
   users.push(user);
   saveUsers(users);
   return user;
@@ -5956,6 +6037,29 @@ function bindEvents() {
   }, 12000);
 }
 
+function installAppInteractionGuards() {
+  ["copy", "cut", "paste", "selectstart", "contextmenu", "dragstart"].forEach((eventName) => {
+    document.addEventListener(eventName, (event) => event.preventDefault(), { capture: true });
+  });
+
+  ["gesturestart", "gesturechange", "gestureend", "dblclick"].forEach((eventName) => {
+    document.addEventListener(eventName, (event) => event.preventDefault(), { capture: true });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    const key = event.key.toLowerCase();
+    if ((event.metaKey || event.ctrlKey) && ["a", "c", "v", "x"].includes(key)) event.preventDefault();
+  }, { capture: true });
+
+  let lastTouchEndAt = 0;
+  document.addEventListener("touchend", (event) => {
+    const now = Date.now();
+    if (now - lastTouchEndAt < 320) event.preventDefault();
+    lastTouchEndAt = now;
+  }, { capture: true, passive: false });
+}
+
+installAppInteractionGuards();
 resetPrototypeStorageIfNeeded();
 initAuth();
 bindEvents();
