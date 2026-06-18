@@ -1,4 +1,5 @@
 .DS_Store
 .env
 .playwright-cli/
+.superpowers/
 node_modules/

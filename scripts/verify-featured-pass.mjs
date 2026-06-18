@@ -4,10 +4,14 @@ const index = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const script = readFileSync(new URL("../script.js", import.meta.url), "utf8");
 const styles = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 const faviconExists = existsSync(new URL("../favicon.svg", import.meta.url));
+const favicon = faviconExists ? readFileSync(new URL("../favicon.svg", import.meta.url), "utf8") : "";
 
 const checks = [
   ["page declares a favicon so browser preview does not 404", /<link\s+rel="icon"\s+href="favicon\.svg"\s+type="image\/svg\+xml"\s*\/?>/],
   ["favicon asset exists", faviconExists ? /./ : /$a/],
+  ["city tape logo markup is used across splash auth and header", /splash-logo[\s\S]*logo-card-mark[\s\S]*auth-brand[\s\S]*logo-card-mark[\s\S]*wordmark[\s\S]*logo-card-mark/],
+  ["city tape logo styles define card bands", /\.logo-card-mark[\s\S]*\.logo-band\.is-blue[\s\S]*\.logo-band\.is-orange/],
+  ["favicon uses the city tape logo direction", /city-tape-favicon/],
   ["city pass category is defined before 秘境探索", /id:\s*"featured"[\s\S]*?name:\s*"城市通行证"[\s\S]*?id:\s*"quest"[\s\S]*?name:\s*"秘境探索"/],
   ["city pass category has distinct styling hooks", /featuredLayerVisual|is-featured-layer|--featured-accent/],
   ["featured map pass data includes multi-city issues", /featuredPassMaps[\s\S]*?shanghai[\s\S]*?chengdu[\s\S]*?abudhabi/],
@@ -147,10 +151,10 @@ const checks = [
   ["pre-purchase screen does not show purchase-to-redeem buttons", { not: /购买后核销/ }],
   ["there is no continue payment or saved pending state", { not: /继续支付|pending_payment|待支付订单|未支付/ }],
   ["featured pass styles exist", /\.featured-pass|\.pass-stop|\.profile-pass/],
-  ["stylesheet cache key changed", /styles\.css\?v=20260617-recommend-filter44/]
+  ["stylesheet cache key changed", /styles\.css\?v=20260618-city-tape-logo/]
 ];
 
-const combined = `${index}\n${script}\n${styles}`;
+const combined = `${index}\n${script}\n${styles}\n${favicon}`;
 const failures = checks
   .filter(([, pattern]) => pattern.not ? pattern.not.test(combined) : !pattern.test(combined))
   .map(([label]) => label);

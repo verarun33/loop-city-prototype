@@ -7481,3 +7481,180 @@ body::-webkit-scrollbar,
 .day-cell.has-photo span {
   color: #fff;
 }
+
+/* LOOP city tape identity */
+.logo-copy,
+.splash-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-items: initial;
+  gap: 10px;
+  width: fit-content;
+}
+
+.logo-type {
+  display: grid;
+  gap: 3px;
+}
+
+.logo-card-mark {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 34px;
+  border: 2px solid var(--ink);
+  border-radius: 7px;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 246, 0.96), rgba(247, 239, 217, 0.88));
+  box-shadow: 3px 3px 0 rgba(32, 36, 43, 0.08);
+  transform: rotate(-2deg);
+}
+
+.logo-card-mark::before {
+  position: absolute;
+  inset: 7px 8px auto;
+  height: 2px;
+  background: rgba(32, 36, 43, 0.7);
+  content: "";
+}
+
+.logo-card-mark::after {
+  position: absolute;
+  right: 7px;
+  bottom: 6px;
+  width: 7px;
+  height: 7px;
+  background: var(--ink);
+  content: "";
+}
+
+.logo-band {
+  position: absolute;
+  left: 8px;
+  display: block;
+  height: 5px;
+}
+
+.logo-band.is-blue {
+  bottom: 9px;
+  width: 13px;
+  background: var(--blue);
+}
+
+.logo-band.is-orange {
+  bottom: 9px;
+  left: 22px;
+  width: 8px;
+  background: var(--orange);
+}
+
+.logo-band.is-paper {
+  display: none;
+}
+
+.logo-copy strong,
+.splash-logo strong {
+  width: fit-content;
+  color: var(--ink);
+  font-weight: 1000;
+  letter-spacing: 0;
+}
+
+.logo-copy strong {
+  font-size: 25px;
+  line-height: 0.84;
+}
+
+.splash-logo strong {
+  font-size: 50px;
+  line-height: 0.82;
+}
+
+.logo-copy strong::after,
+.splash-logo strong::after {
+  display: none;
+}
+
+.logo-copy small,
+.splash-logo small {
+  display: block;
+  margin: 0;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.splash-logo {
+  gap: 14px;
+}
+
+.splash-logo .logo-card-mark {
+  width: 58px;
+  height: 50px;
+  border-width: 3px;
+  border-radius: 10px;
+  box-shadow: 5px 5px 0 rgba(32, 36, 43, 0.08);
+}
+
+.splash-logo .logo-card-mark::before {
+  inset: 11px 12px auto;
+  height: 3px;
+}
+
+.splash-logo .logo-card-mark::after {
+  right: 11px;
+  bottom: 10px;
+  width: 10px;
+  height: 10px;
+}
+
+.splash-logo .logo-band {
+  left: 12px;
+  bottom: 14px;
+  height: 8px;
+}
+
+.splash-logo .logo-band.is-blue {
+  width: 20px;
+}
+
+.splash-logo .logo-band.is-orange {
+  left: 34px;
+  width: 12px;
+}
+
+.auth-brand .logo-copy {
+  gap: 11px;
+}
+
+.wordmark {
+  min-width: auto;
+  gap: 0;
+}
+
+.wordmark .logo-card-mark {
+  width: 34px;
+  height: 31px;
+  border-radius: 6px;
+}
+
+@media (max-width: 380px) {
+  .wordmark .logo-card-mark {
+    width: 31px;
+    height: 29px;
+  }
+
+  .logo-copy {
+    gap: 8px;
+  }
+
+  .logo-copy strong {
+    font-size: 22px;
+  }
+
+  .logo-copy small {
+    font-size: 10px;
+  }
+}
