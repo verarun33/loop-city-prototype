@@ -7,7 +7,7 @@
     "start": "node server.mjs",
     "data:check": "node scripts/verify-loop-data.mjs",
     "check": "node --check script.js && node --check server.mjs",
-    "test": "node scripts/verify-featured-pass.mjs",
+    "test": "npm run data:check && node scripts/verify-featured-pass.mjs",
     "ios:icon": "swift scripts/generate-ios-app-icon.swift",
     "ios:sync": "node scripts/sync-ios-web-assets.mjs",
     "ios:check": "npm run ios:sync && node scripts/verify-ios-webview-wrapper.mjs",

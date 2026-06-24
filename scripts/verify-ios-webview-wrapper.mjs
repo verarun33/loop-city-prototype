@@ -15,6 +15,7 @@ const requiredFiles = [
   "LoopCityWebViewApp/Web/index.html",
   "LoopCityWebViewApp/Web/styles.css",
   "LoopCityWebViewApp/Web/script.js",
+  "LoopCityWebViewApp/Web/data/loop-data-v0.1.js",
   "LoopCityWebViewApp/Web/favicon.svg"
 ];
 
@@ -29,6 +30,12 @@ for (const file of ["index.html", "styles.css", "script.js", "favicon.svg"]) {
   if (source !== bundled) {
     throw new Error(`Bundled iOS Web asset is out of sync: ${file}`);
   }
+}
+
+const rootData = readFileSync(join(root, "data", "loop-data-v0.1.js"), "utf8");
+const bundledData = readFileSync(join(appRoot, "LoopCityWebViewApp", "Web", "data", "loop-data-v0.1.js"), "utf8");
+if (rootData !== bundledData) {
+  throw new Error("iOS 打包数据资产不同步：data/loop-data-v0.1.js");
 }
 
 const webViewScreen = readFileSync(join(appRoot, "LoopCityWebViewApp", "WebViewScreen.swift"), "utf8");
