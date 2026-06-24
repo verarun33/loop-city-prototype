@@ -3557,7 +3557,10 @@ function renderOngoingFeaturedPasses(passItems) {
       </figure>
       <div class="profile-pass-body">
         <div class="profile-pass-head">
-          <span>${passStatusLabel(status)} · ${redeemed}/${total}</span>
+          <div class="profile-pass-topline">
+            <span>${passStatusLabel(status)} · ${redeemed}/${total}</span>
+            <em class="profile-pass-price">${route.price || route.budget}</em>
+          </div>
           <strong>${route.title}</strong>
           <small>${profilePassMeta(pass, route, status)}</small>
         </div>

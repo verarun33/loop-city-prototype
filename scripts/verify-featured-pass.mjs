@@ -105,6 +105,8 @@ const checks = [
   ["profile renders ongoing ordinary interest maps separately", /interestMapSection[\s\S]*进行中的兴趣地图[\s\S]*renderOngoingInterestMap/],
   ["demo profile seeds enough ongoing city pass cards to exercise horizontal scrolling", /(?=[\s\S]*DEMO_PREVIEW_PASS_TARGET\s*=\s*3)(?=[\s\S]*function demoPreviewFeaturedPassItems)(?=[\s\S]*renderOngoingFeaturedPasses\(demoPreviewFeaturedPassItems\(activeItems\)\))/],
   ["demo profile seeds enough ongoing interest map cards to exercise horizontal scrolling", /(?=[\s\S]*DEMO_PREVIEW_INTEREST_MAP_TARGET\s*=\s*3)(?=[\s\S]*function demoPreviewInterestMapItems)(?=[\s\S]*routeItems\s*=\s*demoPreviewInterestMapItems\(routeItem\))/],
+  ["ongoing city pass cards show pass price in the top-right status row", /profile-pass-topline[\s\S]*profile-pass-price[\s\S]*\$\{route\.price \|\| route\.budget\}/],
+  ["ongoing city pass price aligns with the left status text", /\.profile-pass-topline[\s\S]*display:\s*flex[\s\S]*align-items:\s*baseline[\s\S]*justify-content:\s*space-between[\s\S]*\.profile-pass-price/],
   ["profile ongoing interest maps use the same horizontal rail as city passes", /interestMapList\.className\s*=\s*`profile-pass-list interest-map-list is-compact has-tilted-covers/],
   ["profile tilted ongoing rails allow horizontal touch panning", /\.profile-pass-list\.is-compact\.has-tilted-covers[\s\S]*touch-action:\s*pan-x/],
   ["profile floating top shortcut avoids ongoing exploration bar", /\.app-frame\.has-ongoing\s+\.record-scroll-float[\s\S]*bottom:\s*calc/],
@@ -163,7 +165,8 @@ const checks = [
   ["pre-purchase screen does not show purchase-to-redeem buttons", { not: /购买后核销/ }],
   ["there is no continue payment or saved pending state", { not: /继续支付|pending_payment|待支付订单|未支付/ }],
   ["featured pass styles exist", /\.featured-pass|\.pass-stop|\.profile-pass/],
-  ["stylesheet cache key changed", /styles\.css\?v=20260624-mobile-rails/]
+  ["stylesheet cache key changed", /styles\.css\?v=20260624-pass-price/],
+  ["script cache key changed", /script\.js\?v=20260624-pass-price/]
 ];
 
 const combined = `${index}\n${script}\n${styles}\n${favicon}`;

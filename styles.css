@@ -7234,10 +7234,29 @@ body::-webkit-scrollbar,
   gap: 4px;
 }
 
+.profile-pass-topline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
 .profile-pass-head span {
   color: var(--orange);
   font-size: 10px;
   font-weight: 1000;
+  line-height: 1.2;
+}
+
+.profile-pass-price {
+  flex: 0 0 auto;
+  color: var(--orange);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 1000;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .profile-pass-head strong {
