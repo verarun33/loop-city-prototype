@@ -22,14 +22,19 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 ## 当前已知可用基线
 
-阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
+阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
 
 最新功能基线：
 
-阶段 2D TestFlight 准备审计已建立。精确提交请用 `git log -1 --oneline` 查看。
+阶段 2E TestFlight / App Store 人工材料草稿已建立。精确提交请用 `git log -1 --oneline` 查看。
 
 近期关键提交：
 
+- `4eafbc3 记录 TestFlight 人工材料草稿`
+- `a7e20c3 新增 TestFlight 材料失败检查`
+- `ec2c419 规划 TestFlight 人工材料实施`
+- `0e65517 规划 TestFlight 人工材料`
+- `266c124 完成 TestFlight 准备审计阶段状态`
 - `740413f 记录 TestFlight 准备清单`
 - `95d347c 新增 TestFlight readiness 失败检查`
 - `137e670 规划 TestFlight 准备审计实施`
@@ -109,6 +114,8 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 
 阶段 2D 已完成：TestFlight 准备审计已建立。项目现在有 `npm run ios:release-check` 用于 repo 级发布前检查，并有 `docs/release/ios-testflight-readiness.md` 明确区分自动检查项和人工发布待办。当前仍未配置 Apple Developer Team，也未上传 TestFlight build。
 
+阶段 2E 已完成：TestFlight / App Store 人工材料草稿已建立。`docs/release/ios-app-store-materials.md` 记录 App Store Connect 基础信息、TestFlight Beta 信息、App Review notes、截图清单、隐私标签草稿和人工确认项；`npm run ios:release-check` 会检查材料文档存在和关键栏目。
+
 相关文档：
 
 - `docs/superpowers/specs/2026-06-24-camera-photo-native-bridge-design.md`
@@ -120,6 +127,9 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `docs/superpowers/specs/2026-06-24-testflight-readiness-design.md`
 - `docs/superpowers/plans/2026-06-24-testflight-readiness-implementation.md`
 - `docs/release/ios-testflight-readiness.md`
+- `docs/superpowers/specs/2026-06-24-testflight-materials-design.md`
+- `docs/superpowers/plans/2026-06-24-testflight-materials-implementation.md`
+- `docs/release/ios-app-store-materials.md`
 
 最近完整验证时间：2026-06-24。
 
@@ -133,7 +143,7 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `npm run ios:release-check`
 - `npm run ios:build`
 
-下一步可继续规划照片记录真实后端持久化、真实签名配置、TestFlight 人工材料或推送提醒。
+下一步可继续规划真实签名配置、截图生产、照片记录真实后端持久化或推送提醒。
 
 ## 新窗口启动提示
 
