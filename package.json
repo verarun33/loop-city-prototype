@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
+    "data:check": "node scripts/verify-loop-data.mjs",
     "check": "node --check script.js && node --check server.mjs",
     "test": "node scripts/verify-featured-pass.mjs",
     "ios:icon": "swift scripts/generate-ios-app-icon.swift",
