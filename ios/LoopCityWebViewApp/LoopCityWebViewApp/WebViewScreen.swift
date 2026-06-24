@@ -1,3 +1,4 @@
+import CoreLocation
 import PhotosUI
 import SwiftUI
 import UniformTypeIdentifiers
@@ -58,6 +59,14 @@ struct WebViewScreen: UIViewRepresentable {
     final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
         private weak var webView: WKWebView?
         private var activePhotoRequest: NativePhotoRequest?
+        private var activeLocationRequest: NativeLocationRequest?
+        private var locationTimeoutTask: Task<Void, Never>?
+        private lazy var locationManager: CLLocationManager = {
+            let manager = CLLocationManager()
+            manager.delegate = self
+            manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+            return manager
+        }()
 
         static let nativeBootstrapScript = WKUserScript(
             source: """
@@ -99,6 +108,20 @@ struct WebViewScreen: UIViewRepresentable {
                 self.maxDimension = CGFloat(min(max(dimension, 320), 2048))
                 let quality = payload["jpegQuality"] as? Double ?? 0.78
                 self.jpegQuality = CGFloat(min(max(quality, 0.1), 0.95))
+            }
+        }
+
+        private struct NativeLocationRequest {
+            let requestId: String
+            let timeoutMs: Double
+
+            init?(payload: [String: Any]) {
+                guard let requestId = payload["requestId"] as? String, !requestId.isEmpty else {
+                    return nil
+                }
+                self.requestId = requestId
+                let timeout = payload["timeoutMs"] as? Double ?? 12000
+                self.timeoutMs = min(max(timeout, 4000), 20000)
             }
         }
 
@@ -161,6 +184,8 @@ struct WebViewScreen: UIViewRepresentable {
                 handleCameraCapture(payload: payload)
             case "photo.pick":
                 handlePhotoPick(payload: payload)
+            case "location.request":
+                handleLocationRequest(payload: payload)
             default:
                 break
             }
@@ -210,6 +235,97 @@ struct WebViewScreen: UIViewRepresentable {
             let picker = PHPickerViewController(configuration: configuration)
             picker.delegate = self
             present(picker)
+        }
+
+        private func handleLocationRequest(payload: [String: Any]) {
+            guard let request = NativeLocationRequest(payload: payload) else {
+                sendLocationResult(
+                    requestId: payload["requestId"] as? String ?? "",
+                    reason: "invalid-payload",
+                    message: "定位请求缺少 requestId"
+                )
+                return
+            }
+            locationTimeoutTask?.cancel()
+            activeLocationRequest = request
+            startLocationTimeout(for: request)
+            switch locationManager.authorizationStatus {
+            case .notDetermined:
+                locationManager.requestWhenInUseAuthorization()
+            case .authorizedAlways, .authorizedWhenInUse:
+                requestCurrentLocation()
+            case .denied:
+                finishLocationFailure(reason: "denied", message: "定位权限未开启")
+            case .restricted:
+                finishLocationFailure(reason: "restricted", message: "定位权限受限")
+            @unknown default:
+                finishLocationFailure(reason: "unknown", message: "定位授权状态未知")
+            }
+        }
+
+        private func requestCurrentLocation() {
+            locationManager.requestLocation()
+        }
+
+        private func startLocationTimeout(for request: NativeLocationRequest) {
+            locationTimeoutTask?.cancel()
+            locationTimeoutTask = Task { @MainActor in
+                do {
+                    try await Task.sleep(nanoseconds: UInt64(request.timeoutMs * 1_000_000))
+                } catch {
+                    return
+                }
+                guard self.activeLocationRequest?.requestId == request.requestId else { return }
+                self.finishLocationFailure(reason: "timeout", message: "定位超时")
+            }
+        }
+
+        private func finishLocationFailure(reason: String, message: String) {
+            guard let request = activeLocationRequest else { return }
+            activeLocationRequest = nil
+            locationTimeoutTask?.cancel()
+            locationTimeoutTask = nil
+            sendLocationResult(requestId: request.requestId, reason: reason, message: message)
+        }
+
+        private func sendLocationResult(requestId: String, reason: String, message: String) {
+            let payload: [String: Any] = [
+                "requestId": requestId,
+                "ok": false,
+                "reason": reason,
+                "message": message
+            ]
+            dispatchLocationResult(payload)
+        }
+
+        private func sendLocationResult(request: NativeLocationRequest, location: CLLocation) {
+            let payload: [String: Any] = [
+                "requestId": request.requestId,
+                "ok": true,
+                "latitude": location.coordinate.latitude,
+                "longitude": location.coordinate.longitude,
+                "accuracy": location.horizontalAccuracy,
+                "authorizationStatus": locationAuthorizationLabel(locationManager.authorizationStatus),
+                "capturedAt": ISO8601DateFormatter().string(from: location.timestamp)
+            ]
+            dispatchLocationResult(payload)
+        }
+
+        private func locationAuthorizationLabel(_ status: CLAuthorizationStatus) -> String {
+            switch status {
+            case .authorizedAlways:
+                return "authorizedAlways"
+            case .authorizedWhenInUse:
+                return "authorizedWhenInUse"
+            case .denied:
+                return "denied"
+            case .restricted:
+                return "restricted"
+            case .notDetermined:
+                return "notDetermined"
+            @unknown default:
+                return "unknown"
+            }
         }
 
         private func present(_ viewController: UIViewController) {
@@ -282,6 +398,17 @@ struct WebViewScreen: UIViewRepresentable {
             let script = "window.dispatchEvent(new CustomEvent('loopnative:photo-result', { detail: \(json) }));"
             webView?.evaluateJavaScript(script)
         }
+
+        private func dispatchLocationResult(_ payload: [String: Any]) {
+            guard
+                let data = try? JSONSerialization.data(withJSONObject: payload),
+                let json = String(data: data, encoding: .utf8)
+            else {
+                return
+            }
+            let script = "window.dispatchEvent(new CustomEvent('loopnative:location-result', { detail: \(json) }));"
+            webView?.evaluateJavaScript(script)
+        }
     }
 }
 
@@ -350,5 +477,38 @@ extension WebViewScreen.Coordinator: PHPickerViewControllerDelegate {
                 self.sendPhotoResult(request: request, image: image)
             }
         }
+    }
+}
+
+extension WebViewScreen.Coordinator: @MainActor CLLocationManagerDelegate {
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        guard activeLocationRequest != nil else { return }
+        switch manager.authorizationStatus {
+        case .authorizedAlways, .authorizedWhenInUse:
+            requestCurrentLocation()
+        case .denied:
+            finishLocationFailure(reason: "denied", message: "定位权限未开启")
+        case .restricted:
+            finishLocationFailure(reason: "restricted", message: "定位权限受限")
+        case .notDetermined:
+            break
+        @unknown default:
+            finishLocationFailure(reason: "unknown", message: "定位授权状态未知")
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let request = activeLocationRequest, let location = locations.last else {
+            finishLocationFailure(reason: "unavailable", message: "没有获得当前位置")
+            return
+        }
+        activeLocationRequest = nil
+        locationTimeoutTask?.cancel()
+        locationTimeoutTask = nil
+        sendLocationResult(request: request, location: location)
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        finishLocationFailure(reason: "unavailable", message: error.localizedDescription)
     }
 }
