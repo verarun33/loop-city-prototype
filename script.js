@@ -7088,7 +7088,7 @@ function installAppInteractionGuards() {
   }, { capture: true, passive: false });
 }
 
-const LOOP_NATIVE_BRIDGE_MESSAGES = Object.freeze(["ready", "haptic", "camera.capture", "photo.pick"]);
+const LOOP_NATIVE_BRIDGE_MESSAGES = Object.freeze(["ready", "haptic", "camera.capture", "photo.pick", "location.request"]);
 const nativePhotoRequests = new Map();
 let nativePhotoRequestCounter = 0;
 

@@ -26,6 +26,8 @@
 	<string>LOOP 会在后续版本用于保存你的城市打卡照片。</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>LOOP 会在后续版本用于选择并保存你的城市记录照片。</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>LOOP 会用当前位置确认你是否正在进行城市路线打卡。</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
