@@ -27,7 +27,7 @@ function extractPlistString(plist, key) {
 }
 
 function requireVersion(value, label) {
-  if (!/^\\d+(\\.\\d+){0,2}$/.test(value)) {
+  if (!/^\d+(\.\d+){0,2}$/.test(value)) {
     throw new Error(`${label} 版本格式不正确：${value || "(空)"}`);
   }
 }
