@@ -7074,13 +7074,17 @@ function installAppInteractionGuards() {
   }, { capture: true, passive: false });
 }
 
+const LOOP_NATIVE_BRIDGE_MESSAGES = Object.freeze(["ready", "haptic"]);
+
 function installNativeShellBridge() {
   const markNativeShell = () => {
     const native = window.LoopNative;
     if (!native || native.platform !== "ios") return;
     document.documentElement.dataset.nativeShell = native.platform;
     document.documentElement.dataset.nativeShellVersion = native.shellVersion || "";
-    native.post("ready", { href: window.location.href, dataVersion: LOOP_DATA_VERSION });
+    if (LOOP_NATIVE_BRIDGE_MESSAGES.includes("ready")) {
+      native.post("ready", { href: window.location.href, dataVersion: LOOP_DATA_VERSION });
+    }
   };
 
   window.addEventListener("loopnative:ready", markNativeShell, { once: true });
