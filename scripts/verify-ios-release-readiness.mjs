@@ -9,6 +9,7 @@ const projectPath = join(appRoot, "LoopCityWebViewApp.xcodeproj", "project.pbxpr
 const appIconContentsPath = join(appRoot, "LoopCityWebViewApp", "Assets.xcassets", "AppIcon.appiconset", "Contents.json");
 const appIconPath = join(appRoot, "LoopCityWebViewApp", "Assets.xcassets", "AppIcon.appiconset", "loop-city-app-icon-1024.png");
 const readinessDocPath = join(root, "docs", "release", "ios-testflight-readiness.md");
+const materialsDocPath = join(root, "docs", "release", "ios-app-store-materials.md");
 
 const warnings = [];
 
@@ -36,6 +37,7 @@ const info = readRequired(infoPath, "Info.plist");
 const project = readRequired(projectPath, "Xcode project");
 const appIconContents = readRequired(appIconContentsPath, "AppIcon Contents.json");
 const readinessDoc = readRequired(readinessDocPath, "TestFlight readiness 文档");
+const materialsDoc = readRequired(materialsDocPath, "App Store materials 文档");
 
 requireIncludes(info, "<string>LOOP 城市回路</string>", "CFBundleDisplayName");
 requireIncludes(info, "NSCameraUsageDescription", "Info.plist");
@@ -60,6 +62,19 @@ if (pngSignature !== "89504e470d0a1a0a") {
 
 for (const expected of ["Apple Developer Team", "App Store Connect", "隐私标签", "截图", "审核说明", "TestFlight"]) {
   requireIncludes(readinessDoc, expected, "ios-testflight-readiness.md");
+}
+
+for (const expected of [
+  "App Store Connect 基础信息",
+  "TestFlight Beta 信息",
+  "App Review notes",
+  "截图清单",
+  "隐私标签草稿",
+  "人工确认项",
+  "WebView-first",
+  "LOOP 城市回路"
+]) {
+  requireIncludes(materialsDoc, expected, "ios-app-store-materials.md");
 }
 
 for (const warning of warnings) {
