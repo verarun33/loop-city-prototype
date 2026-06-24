@@ -26,10 +26,12 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 最新功能基线：
 
-阶段 2E TestFlight / App Store 人工材料草稿已建立。精确提交请用 `git log -1 --oneline` 查看。
+照片记录后端持久化已完成设计和实施计划，尚未执行代码实现。精确提交请用 `git log -1 --oneline` 查看。
 
 近期关键提交：
 
+- `6b01b4b 规划照片记录持久化实施`
+- `85f8a02 规划照片记录后端持久化`
 - `4eafbc3 记录 TestFlight 人工材料草稿`
 - `a7e20c3 新增 TestFlight 材料失败检查`
 - `ec2c419 规划 TestFlight 人工材料实施`
@@ -116,6 +118,8 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 
 阶段 2E 已完成：TestFlight / App Store 人工材料草稿已建立。`docs/release/ios-app-store-materials.md` 记录 App Store Connect 基础信息、TestFlight Beta 信息、App Review notes、截图清单、隐私标签草稿和人工确认项；`npm run ios:release-check` 会检查材料文档存在和关键栏目。
 
+照片记录后端持久化已完成设计和实施计划，但尚未执行代码实现。设计选择是先做 Phase 3A dev backend + Web sync adapter，默认 API base 为空、不影响线上原型；继续实现前需要 Vera 确认接受“dev backend 不是生产云端”的阶段边界。
+
 相关文档：
 
 - `docs/superpowers/specs/2026-06-24-camera-photo-native-bridge-design.md`
@@ -130,6 +134,8 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `docs/superpowers/specs/2026-06-24-testflight-materials-design.md`
 - `docs/superpowers/plans/2026-06-24-testflight-materials-implementation.md`
 - `docs/release/ios-app-store-materials.md`
+- `docs/superpowers/specs/2026-06-24-photo-record-persistence-design.md`
+- `docs/superpowers/plans/2026-06-24-photo-record-persistence-implementation.md`
 
 最近完整验证时间：2026-06-24。
 
@@ -143,7 +149,7 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `npm run ios:release-check`
 - `npm run ios:build`
 
-下一步可继续规划真实签名配置、截图生产、照片记录真实后端持久化或推送提醒。
+下一步可继续执行照片记录持久化 Phase 3A、规划真实签名配置、截图生产或推送提醒。
 
 ## 新窗口启动提示
 
