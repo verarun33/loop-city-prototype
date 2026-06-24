@@ -19,6 +19,7 @@ npm run ios:release-check
 - iOS deployment target 是 `17.0`。
 - app icon asset 引用 `loop-city-app-icon-1024.png`，且文件是 PNG。
 - 本文档包含 TestFlight 前的人工待办。
+- TestFlight / App Store Connect 人工材料草稿存在，并包含核心栏目。
 
 ## 当前本地状态
 
@@ -38,6 +39,7 @@ npm run ios:release-check
 - 隐私标签：根据最终数据流填写相机、相册、定位、分析、账号和后端数据使用情况。
 - 截图：准备 iPhone 尺寸截图，至少覆盖首页、地图/通行证、我的、记录或打卡流程。
 - 审核说明：解释 WebView-first 架构、城市路线原型状态、需要的权限用途。
+- 人工材料草稿：先维护 `docs/release/ios-app-store-materials.md`，再把确认后的内容填入 App Store Connect。
 - TestFlight：准备内部测试成员、测试说明和首个 build 的变更说明。
 - 生产后端：确认照片记录、用户账号、支付或核销相关数据是否仍是原型本地状态。
 
