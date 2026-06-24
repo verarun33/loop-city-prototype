@@ -54,6 +54,11 @@ for (const expected of ["camera.capture", "photo.pick", "loopnative:photo-result
     throw new Error(`WebViewScreen.swift 必须实现 native photo bridge：${expected}`);
   }
 }
+for (const expected of ["location.request", "loopnative:location-result", "CLLocationManager", "CLLocationManagerDelegate"]) {
+  if (!webViewScreen.includes(expected)) {
+    throw new Error(`WebViewScreen.swift 必须实现 native location bridge：${expected}`);
+  }
+}
 
 const script = readFileSync(join(root, "script.js"), "utf8");
 for (const expected of ["installNativeShellBridge", "loopnative:ready", "nativeShell"]) {
@@ -73,6 +78,11 @@ for (const expected of ["loopnative:photo-result", "invalid-payload", "encode-fa
     throw new Error(`native-bridge-registry.md 必须记录 photo bridge 结果：${expected}`);
   }
 }
+for (const expected of ["loopnative:location-result", "denied", "restricted", "timeout", "invalid-payload"]) {
+  if (!bridgeRegistry.includes(expected)) {
+    throw new Error(`native-bridge-registry.md 必须记录 location bridge 结果：${expected}`);
+  }
+}
 
 for (const expected of ["LOOP_NATIVE_BRIDGE_MESSAGES", "ready", "haptic"]) {
   if (!script.includes(expected)) {
@@ -81,7 +91,7 @@ for (const expected of ["LOOP_NATIVE_BRIDGE_MESSAGES", "ready", "haptic"]) {
 }
 
 const info = readFileSync(join(appRoot, "LoopCityWebViewApp", "Info.plist"), "utf8");
-for (const expected of ["NSCameraUsageDescription", "NSPhotoLibraryUsageDescription", "UILaunchStoryboardName", "UIViewControllerBasedStatusBarAppearance"]) {
+for (const expected of ["NSCameraUsageDescription", "NSPhotoLibraryUsageDescription", "NSLocationWhenInUseUsageDescription", "UILaunchStoryboardName", "UIViewControllerBasedStatusBarAppearance"]) {
   if (!info.includes(expected)) {
     throw new Error(`Info.plist must include ${expected}`);
   }
