@@ -125,6 +125,28 @@ struct WebViewScreen: UIViewRepresentable {
             }
         }
 
+        private struct NativeShareRequest {
+            let requestId: String
+            let title: String
+            let text: String
+            let url: URL?
+            let subject: String
+
+            init?(payload: [String: Any]) {
+                guard
+                    let requestId = payload["requestId"] as? String, !requestId.isEmpty,
+                    let text = payload["text"] as? String, !text.isEmpty
+                else {
+                    return nil
+                }
+                self.requestId = requestId
+                self.title = payload["title"] as? String ?? "LOOP 城市回路"
+                self.text = text
+                self.url = (payload["url"] as? String).flatMap(URL.init(string:))
+                self.subject = payload["subject"] as? String ?? self.title
+            }
+        }
+
         func attach(_ webView: WKWebView) {
             self.webView = webView
         }
@@ -186,6 +208,8 @@ struct WebViewScreen: UIViewRepresentable {
                 handlePhotoPick(payload: payload)
             case "location.request":
                 handleLocationRequest(payload: payload)
+            case "share.open":
+                handleShareOpen(payload: payload)
             default:
                 break
             }
@@ -261,6 +285,50 @@ struct WebViewScreen: UIViewRepresentable {
             @unknown default:
                 finishLocationFailure(reason: "unknown", message: "定位授权状态未知")
             }
+        }
+
+        private func handleShareOpen(payload: [String: Any]) {
+            guard let request = NativeShareRequest(payload: payload) else {
+                sendShareResult(
+                    requestId: payload["requestId"] as? String ?? "",
+                    reason: "invalid-payload",
+                    message: "分享请求缺少 requestId 或 text"
+                )
+                return
+            }
+            var items: [Any] = [request.text]
+            if let url = request.url {
+                items.append(url)
+            }
+            let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
+            controller.setValue(request.subject, forKey: "subject")
+            controller.completionWithItemsHandler = { [weak self] activityType, completed, _, error in
+                Task { @MainActor in
+                    guard let self else { return }
+                    if let error {
+                        self.sendShareResult(
+                            requestId: request.requestId,
+                            reason: "failed",
+                            message: error.localizedDescription
+                        )
+                        return
+                    }
+                    if completed {
+                        self.sendShareResult(
+                            requestId: request.requestId,
+                            completed: true,
+                            activityType: activityType?.rawValue
+                        )
+                    } else {
+                        self.sendShareResult(
+                            requestId: request.requestId,
+                            reason: "cancelled",
+                            message: "用户取消了分享"
+                        )
+                    }
+                }
+            }
+            presentShareController(controller, request: request)
         }
 
         private func requestCurrentLocation() {
@@ -342,6 +410,23 @@ struct WebViewScreen: UIViewRepresentable {
             presenter.present(viewController, animated: true)
         }
 
+        private func presentShareController(_ controller: UIActivityViewController, request: NativeShareRequest) {
+            guard let presenter = webView?.window?.rootViewController else {
+                sendShareResult(
+                    requestId: request.requestId,
+                    reason: "unavailable",
+                    message: "无法展示系统分享面板"
+                )
+                return
+            }
+            if let popover = controller.popoverPresentationController, let webView {
+                popover.sourceView = webView
+                popover.sourceRect = CGRect(x: webView.bounds.midX, y: webView.bounds.midY, width: 1, height: 1)
+                popover.permittedArrowDirections = []
+            }
+            presenter.present(controller, animated: true)
+        }
+
         private func sendPhotoResult(requestId: String, source: String, reason: String, message: String) {
             let payload: [String: Any] = [
                 "requestId": requestId,
@@ -376,6 +461,29 @@ struct WebViewScreen: UIViewRepresentable {
             dispatchPhotoResult(payload)
         }
 
+        private func sendShareResult(requestId: String, completed: Bool, activityType: String?) {
+            var payload: [String: Any] = [
+                "requestId": requestId,
+                "ok": true,
+                "completed": completed
+            ]
+            if let activityType {
+                payload["activityType"] = activityType
+            }
+            dispatchShareResult(payload)
+        }
+
+        private func sendShareResult(requestId: String, reason: String, message: String) {
+            let payload: [String: Any] = [
+                "requestId": requestId,
+                "ok": false,
+                "completed": false,
+                "reason": reason,
+                "message": message
+            ]
+            dispatchShareResult(payload)
+        }
+
         private func resizedImage(_ image: UIImage, maxDimension: CGFloat) -> UIImage {
             let size = image.size
             let longest = max(size.width, size.height)
@@ -407,6 +515,17 @@ struct WebViewScreen: UIViewRepresentable {
                 return
             }
             let script = "window.dispatchEvent(new CustomEvent('loopnative:location-result', { detail: \(json) }));"
+            webView?.evaluateJavaScript(script)
+        }
+
+        private func dispatchShareResult(_ payload: [String: Any]) {
+            guard
+                let data = try? JSONSerialization.data(withJSONObject: payload),
+                let json = String(data: data, encoding: .utf8)
+            else {
+                return
+            }
+            let script = "window.dispatchEvent(new CustomEvent('loopnative:share-result', { detail: \(json) }));"
             webView?.evaluateJavaScript(script)
         }
     }
