@@ -7074,7 +7074,7 @@ function installAppInteractionGuards() {
   }, { capture: true, passive: false });
 }
 
-const LOOP_NATIVE_BRIDGE_MESSAGES = Object.freeze(["ready", "haptic"]);
+const LOOP_NATIVE_BRIDGE_MESSAGES = Object.freeze(["ready", "haptic", "camera.capture", "photo.pick"]);
 
 function installNativeShellBridge() {
   const markNativeShell = () => {
