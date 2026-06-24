@@ -11,6 +11,10 @@ struct WebViewScreen: UIViewRepresentable {
         configuration.allowsInlineMediaPlayback = true
         configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
         configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+        let userContentController = WKUserContentController()
+        userContentController.addUserScript(Coordinator.nativeBootstrapScript)
+        userContentController.add(context.coordinator, name: "loopNative")
+        configuration.userContentController = userContentController
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
@@ -48,7 +52,31 @@ struct WebViewScreen: UIViewRepresentable {
     }
 
     @MainActor
-    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
+    final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
+        static let nativeBootstrapScript = WKUserScript(
+            source: """
+            (() => {
+              if (window.LoopNative) return;
+              const bridge = Object.freeze({
+                platform: "ios",
+                shellVersion: "0.1",
+                post(name, payload = {}) {
+                  window.webkit.messageHandlers.loopNative.postMessage({ name, payload });
+                }
+              });
+              Object.defineProperty(window, "LoopNative", {
+                value: bridge,
+                configurable: false,
+                enumerable: true,
+                writable: false
+              });
+              window.dispatchEvent(new CustomEvent("loopnative:ready", { detail: bridge }));
+            })();
+            """,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true
+        )
+
         func webView(
             _ webView: WKWebView,
             createWebViewWith configuration: WKWebViewConfiguration,
@@ -84,6 +112,20 @@ struct WebViewScreen: UIViewRepresentable {
 
             UIApplication.shared.open(url)
             decisionHandler(.cancel)
+        }
+
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            guard
+                message.name == "loopNative",
+                let body = message.body as? [String: Any],
+                let name = body["name"] as? String
+            else {
+                return
+            }
+
+            if name == "haptic" {
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
         }
     }
 }

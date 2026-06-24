@@ -37,6 +37,18 @@ for (const expected of ["WKWebView", "loadFileURL", "allowsBackForwardNavigation
     throw new Error(`WebViewScreen.swift must include ${expected}`);
   }
 }
+for (const expected of ["WKUserContentController", "WKUserScript", "LoopNative", "loopNative", "WKScriptMessageHandler"]) {
+  if (!webViewScreen.includes(expected)) {
+    throw new Error(`WebViewScreen.swift must include native bridge piece: ${expected}`);
+  }
+}
+
+const script = readFileSync(join(root, "script.js"), "utf8");
+for (const expected of ["installNativeShellBridge", "loopnative:ready", "nativeShell"]) {
+  if (!script.includes(expected)) {
+    throw new Error(`script.js must include native shell bridge hook: ${expected}`);
+  }
+}
 
 const info = readFileSync(join(appRoot, "LoopCityWebViewApp", "Info.plist"), "utf8");
 for (const expected of ["NSCameraUsageDescription", "NSPhotoLibraryUsageDescription", "UILaunchStoryboardName", "UIViewControllerBasedStatusBarAppearance"]) {
