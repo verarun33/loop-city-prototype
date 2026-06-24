@@ -1,98 +1,98 @@
-# LOOP Data Foundation v0.1 Design
+# LOOP 数据基础 v0.1 设计
 
-Date: 2026-06-18
-Status: Draft for review
+日期：2026-06-18
+状态：历史设计文档，阶段 1 仍参考
 
-## Goal
+## 目标
 
-Build a local LOOP data foundation before connecting crawlers, real AI, merchant back office, or a database.
+在接入爬虫、真实 AI、商家后台或数据库前，先建立本地 LOOP 数据基础。
 
-v0.1 should create a stable local data container for:
+v0.1 要为这些对象提供稳定的数据容器：
 
-- City POIs
-- Routes
-- City passes
-- Orders
-- Redemptions
-- User visit/photo/completion records
-- AI recommendation read rules
-- Manual admin input fields
+- 城市 POI
+- 路线
+- 城市通行证
+- 订单
+- 核销
+- 用户到访、照片和完成记录
+- AI 推荐读取规则
+- 人工运营字段
 
-The current app is a static frontend plus a local Node server. Most product data currently lives directly in `script.js`. v0.1 will move the shape of that data into explicit local data files so the prototype has a single source of truth for future content.
+当前 app 是静态前端加本地 Node server。很多产品数据还直接写在 `script.js` 里。v0.1 的目标是把数据形状移到显式本地数据文件，让原型有一个可迁移的事实来源。
 
-## Non-Goals
+## 非目标
 
-- No crawler integration.
-- No real AI recommendation service change.
-- No database migration.
-- No merchant login or merchant submission flow.
-- No payment provider integration.
-- No large UI redesign.
+- 不接入爬虫。
+- 不改真实 AI 推荐服务。
+- 不迁移数据库。
+- 不做商家登录或商家提交流程。
+- 不接入支付 provider。
+- 不做大规模 UI 重设计。
 
-## Recommended Approach
+## 推荐方案
 
-Use a local data package:
+使用一个本地数据包：
 
-- `data/loop-data-v0.1.js` exports the product data and attaches it to `window.LOOP_DATA_V01` for the browser.
-- `data/README.md` documents field ownership and source strategy.
-- `scripts/verify-loop-data.mjs` validates referential integrity.
-- `index.html` loads the data file before `script.js`.
-- Existing UI behavior stays mostly unchanged in the first implementation step.
+- `data/loop-data-v0.1.js` 导出产品数据，并挂到 `window.LOOP_DATA_V01`。
+- `data/README.md` 说明字段归属和来源策略。
+- `scripts/verify-loop-data.mjs` 校验引用完整性。
+- `index.html` 在 `script.js` 前加载数据文件。
+- 第一阶段尽量保持现有 UI 行为不变。
 
-This keeps v0.1 close to the existing prototype while making later API or database migration straightforward.
+这样 v0.1 离现有原型足够近，同时后面迁移到 API 或数据库也比较直。
 
-## Data Model
+## 数据模型
 
-All records use stable string IDs. IDs should be readable and migration-safe, for example `poi-sh-ops-cafe`, `route-sh-coffee-01`, `pass-sh-coffee-vol01`.
+所有记录使用稳定字符串 ID。ID 应可读、可迁移，例如 `poi-sh-ops-cafe`、`route-sh-coffee-01`、`pass-sh-coffee-vol01`。
 
-### Cities
+### 城市
 
-Purpose: define supported cities and city-level editorial context.
+用途：定义支持城市和城市级编辑上下文。
 
-Fields:
+字段：
 
-- `id`: stable city key, such as `shanghai`, `chengdu`, `abudhabi`
-- `name`: display name
-- `code`: short code used in routes and orders
+- `id`：稳定城市 key，例如 `shanghai`、`chengdu`、`abudhabi`
+- `name`：展示名
+- `code`：路线和订单中使用的短码
 - `country`
 - `timezone`
 - `currency`
-- `status`: `draft`, `active`, or `archived`
-- `districts`: editorial district list
-- `editorialLine`: one-line product positioning for the city
-- `manualFields`: admin guidance for city editors
+- `status`：`draft`、`active` 或 `archived`
+- `districts`：编辑用街区列表
+- `editorialLine`：城市定位一句话
+- `manualFields`：给城市编辑的运营字段说明
 
-### City POIs
+### 城市 POI
 
-Purpose: store city points that routes, passes, and recommendations can reference.
+用途：存储路线、通行证和推荐可引用的城市地点。
 
-Fields:
+字段：
 
 - `id`
 - `cityId`
 - `name`
-- `categoryId`: matches existing LOOP layer IDs, such as `coffee`, `drink`, `art`
+- `categoryId`：匹配现有 LOOP layer，例如 `coffee`、`drink`、`art`
 - `area`
 - `address`
-- `displayCoordinate`: prototype map position, `{ x, y }`
-- `geo`: optional real latitude/longitude for future use
+- `displayCoordinate`：原型地图位置，`{ x, y }`
+- `geo`：未来真实经纬度，可选
 - `summary`
 - `tags`
 - `openingHours`
 - `priceHint`
-- `source`: `manual`, `open_data`, `merchant`, or `prototype_seed`
+- `source`：`manual`、`open_data`、`merchant` 或 `prototype_seed`
 - `sourceUrl`
-- `confidence`: `low`, `medium`, or `high`
-- `status`: `draft`, `active`, `hidden`, or `archived`
+- `confidence`：`low`、`medium` 或 `high`
+- `status`：`draft`、`active`、`hidden` 或 `archived`
 - `adminNotes`
 
-v0.1 can use `displayCoordinate` even when real geo data is missing. Real `geo` can be filled later from open data or merchant submission.
+v0.1 可以在缺少真实 `geo` 时先使用 `displayCoordinate`。真实经纬度之后可由公开数据或商家提交补齐。
 
-### Routes
+### 路线
 
-Purpose: define route products and recommendation candidates.
+用途：定义路线产品和推荐候选。
 
-Fields:
+字段：
 
 - `id`
 - `cityId`
@@ -100,23 +100,23 @@ Fields:
 - `categoryId`
 - `title`
 - `summary`
-- `stopIds`: ordered POI IDs
+- `stopIds`：有序 POI ID
 - `durationLabel`
 - `budgetLabel`
 - `distanceKm`
 - `bestFor`
 - `scoreHot`
 - `recommendationTags`
-- `status`: `draft`, `active`, `hidden`, or `archived`
-- `manualFields`: editor notes for route quality
+- `status`：`draft`、`active`、`hidden` 或 `archived`
+- `manualFields`：路线质量编辑备注
 
-Route stops must reference existing POIs in the same city. Free-text stops can exist only as temporary migration data and should be flagged by validation.
+路线站点必须引用同一城市下已存在的 POI。临时自由文本站点只能作为迁移数据存在，并应被验证脚本标记。
 
-### City Passes
+### 城市通行证
 
-Purpose: define paid editorial maps with redeemable merchant benefits.
+用途：定义带商家权益的付费编辑地图。
 
-Fields:
+字段：
 
 - `id`
 - `cityId`
@@ -131,9 +131,9 @@ Fields:
 - `currency`
 - `validDays`
 - `benefits`
-- `status`: `draft`, `active`, `paused`, or `archived`
+- `status`：`draft`、`active`、`paused` 或 `archived`
 
-Benefit fields:
+权益字段：
 
 - `id`
 - `poiId`
@@ -142,64 +142,64 @@ Benefit fields:
 - `description`
 - `hours`
 - `routeRole`
-- `redemptionLimit`: usually `1`
-- `merchantManaged`: boolean for future merchant backend routing
-- `manualVerifyRequired`: boolean for early manual operation
+- `redemptionLimit`：通常为 `1`
+- `merchantManaged`：未来商家后台路由
+- `manualVerifyRequired`：早期人工运营核验
 
-The city pass should reference a route, and each benefit should reference a POI. This keeps route exploration and benefit redemption connected but not identical.
+城市通行证应引用路线，每个权益应引用 POI。这样路线探索和权益核销有关联，但不混成一个对象。
 
-### Orders
+### 订单
 
-Purpose: model purchase state for city passes.
+用途：描述城市通行证购买状态。
 
-Fields:
+字段：
 
 - `id`
 - `orderNo`
 - `userId`
 - `cityPassId`
 - `cityId`
-- `status`: `paid`, `active`, `completed`, `expired`, `refunded`
+- `status`：`paid`、`active`、`completed`、`expired`、`refunded`
 - `amount`
 - `currency`
 - `createdAt`
 - `paidAt`
 - `validFrom`
 - `validUntil`
-- `source`: `prototype`, `manual`, or future payment provider
+- `source`：`prototype`、`manual` 或未来支付 provider
 
-v0.1 does not need unpaid or pending payment states because the current prototype intentionally uses simulated paid purchases.
+v0.1 不需要 unpaid/pending payment，因为当前原型只保留模拟已支付购买。
 
-### Redemptions
+### 核销
 
-Purpose: model each benefit redemption event.
+用途：描述每个权益核销事件。
 
-Fields:
+字段：
 
 - `id`
 - `orderId`
 - `cityPassId`
 - `benefitId`
 - `poiId`
-- `status`: `available`, `redeemed`, `expired`, or `voided`
+- `status`：`available`、`redeemed`、`expired` 或 `voided`
 - `redemptionCode`
 - `redeemedAt`
-- `redeemedBy`: future merchant/admin operator ID
-- `method`: `qr`, `manual_code`, or `prototype_simulated_scan`
+- `redeemedBy`：未来商家或后台操作员 ID
+- `method`：`qr`、`manual_code` 或 `prototype_simulated_scan`
 - `notes`
 
-The validation script should prevent duplicate redeemed events for the same `orderId + benefitId`.
+验证脚本应防止同一 `orderId + benefitId` 出现重复已核销事件。
 
-### User Records
+### 用户记录
 
-Purpose: model a user's went/photo/completion history.
+用途：描述用户去过、拍过、完成过的历史。
 
-Fields:
+字段：
 
 - `id`
 - `userId`
 - `cityId`
-- `recordType`: `visited`, `photo`, `route_completed`, `pass_completed`, or `note`
+- `recordType`：`visited`、`photo`、`route_completed`、`pass_completed` 或 `note`
 - `poiIds`
 - `routeId`
 - `cityPassId`
@@ -209,111 +209,52 @@ Fields:
 - `title`
 - `mood`
 - `photo`
-- `photoSource`: `camera`, `upload`, `pass_completed`, or empty
+- `photoSource`：`camera`、`upload`、`pass_completed` 或空
 - `durationLabel`
 - `budgetLabel`
 - `note`
-- `visibility`: `private` for v0.1
+- `visibility`：v0.1 使用 `private`
 
-These records drive profile history and AI exclusion rules. A completed pass can create a user record, but route completion and benefit completion stay separate.
+这些记录驱动个人页历史和 AI 排除规则。完成通行证可以生成用户记录，但路线完成和权益完成保持分离。
 
-## AI Recommendation Read Rules
+## AI 推荐读取规则
 
-Purpose: define what local recommendation logic and future AI are allowed to read.
+用途：定义本地推荐逻辑和未来 AI 允许读取什么。
 
-Fields:
+字段：
 
 - `candidateCategoryIds`
-- `includeStatuses`: usually `active`
-- `excludeVisitedPoiIds`: boolean
-- `excludeCompletedRouteIds`: boolean
-- `preferUserInterestIds`: boolean
-- `preferCurrentCity`: boolean
-- `manualBoosts`: route or POI IDs to lift
-- `manualBlocks`: route or POI IDs to suppress
+- `includeStatuses`：通常为 `active`
+- `excludeVisitedPoiIds`
+- `excludeCompletedRouteIds`
+- `preferUserInterestIds`
+- `preferCurrentCity`
+- `manualBoosts`
+- `manualBlocks`
 - `maxRoutes`
 - `minStops`
 - `maxStops`
-- `promptRules`: text constraints used only by AI payload generation
+- `promptRules`
 
-v0.1 recommendation rules should read from POIs, routes, user records, and completed route IDs. They should not call external AI by themselves.
+v0.1 推荐规则应读取 POI、路线、用户记录和已完成路线 ID。它本身不调用外部 AI。
 
-## Manual Admin Input Fields
+## 人工运营字段
 
-Purpose: make future editor and merchant tooling predictable before building it.
+用途：在真正做编辑后台和商家工具前，先定义可预期字段。
 
-Each data type gets a field checklist:
+每类数据都需要字段清单：
 
-- Required fields
-- Optional fields
-- Source type
-- Source confidence
-- Review owner
-- Last reviewed date
-- Publish status
-- Notes for future merchant self-service
+- 必填字段
+- 可选字段
+- 来源类型
+- 来源可信度
+- 审核负责人
+- 最近审核日期
+- 发布状态
+- 未来商家自助备注
 
-Ownership split:
+归属拆分：
 
-- LOOP editor manually seeds cities, route structure, themes, editorial copy, recommendation rules.
-- Open data can later fill address, coordinates, opening hours, website, and source URLs.
-- Merchant backend can later fill benefit details, live availability, redemption rules, and merchant-managed notes.
-
-## Initial Seed Strategy
-
-Seed enough local data to prove the container:
-
-- 3 cities: Shanghai, Chengdu, Abu Dhabi
-- 6 to 10 active POIs per city
-- 3 to 5 active routes per city
-- 1 to 2 city passes per city
-- 1 demo paid order
-- 2 to 4 redemption states
-- 6 to 10 user records
-- 1 recommendation ruleset
-
-The seed does not need to be complete. It must be internally consistent.
-
-## Validation Rules
-
-`scripts/verify-loop-data.mjs` should fail if:
-
-- A route references a missing POI.
-- A route references a POI in a different city.
-- A city pass references a missing route.
-- A city pass benefit references a missing POI.
-- An order references a missing city pass.
-- A redemption references a missing order, pass, benefit, or POI.
-- Duplicate IDs exist within a table.
-- Active routes have fewer than 2 stops.
-- Active city passes have no benefits.
-- AI recommendation rules reference unknown categories, routes, or POIs.
-
-## Frontend Integration
-
-v0.1 integration should be shallow:
-
-- Load `data/loop-data-v0.1.js` in `index.html`.
-- Add adapter helpers in `script.js` that can map local data records into the current UI shape.
-- Keep existing fallback data during the first migration so the app still opens if the data file fails to load.
-- Do not rewrite all state management in the first pass.
-
-The first implementation can migrate only a small slice of display data, then validation protects the rest of the container.
-
-## Testing
-
-Minimum verification:
-
-- `npm run check`
-- `npm test`
-- `node scripts/verify-loop-data.mjs`
-
-If frontend behavior is changed, run a browser smoke check against the local server.
-
-## Acceptance Criteria
-
-- Local data files exist and are readable by the browser.
-- The data package includes all eight requested data areas.
-- Validation script catches broken references and duplicate IDs.
-- Existing app still passes current checks.
-- No crawler, real AI, database, merchant login, or payment provider is introduced.
+- LOOP 编辑人工维护城市、路线结构、主题、编辑文案和推荐规则。
+- 公开数据未来补地址、坐标、营业时间、网站和来源 URL。
+- 商家后台未来补权益详情、实时可用性、核销规则和商家备注。

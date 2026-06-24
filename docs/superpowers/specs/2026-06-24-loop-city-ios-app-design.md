@@ -1,152 +1,154 @@
-# LOOP City iOS App Foundation Design
+# LOOP 城市回路 iOS App Foundation 设计
 
-Date: 2026-06-24
-Status: Draft for Vera review
+日期：2026-06-24
+状态：阶段 1 执行依据
 
-## Goal
+## 目标
 
-Create a stable Apple app development foundation for LOOP / 城市回路 without losing the visual and interaction quality of the current mobile web prototype.
+为 LOOP / 城市回路建立稳定的 Apple app 开发底座，同时不丢失当前移动网页原型的视觉和交互质量。
 
-## Context
+## 当前上下文
 
-The project currently has:
+项目现在已有：
 
-- A deployed GitHub Pages prototype.
-- A local Node development server.
-- Root web assets for the prototype.
-- An iOS `WKWebView` shell.
-- An app icon.
-- A native bridge foundation.
-- Verification scripts for web syntax, featured pass behavior, iOS asset sync, and iOS Simulator build.
+- 已部署的 GitHub Pages 原型。
+- 本地 Node 开发服务。
+- 根目录 Web 资产。
+- iOS `WKWebView` 外壳。
+- App icon。
+- native bridge 基础。
+- Web 语法、城市通行证行为、iOS 资产同步和 iOS Simulator build 验证脚本。
 
-The project also has existing unstaged web data/cache-key changes. Those should remain separate from this documentation and planning work.
+`e92c9d8 Expand public cultural discovery data` 已成为当前公开文化数据基线。
 
-## Recommended Approach
+## 推荐方案
 
-Use a WebView-first iOS app foundation.
+采用 WebView-first iOS app foundation。
 
-SwiftUI should host a focused `WKWebView` shell and expose native features through a narrow `window.LoopNative` bridge. The web app remains the canonical UI. Product behavior should be progressively enhanced by native capabilities only when the browser cannot provide the required Apple app experience.
+SwiftUI 只承载聚焦的 `WKWebView` 外壳，并通过很窄的 `window.LoopNative` bridge 暴露原生能力。Web app 仍是 canonical UI。只有浏览器能力不足时，才用原生能力渐进增强产品体验。
 
-## Alternatives Considered
+## 比较过的方案
 
-### Full SwiftUI rewrite
+### SwiftUI 全量重写
 
-Rejected for now.
+当前拒绝。
 
-It would create a cleaner native codebase eventually, but the first replication attempt showed that the web design loses too much detail when recreated quickly in SwiftUI. It would slow product iteration and create two UI sources of truth.
+它最终可能得到更纯的原生代码，但第一次快速复刻证明 Web 设计细节很容易丢。这样会拖慢产品迭代，并制造两个 UI 事实来源。
 
-### WebView-only wrapper with no native bridge
+### 只套 WebView，不做 native bridge
 
-Rejected as the long-term direction.
+长期拒绝。
 
-It preserves the UI, but it cannot become a serious Apple app because camera, photo library, location, sharing, haptics, authentication, and payment flows need native integration.
+它能保留 UI，但无法成为严肃 Apple app，因为相机、相册、定位、分享、触感、认证和支付都需要原生集成。
 
-### WebView-first with narrow native bridge
+### WebView-first 加窄 native bridge
 
-Accepted.
+已接受。
 
-It preserves the prototype while giving the app a controlled path toward native capabilities.
+它保留原型，同时给原生能力留出受控成长路径。
 
-## Architecture
+## 架构
 
-The system has three layers:
+系统分三层：
 
-1. Web product layer
-   - Owns screens, visual design, product copy, city content, pass cards, interest maps, and record lists.
-2. iOS shell layer
-   - Owns `WKWebView`, bundled assets, native permissions, app icon, launch screen, and bridge handlers.
-3. Project control layer
-   - Owns handoff docs, decisions, specs, plans, scripts, and verification commands.
+1. Web 产品层
+   - 负责页面、视觉、产品文案、城市内容、通行证卡片、兴趣地图和记录列表。
+2. iOS 外壳层
+   - 负责 `WKWebView`、打包资产、原生权限、app icon、launch screen 和 bridge handler。
+3. 项目控制层
+   - 负责 handoff 文档、决策、spec、plan、脚本和验证命令。
 
-## Data Flow
+## 数据流
 
-Current launch flow:
+当前启动流程：
 
-1. `npm run ios:sync` copies root web assets into the iOS app bundle.
-2. The iOS app loads `Web/index.html` through `WKWebView.loadFileURL`.
-3. Native injects `window.LoopNative`.
-4. Web detects the bridge and marks native shell state.
-5. Web renders the same product UI as browser mode.
+1. `npm run ios:sync` 把根 Web 资产复制进 iOS app bundle。
+2. iOS app 通过 `WKWebView.loadFileURL` 加载 `Web/index.html`。
+3. 原生注入 `window.LoopNative`。
+4. Web 检测 bridge 并标记 native shell 状态。
+5. Web 渲染与浏览器模式一致的产品 UI。
 
-Future native capability flow:
+未来原生能力流程：
 
-1. Web calls `window.LoopNative.post("capability.name", payload)`.
-2. Native validates the message name and payload.
-3. Native performs the system action.
-4. Native returns the result through a documented response event if the feature needs a response.
+1. Web 调用 `window.LoopNative.post("capability.name", payload)`。
+2. 原生验证 message name 和 payload。
+3. 原生执行系统动作。
+4. 如果功能需要结果，原生通过文档化的 response event 返回。
 
-## Boundaries
+## 边界
 
-The web layer must not assume the bridge exists.
+Web 层不能假设 bridge 一定存在。
 
-The iOS layer must not recreate product screens in SwiftUI unless a native system surface requires it.
+iOS 层不能在 SwiftUI 里重建产品页面，除非是系统界面必须原生处理。
 
-The bridge must not become a general-purpose remote control API. Each message needs a product reason, a payload shape, and a verification check.
+bridge 不能变成泛用远程控制 API。每个 message 都必须有产品理由、payload 形状和验证检查。
 
-## Documentation System
+## 文档系统
 
-The repo should contain enough state for a fresh Codex window to continue safely:
+repo 必须包含足够状态，让新 Codex 窗口可安全继续：
 
 - `docs/project/CURRENT_STATE.md`
 - `docs/project/DECISIONS.md`
 - `docs/product/loop-city-ios-app-prd.md`
 - `docs/architecture/ios-webview-app-architecture.md`
 - `docs/superpowers/specs/2026-06-24-loop-city-ios-app-design.md`
-- Future implementation plans in `docs/superpowers/plans/`
+- `docs/superpowers/plans/`
 
-## Implementation Phases
+所有项目文档默认使用中文。
 
-### Phase 0: App shell and project control
+## 实施阶段
 
-Status: in progress.
+### 阶段 0：App 外壳与项目控制
 
-Deliverables:
+状态：基本完成。
 
-- WebView shell.
-- App icon and launch screen.
-- Asset sync.
-- Native bridge foundation.
-- Handoff docs.
-- PRD and architecture docs.
+交付物：
 
-### Phase 1: Data foundation and UI safety
+- WebView 外壳。
+- App icon 和 launch screen。
+- 资产同步。
+- native bridge foundation。
+- 接力文档。
+- PRD 和架构文档。
 
-Deliverables:
+### 阶段 1：数据基础与 UI 安全网
 
-- Move product data out of the largest web behavior file into explicit data modules.
-- Keep browser mode and iOS shell mode equivalent.
-- Add checks for critical profile sections and active rails.
+交付物：
 
-### Phase 2: Native capability bridge
+- 把数据基础从巨大 Web 行为文件里拆出第一层显式数据容器。
+- 保持浏览器模式和 iOS 外壳模式等价。
+- 给个人页关键 section 和横向 rails 加检查。
 
-Deliverables:
+### 阶段 2：原生能力 bridge
 
-- Camera/photo capture path.
-- Location permission and city assistance path.
-- Share sheet path.
-- Haptic interaction hooks where useful.
+交付物：
 
-### Phase 3: Account and business state
+- 相机/照片路径。
+- 定位权限和城市辅助路径。
+- 分享面板路径。
+- 必要触感 hook。
 
-Deliverables:
+### 阶段 3：账号和业务状态
 
-- Account decision.
-- Active pass state.
-- Record persistence.
-- Order or pass simulation boundary.
+交付物：
 
-### Phase 4: TestFlight and App Store readiness
+- 账号方案决策。
+- active pass state。
+- 记录持久化。
+- 订单或通行证模拟边界。
 
-Deliverables:
+### 阶段 4：TestFlight 和 App Store 准备
 
-- Bundle ID and signing.
-- Privacy strings and privacy labels.
-- TestFlight build flow.
-- App Store screenshots and review notes.
+交付物：
 
-## Verification
+- Bundle ID 和签名。
+- 隐私文案和 privacy labels。
+- TestFlight build 流程。
+- App Store 截图和审核说明。
 
-Before claiming a phase is complete, run the relevant subset of:
+## 验证
+
+阶段完成前，根据改动运行：
 
 ```sh
 npm run check
@@ -155,12 +157,10 @@ npm run ios:check
 npm run ios:build
 ```
 
-For documentation-only changes, still run the project checks when the working tree contains code changes or when scripts may be affected by sync behavior.
+文档改动如果发生在有代码改动的工作区，也要跑项目检查，避免在坏状态下收尾。
 
-## Review Gate
+## 当前执行入口
 
-Vera should review this design, the PRD, and the architecture document before the detailed implementation plan is written.
-
-After review, create:
+阶段 1 详细计划：
 
 `docs/superpowers/plans/2026-06-24-loop-city-ios-app-implementation.md`

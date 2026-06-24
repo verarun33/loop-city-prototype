@@ -1,152 +1,152 @@
-# LOOP City iOS App PRD
+# LOOP 城市回路 iOS App PRD
 
-Date: 2026-06-24
-Status: Draft for Vera review
+日期：2026-06-24
+状态：Vera 已同意进入 implementation plan，后续变更继续在本文维护
 
-## Product Goal
+## 产品目标
 
-Turn the existing LOOP / 城市回路 mobile web prototype into an Apple app that preserves the current visual and interaction design while adding native iOS capabilities where the web shell is not enough.
+把现有 LOOP / 城市回路移动网页原型转成 Apple app，同时保留当前视觉、交互和页面完整度，并在 WebView 不足的地方补上 iOS 原生能力。
 
-## Product Positioning
+## 产品定位
 
-LOOP is a city exploration and pass product. It helps a user discover curated city routes, buy or hold city passes, track personal exploration records, and return to an expressive profile that feels like a city memory map.
+LOOP 是城市探索和城市通行证产品。它帮助用户发现策划路线、持有或购买城市通行证、记录自己的探索，并在“我的”里看到像城市记忆地图一样的个人记录。
 
-The first Apple app should feel like the existing prototype, not a new visual product.
+第一版 Apple app 必须感觉像当前原型，而不是一个重新设计的新产品。
 
-## Primary Users
+## 核心用户
 
-- A city explorer who wants curated routes and a more playful record of where they went.
-- A returning user who checks active city passes and interest maps from "我的".
-- Vera and early testers who need a stable app-shaped prototype for real phone testing.
+- 想要策划路线和城市灵感的城市探索者。
+- 会回到“我的”查看进行中通行证、兴趣地图和探索记录的用户。
+- Vera 和早期测试用户，他们需要一个能在真机上测试的 app 形态原型。
 
-## MVP Scope
+## MVP 范围
 
-The MVP iOS app must include:
+MVP iOS app 必须包含：
 
-- Existing WebView UI with current LOOP visual design preserved.
-- Local bundled web assets so the app can launch without GitHub Pages.
-- iOS-safe top and bottom layout behavior.
-- App icon and launch screen.
-- Native bridge foundation for future iOS capabilities.
-- Haptic bridge support for light feedback.
-- Camera/photo permission declarations in `Info.plist`.
-- Asset sync and verification scripts.
-- Simulator build command.
-- Project handoff docs so future windows can continue safely.
+- 当前 WebView UI，保留 LOOP 视觉设计。
+- 本地打包 Web 资产，不依赖 GitHub Pages 启动。
+- iPhone 顶部和底部安全区适配。
+- App icon 和 launch screen。
+- 原生 bridge 基础，供未来 iOS 能力接入。
+- 轻触感 bridge。
+- `Info.plist` 中的相机和相册权限声明。
+- Web 资产同步脚本和验证脚本。
+- Simulator 构建命令。
+- 项目接力文档，保证新窗口可继续开发。
 
-## Near-Term Product Scope
+## 近期产品范围
 
-After the MVP shell, build these capabilities in order:
+MVP 外壳之后按这个顺序推进：
 
-1. Camera and photo attachment for exploration records.
-2. Location permission and current-city assistance.
-3. Local persistence for records and active pass state.
-4. Share sheet for city passes, route cards, and profile snapshots.
-5. Apple sign-in or account bridge once backend direction is clear.
-6. TestFlight-ready signing and privacy documentation.
+1. 相机和照片附件，用于探索记录。
+2. 定位权限和当前城市辅助。
+3. 探索记录和 active pass state 的本地持久化。
+4. 城市通行证、路线卡、个人页快照的系统分享。
+5. 后端方向清晰后再接 Apple 登录或账号 bridge。
+6. TestFlight 签名和隐私文档。
 
-## Explicit Non-Goals For The Current Phase
+## 当前阶段明确不做
 
-The current phase does not include:
+当前阶段不包括：
 
-- Full SwiftUI rewrite of the product UI.
-- Merchant backend.
-- Real payment integration.
-- Real order reconciliation.
-- Real QR redemption.
-- Full English localization.
-- Production database migration.
-- App Store submission.
+- SwiftUI 全量重写产品 UI。
+- 商家后台。
+- 真实支付集成。
+- 真实订单对账。
+- 真实二维码核销。
+- 完整英文本地化。
+- 生产数据库迁移。
+- App Store 提交。
 
-These are valid future phases, but they should not be mixed into the current app foundation work.
+这些都是未来阶段，但不能混进当前 app foundation 工作里。
 
-## Core Screens To Preserve
+## 必须保留的核心界面
 
-The iOS app should preserve the current web prototype screens:
+iOS app 应保留当前网页原型的这些界面：
 
-- Today / 今日
-- Map exploration / 地图
-- Secrets / 秘境
-- Profile / 我的
-- Active city passes
-- Active interest maps
-- Today exploration record list
-- City selector
-- Language entry
+- 今日
+- 地图
+- 秘境
+- 我的
+- 进行中的城市通行证
+- 进行中的兴趣地图
+- 今日探索记录列表
+- 城市切换
+- 语言入口
 
-The profile page is especially sensitive because recent design work tuned:
+“我的”页尤其敏感，因为最近已经调过：
 
-- Top safe-area layout around the iPhone island.
-- Bottom tab spacing.
-- Active city pass rails.
-- Active interest map rails.
-- Sticky "今日探索" record header.
-- Price placement on pass cards.
+- iPhone 灵动岛附近顶部布局。
+- 底部 tab 间距。
+- 进行中的城市通行证横向 rails。
+- 进行中的兴趣地图横向 rails。
+- “今日探索”记录表头 sticky。
+- 通行证卡片价格位置。
 
-## UX Requirements
+## UX 要求
 
-- The Apple app should look like the mobile web prototype unless a native system surface is required.
-- The WebView must not add visible browser chrome.
-- iPhone safe areas must be respected without wasting top space.
-- Bottom navigation must stay usable above the home indicator.
-- Horizontal rails must remain scrollable on touch devices.
-- Sticky record headers must not leave a gap below the top bar.
-- The app should launch directly into the product experience, not a marketing page.
+- Apple app 看起来应和移动网页原型一致，除非某个系统界面必须原生处理。
+- WebView 不能出现浏览器 chrome。
+- iPhone 安全区要被尊重，但不能浪费顶部空间。
+- 底部导航必须避开 home indicator 且保持可点。
+- 横向 rails 在触屏设备上必须可左右滑动。
+- sticky 记录表头不能和顶部 logo bar 之间留空隙。
+- App 启动后直接进入产品体验，不做营销 landing page。
 
-## Native Capability Requirements
+## 原生能力要求
 
-The iOS shell should provide native capabilities through a narrow bridge:
+iOS 外壳通过窄 bridge 提供原生能力：
 
-- `ready`: web tells native it loaded.
-- `haptic`: web requests light native feedback.
-- `camera.capture`: future task for camera record capture.
-- `photo.pick`: future task for photo library selection.
-- `location.request`: future task for city/location assistance.
-- `share.open`: future task for iOS share sheet.
+- `ready`：Web 告诉原生页面已加载。
+- `haptic`：Web 请求轻触感。
+- `camera.capture`：未来用于拍照记录。
+- `photo.pick`：未来用于相册选择。
+- `location.request`：未来用于城市/定位辅助。
+- `share.open`：未来用于 iOS 分享面板。
 
-Bridge messages must be explicit and versioned. The web layer must remain functional when the bridge is absent.
+bridge message 必须明确、可版本化。没有 bridge 时，Web 层必须仍可运行。
 
-## Data Requirements
+## 数据要求
 
-The current prototype stores much of its product data in `script.js`. Future work should move data into explicit modules or files before adding production backend complexity.
+当前原型很多产品数据还在 `script.js`。在加生产后端复杂度之前，应逐步把数据移入显式数据模块或数据文件。
 
-Data domains:
+数据域包括：
 
-- Cities
-- POIs
-- Routes
-- City passes
-- Interest maps
-- Orders or active pass state
-- User exploration records
-- Recommendation rules
+- 城市
+- POI
+- 路线
+- 城市通行证
+- 兴趣地图
+- 订单或 active pass state
+- 用户探索记录
+- 推荐规则
 
-The existing data foundation design remains relevant:
+已有数据底座设计仍然有效：
 
 `docs/superpowers/specs/2026-06-18-loop-data-foundation-v0.1-design.md`
 
-## Success Criteria
+## 成功标准
 
-The iOS app foundation is successful when:
+iOS app foundation 成功的标准：
 
-- `npm run ios:build` succeeds.
-- Bundled iOS web assets match root web assets after `npm run ios:sync`.
-- The app launches in Simulator and shows the same core UI as the web prototype.
-- The native bridge is detected by the web app without breaking browser mode.
-- Project state can be resumed from repo docs without relying on a long chat.
+- `npm run ios:build` 成功。
+- `npm run ios:sync` 后，iOS 打包 Web 资产和根 Web 资产一致。
+- Simulator app 能启动并展示和网页原型一致的核心 UI。
+- Web app 能识别 native bridge，同时不破坏浏览器模式。
+- 项目状态能从 repo 文档恢复，不依赖长聊天记录。
 
-## Risks
+## 风险
 
-- The web prototype currently has a large `script.js`; adding more behavior there will increase drift risk.
-- WebView native bridges can become messy if message names and payloads are not controlled.
-- App Store readiness may be blocked by signing, privacy labels, payment policy, or incomplete production backend decisions.
-- UI regressions can happen if mobile web changes are not verified inside the iOS bundle.
+- `script.js` 很大，继续往里面堆行为会增加漂移风险。
+- WebView native bridge 如果没有 message/payload 约束，会变乱。
+- App Store 准备可能被签名、隐私标签、支付政策或生产后端决策阻塞。
+- 如果只测浏览器不测 iOS bundle，移动 UI 容易回归。
 
-## Open Product Decisions
+## 待决策产品问题
 
-These should be decided before the corresponding phase starts:
+进入相应阶段前需要决定：
 
-- Whether city pass payment will use Apple in-app purchase, Apple Pay, external checkout, or simulated purchase for early testing.
-- Whether early accounts use Apple sign-in, phone number, email code, or anonymous local profiles.
-- Whether exploration records are local-first or server-synced in the first TestFlight build.
-- Which city is the first real phone testing focus: Shanghai, Chengdu, or Abu Dhabi.
+- 城市通行证支付用 IAP、Apple Pay、外部 checkout，还是早期继续模拟购买。
+- 早期账号使用 Apple 登录、手机号、邮箱验证码，还是匿名本地 profile。
+- 第一个 TestFlight 版本里探索记录是 local-first 还是服务端同步。
+- 第一个真机测试重点城市是上海、成都，还是阿布扎比。

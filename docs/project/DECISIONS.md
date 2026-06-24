@@ -1,107 +1,107 @@
-# LOOP City Apple App Decisions
+# LOOP 城市回路 Apple App 决策记录
 
-Date: 2026-06-24
+日期：2026-06-24
 
-This file records durable project decisions. If a future task disagrees with a decision here, update this file in the same commit as the change and explain why.
+这个文件记录项目的长期决策。如果未来任务要推翻这里的决定，必须在同一个提交里更新本文件，并说明原因。
 
-## Decision 1: Use WebView-first instead of SwiftUI rewrite
+## 决策 1：使用 WebView-first，不做 SwiftUI 全量重写
 
-Status: Accepted
+状态：已接受
 
-The Apple app will use the existing web prototype as the primary UI inside a `WKWebView`. SwiftUI will provide the native shell, not a full visual rewrite.
+Apple app 会把现有网页原型作为 `WKWebView` 里的主要 UI。SwiftUI 只提供原生外壳，不重新实现完整产品界面。
 
-Reasoning:
+原因：
 
-- The existing web prototype already carries the intended LOOP visual language.
-- A quick SwiftUI visual replication was not faithful enough and removed too much page detail.
-- WebView preserves design velocity while native iOS can still provide system capabilities.
+- 现有网页原型已经承载 LOOP 的视觉语言。
+- 快速 SwiftUI 复刻不够像，也删掉了很多页面细节。
+- WebView 能保持产品迭代速度，同时 iOS 仍可提供系统能力。
 
-Implications:
+影响：
 
-- Product UI changes should usually happen in web assets first.
-- SwiftUI should stay small and focused on shell behavior.
-- Native-only UI should be reserved for unavoidable Apple system surfaces.
+- 产品 UI 通常先改 Web 资产。
+- SwiftUI 保持小而聚焦，只处理外壳行为。
+- 原生 UI 只用于 Apple 系统必须接管的界面。
 
-## Decision 2: Keep a narrow native bridge
+## 决策 2：保持窄 native bridge
 
-Status: Accepted
+状态：已接受
 
-Web and iOS communicate through `window.LoopNative`, injected by the native shell.
+Web 和 iOS 通过 `window.LoopNative` 通信，这个对象由原生外壳注入。
 
-Current bridge foundation:
+当前 bridge 基础：
 
-- Native injects `window.LoopNative` at document start.
-- Web marks the page with `document.documentElement.dataset.nativeShell`.
-- Web can post simple named messages to the native shell.
-- Native currently handles light haptics and ignores unsupported messages.
+- 原生在 document start 注入 `window.LoopNative`。
+- Web 用 `document.documentElement.dataset.nativeShell` 标记运行在原生外壳内。
+- Web 可向原生发送简单命名消息。
+- 原生目前处理轻触感消息，并忽略不支持的消息。
 
-Implications:
+影响：
 
-- Add native capabilities as explicit bridge messages.
-- Keep bridge payloads small, serializable, and versioned.
-- Do not expose broad native objects or arbitrary JavaScript execution APIs.
+- 每个原生能力都必须作为明确 bridge message 增加。
+- payload 要小、可序列化、可版本化。
+- 不暴露宽泛的原生对象，也不提供任意 JavaScript 控制口。
 
-## Decision 3: Repo files are the source of truth, not chat history
+## 决策 3：Repo 文件是事实来源，不是聊天记录
 
-Status: Accepted
+状态：已接受
 
-Project state must be recoverable from repo files, git status, commits, and verification scripts.
+项目状态必须能从 repo 文件、git 状态、提交记录和验证脚本恢复。
 
-Required handoff files:
+必要接力文件：
 
 - `docs/project/CURRENT_STATE.md`
 - `docs/project/DECISIONS.md`
-- Product and architecture docs
-- Superpowers specs and implementation plans
+- 产品文档和架构文档
+- Superpowers spec 和 implementation plan
 
-Implications:
+影响：
 
-- Update `CURRENT_STATE.md` at phase boundaries.
-- A new Codex window should not need to read an entire previous chat.
-- Every implementation phase should end with verification evidence and a commit.
+- 阶段边界必须更新 `CURRENT_STATE.md`。
+- 新 Codex 窗口不应该需要阅读完整历史聊天。
+- 每个实现阶段都要以验证证据和提交收尾。
 
-## Decision 4: Use small scoped commits
+## 决策 4：使用小而清晰的提交
 
-Status: Accepted
+状态：已接受
 
-Prefer small commits that each have a clear purpose and a matching verification path.
+每个提交应有一个清楚目的和对应验证路径。
 
-Implications:
+影响：
 
-- Do not mix documentation, data seeding, UI changes, and native bridge changes in one commit.
-- Existing dirty files must be inspected before they are staged.
-- If a task needs parallelism, use worktrees or subagents only when file ownership is separable.
+- 不把文档、数据种子、UI 调整和原生 bridge 混成一个提交。
+- staging 前必须检查已有脏文件。
+- 只有当文件归属能分开时，才使用 worktree 或子任务并行。
 
-## Decision 5: Do not write the implementation plan before spec review
+## 决策 5：文档默认使用中文
 
-Status: Accepted
+状态：已接受
 
-The iOS app implementation plan should be written after Vera reviews the PRD, architecture document, and design spec.
+项目文档默认使用中文。包括状态文件、决策文件、PRD、架构说明、spec、implementation plan 和 handoff 说明。
 
-Reasoning:
+影响：
 
-- The plan should encode product scope, not invent it.
-- The next major phase has several possible paths: data foundation, native capabilities, backend readiness, and App Store readiness.
-- Reviewing the spec first reduces rework.
+- 之后新增文档先写中文。
+- 如果引用代码、命令、文件名或外部 source label，可以保留必要英文原文。
+- 如果某个文档必须英文，需要 Vera 明确确认。
 
-## Decision 6: Preserve Chinese-first product behavior
+## 决策 6：中文优先产品体验
 
-Status: Accepted
+状态：已接受
 
-The app is Chinese-first. The `EN` entry remains lightweight until English content and localization rules are deliberately scoped.
+App 是中文优先。右上角 `EN` 入口保持轻量，直到英文内容和本地化规则被正式规划。
 
-Implications:
+影响：
 
-- Do not expand localization work casually.
-- User-facing product copy should preserve the current Chinese UI unless a feature explicitly requires bilingual behavior.
+- 不随手扩展本地化工作。
+- 用户可见产品文案保持当前中文体验。
 
-## Decision 7: Treat App Store readiness as its own phase
+## 决策 7：App Store 准备作为独立阶段
 
-Status: Accepted
+状态：已接受
 
-Signing, TestFlight, App Store screenshots, privacy labels, review notes, and production backend readiness should be handled as a later explicit phase.
+签名、TestFlight、App Store 截图、隐私标签、审核说明和生产后端准备作为后续独立阶段处理。
 
-Implications:
+影响：
 
-- Early iOS builds can use Simulator builds with `CODE_SIGNING_ALLOWED=NO`.
-- Do not claim App Store readiness until signing, bundle ID, capabilities, privacy, and production data flows have been verified.
+- 早期 iOS 构建可继续使用 `CODE_SIGNING_ALLOWED=NO` 的 Simulator 构建。
+- 未验证 bundle ID、签名、capabilities、隐私和生产数据流前，不声明 App Store ready。
