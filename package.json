@@ -12,6 +12,7 @@
     "ios:icon": "swift scripts/generate-ios-app-icon.swift",
     "ios:sync": "node scripts/sync-ios-web-assets.mjs",
     "ios:check": "npm run ios:sync && node scripts/verify-ios-webview-wrapper.mjs",
-    "ios:build": "npm run ios:check && xcodebuild -project ios/LoopCityWebViewApp/LoopCityWebViewApp.xcodeproj -scheme LoopCityWebViewApp -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build"
+    "ios:build": "npm run ios:check && xcodebuild -project ios/LoopCityWebViewApp/LoopCityWebViewApp.xcodeproj -scheme LoopCityWebViewApp -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build",
+    "ios:release-check": "npm run ios:check && node scripts/verify-ios-release-readiness.mjs"
   }
 }
