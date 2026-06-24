@@ -86,6 +86,8 @@ const checks = [
   ["profile record section no longer has meaningless add photo button", { not: /fakePhotoButton|加照片/ }],
   ["profile top record period bar is removed", { not: new RegExp(`record${"Tabs"}|record${"-tabs"}|记录${"周期"}`) }],
   ["profile keeps the lower period overview selector", /periodOverview|period-overview|renderPeriodOverview/],
+  ["profile record summary is wrapped as a section-local sticky header", /profile-record-section[\s\S]*profile-record-sticky-head[\s\S]*recordListTitle[\s\S]*periodOverview/],
+  ["profile record sticky header is constrained by its record section", /\.profile-record-section[\s\S]*position:\s*relative[\s\S]*\.profile-record-sticky-head[\s\S]*position:\s*sticky[\s\S]*top:\s*calc\(var\(--header-safe-top\)\s*\+\s*32px\)[\s\S]*z-index:\s*22/],
   ["profile record detail opens a single exploration record", /openRecordDetail\(record\.id\)[\s\S]*function openRecordDetail\(recordId\)[\s\S]*renderRecordDetailSheet\(record,\s*\[record\]/],
   ["single record detail does not render the full day list", /function openRecordDetail\(recordId\)[\s\S]{0,500}renderRecordDetailSheet\(record,\s*\[record\]/],
   ["profile record list initially shows at most six records", /PROFILE_RECORD_PAGE_SIZE\s*=\s*6[\s\S]*visibleProfileRecords/],
