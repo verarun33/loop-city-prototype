@@ -12,6 +12,8 @@ const LOOP_DATA_VERSION = "20260618-rich-demo-v1";
 const LOOP_DATA_VERSION_KEY = "loop-city-data-version";
 const DEMO_ACCOUNT = "demo@loop.city";
 const DEMO_PASSWORD = "loop2026";
+const DEMO_PREVIEW_PASS_TARGET = 3;
+const DEMO_PREVIEW_INTEREST_MAP_TARGET = 3;
 const PROFILE_RECORD_PAGE_SIZE = 6;
 
 const cityArt = {
@@ -3503,34 +3505,72 @@ function renderFeaturedPasses() {
     .map((item) => ({ ...item, status: featuredPassStatus(item.pass) }))
     .sort((a, b) => passSortTime(b.pass) - passSortTime(a.pass));
   const activeItems = passItems.filter((item) => item.status === "active");
-  renderOngoingFeaturedPasses(activeItems);
+  renderOngoingFeaturedPasses(demoPreviewFeaturedPassItems(activeItems));
+}
+
+function isDemoPreviewUser() {
+  return state.currentUser?.account === DEMO_ACCOUNT;
+}
+
+function demoPreviewFeaturedPassItems(passItems) {
+  if (!isDemoPreviewUser() || passItems.length >= DEMO_PREVIEW_PASS_TARGET) return passItems;
+  const existingRouteIds = new Set(passItems.map((item) => item.route.id));
+  const routes = Object.values(featuredPassMaps)
+    .flat()
+    .sort((a, b) => Number(b.city === state.city) - Number(a.city === state.city))
+    .filter((route) => !existingRouteIds.has(route.id));
+  const now = Date.now();
+  const previews = routes.slice(0, DEMO_PREVIEW_PASS_TARGET - passItems.length).map((route, index) => {
+    const redeemed = route.benefits.slice(0, Math.min(index + 1, Math.max(route.benefits.length - 1, 0))).map((item) => item.id);
+    const pass = {
+      id: `demo-preview-pass-${route.id}`,
+      orderNo: `DEMO-${route.code}`,
+      routeId: route.id,
+      city: route.city,
+      status: "active",
+      createdAt: now - (index + 2) * 3600 * 1000,
+      paidAt: now - (index + 2) * 3600 * 1000,
+      purchasedAt: now - (index + 2) * 3600 * 1000,
+      expiresAt: now + route.validDays * 24 * 60 * 60 * 1000,
+      redeemed,
+      preview: true
+    };
+    return { pass, route, status: "active", preview: true };
+  });
+  return [...passItems, ...previews];
 }
 
 function renderOngoingFeaturedPasses(passItems) {
   dom.featuredPassSection.hidden = !passItems.length;
   dom.passMapButton.textContent = "看更多";
   dom.featuredPassList.replaceChildren();
-  dom.featuredPassList.className = "profile-pass-list is-compact";
+  dom.featuredPassList.className = `profile-pass-list is-compact has-tilted-covers${passItems.length > 1 ? " has-multiple" : ""}`;
+  dom.featuredPassList.setAttribute("aria-label", passItems.length > 1 ? "进行中的城市通行证，可左右滑动" : "进行中的城市通行证");
   passItems.forEach(({ pass, route, status }) => {
     const card = document.createElement("article");
-    card.className = `profile-pass is-${status.replace("_", "-")}`;
+    card.className = `profile-pass has-tilted-cover is-${status.replace("_", "-")}`;
     const redeemed = pass.redeemed?.length || 0;
     const total = route.benefits.length;
     card.innerHTML = `
-      <div class="profile-pass-head">
-        <span>${passStatusLabel(status)} · ${redeemed}/${total}</span>
-        <strong>${route.title}</strong>
-        <small>${profilePassMeta(pass, route, status)}</small>
-      </div>
-      <div class="profile-pass-progress" aria-hidden="true"><i style="width:${profilePassProgress(pass, route, status)}%"></i></div>
-      <div class="profile-pass-actions">
-        <button type="button" data-pass-action="map" data-pass-id="${pass.id}">查看</button>
+      <figure class="profile-pass-cover">
+        <img src="${photoForRoute(route, 360, 460)}" alt="${route.title}封面" loading="lazy" />
+      </figure>
+      <div class="profile-pass-body">
+        <div class="profile-pass-head">
+          <span>${passStatusLabel(status)} · ${redeemed}/${total}</span>
+          <strong>${route.title}</strong>
+          <small>${profilePassMeta(pass, route, status)}</small>
+        </div>
+        <div class="profile-pass-progress" aria-hidden="true"><i style="width:${profilePassProgress(pass, route, status)}%"></i></div>
+        <div class="profile-pass-actions">
+          <button type="button" data-pass-action="map" data-pass-id="${pass.id}" data-pass-route-id="${route.id}">查看</button>
+        </div>
       </div>
     `;
     dom.featuredPassList.append(card);
   });
   dom.featuredPassList.querySelectorAll("[data-pass-action]").forEach((button) => {
-    button.addEventListener("click", () => openFeaturedPassFromProfile(button.dataset.passId));
+    button.addEventListener("click", () => openFeaturedPassFromProfile(button.dataset.passId, button.dataset.passRouteId));
   });
 }
 
@@ -3538,41 +3578,80 @@ function renderOngoingInterestMap() {
   const routeItem = state.explorationActive && state.explorationRoute && !state.explorationRoute.isFeaturedPass
     ? state.explorationRoute
     : null;
-  dom.interestMapSection.hidden = !routeItem;
+  const routeItems = demoPreviewInterestMapItems(routeItem);
+  const activeRouteId = routeItem?.id || "";
+  dom.interestMapSection.hidden = !routeItems.length;
   dom.interestMapList.replaceChildren();
-  dom.interestMapList.className = "profile-pass-list interest-map-list";
-  if (!routeItem) return;
+  dom.interestMapList.className = `profile-pass-list interest-map-list is-compact has-tilted-covers${routeItems.length > 1 ? " has-multiple" : ""}`;
+  dom.interestMapList.setAttribute("aria-label", routeItems.length > 1 ? "进行中的兴趣地图，可左右滑动" : "进行中的兴趣地图");
+  if (!routeItems.length) return;
 
-  const total = routeItem.stops.length;
-  const currentIndex = Math.min(Math.max(state.routeProgress || 0, 0), total - 1);
-  const currentStop = routeItem.stops[currentIndex] || routeItem.title;
-  const progress = Math.max(8, explorationProgress(routeItem));
-  const layer = layerName(routeItem.layer).name;
-  const card = document.createElement("article");
-  card.className = "profile-pass is-interest-map";
-  card.innerHTML = `
-    <div class="profile-pass-head">
-      <span>正在探索 · 第 ${currentIndex + 1}/${total} 站</span>
-      <strong>${routeItem.title}</strong>
-      <small>${layer} · 当前站 ${currentStop} · 已进行 ${formatElapsed(Date.now() - (state.explorationStartedAt || Date.now()))}</small>
-    </div>
-    <div class="profile-pass-progress" aria-hidden="true"><i style="width:${progress}%"></i></div>
-    <div class="profile-pass-actions">
-      <button type="button" data-interest-map-action="continue">继续下一站</button>
-    </div>
-  `;
-  dom.interestMapList.append(card);
-  card.querySelector("[data-interest-map-action]")?.addEventListener("click", () => {
-    switchView("atlas");
-    openOngoingExploration();
+  routeItems.forEach((item, index) => {
+    const isCurrent = item.id === activeRouteId;
+    const total = item.stops.length;
+    const currentIndex = isCurrent
+      ? Math.min(Math.max(state.routeProgress || 0, 0), total - 1)
+      : Math.min(index + 1, total - 1);
+    const currentStop = item.stops[currentIndex] || item.title;
+    const progress = isCurrent
+      ? Math.max(8, explorationProgress(item))
+      : Math.max(18, Math.round((currentIndex / Math.max(total - 1, 1)) * 100));
+    const startedAt = isCurrent
+      ? state.explorationStartedAt || Date.now()
+      : Date.now() - (index + 2) * 28 * 60 * 1000;
+    const layer = layerName(item.layer).name;
+    const card = document.createElement("article");
+    card.className = `profile-pass has-tilted-cover is-interest-map${isCurrent ? "" : " is-preview"}`;
+    card.innerHTML = `
+      <figure class="profile-pass-cover">
+        <img src="${photoForRoute(item, 360, 460)}" alt="${item.title}封面" loading="lazy" />
+      </figure>
+      <div class="profile-pass-body">
+        <div class="profile-pass-head">
+          <span>${isCurrent ? "正在探索" : "模拟进行中"} · 第 ${currentIndex + 1}/${total} 站</span>
+          <strong>${item.title}</strong>
+          <small>${layer} · 当前站 ${currentStop} · 已进行 ${formatElapsed(Date.now() - startedAt)}</small>
+        </div>
+        <div class="profile-pass-progress" aria-hidden="true"><i style="width:${progress}%"></i></div>
+        <div class="profile-pass-actions">
+          <button type="button" data-interest-map-action="${isCurrent ? "continue" : "preview"}" data-interest-route-id="${item.id}">${isCurrent ? "继续下一站" : "查看路线"}</button>
+        </div>
+      </div>
+    `;
+    dom.interestMapList.append(card);
+    card.querySelector("[data-interest-map-action]")?.addEventListener("click", () => {
+      if (isCurrent) {
+        switchView("atlas");
+        openOngoingExploration();
+        return;
+      }
+      state.layer = item.layer;
+      state.selectedRouteId = item.id;
+      switchView("atlas");
+      openRouteDetail(item, "preview");
+    });
   });
 }
 
-function openFeaturedPassFromProfile(passId) {
+function demoPreviewInterestMapItems(activeRouteItem) {
+  const items = activeRouteItem ? [activeRouteItem] : [];
+  if (!isDemoPreviewUser() || items.length >= DEMO_PREVIEW_INTEREST_MAP_TARGET) return items;
+  const existingRouteIds = new Set(items.map((item) => item.id));
+  const candidates = [...localRecommendedRoutes(6), ...(currentCity().routes || [])]
+    .filter((route) => route && !route.isFeaturedPass && !existingRouteIds.has(route.id));
+  const uniqueCandidates = [];
+  candidates.forEach((route) => {
+    if (uniqueCandidates.some((item) => item.id === route.id)) return;
+    uniqueCandidates.push(route);
+  });
+  return [...items, ...uniqueCandidates.slice(0, DEMO_PREVIEW_INTEREST_MAP_TARGET - items.length)];
+}
+
+function openFeaturedPassFromProfile(passId, routeId = "") {
   const pass = state.featuredPasses.find((item) => item.id === passId);
-  const routeItem = pass ? featuredRouteById(pass.routeId) : null;
-  if (!pass || !routeItem) return;
-  state.city = pass.city;
+  const routeItem = pass ? featuredRouteById(pass.routeId) : featuredRouteById(routeId);
+  if (!routeItem) return;
+  state.city = pass?.city || routeItem.city || state.city;
   state.layer = "featured";
   state.selectedRouteId = routeItem.id;
   switchView("atlas");

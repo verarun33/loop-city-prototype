@@ -13,6 +13,7 @@ const checks = [
   ["city tape logo styles define card bands", /\.logo-card-mark[\s\S]*\.logo-band\.is-blue[\s\S]*\.logo-band\.is-orange/],
   ["favicon uses the city tape logo direction", /city-tape-favicon/],
   ["mobile viewport disables user scaling for app-like demo", /name="viewport"\s+content="[^"]*maximum-scale=1\.0[^"]*user-scalable=no/],
+  ["mobile viewport allows safe-area fitting for iPhone app shell", /name="viewport"\s+content="[^"]*viewport-fit=cover/],
   ["app shell disables text selection and touch callout", /user-select:\s*none[\s\S]*-webkit-user-select:\s*none[\s\S]*-webkit-touch-callout:\s*none/],
   ["app shell disables copy paste selection browser gestures", /installAppInteractionGuards[\s\S]*\["copy",\s*"cut",\s*"paste",\s*"selectstart",\s*"contextmenu",\s*"dragstart"\][\s\S]*gesturestart[\s\S]*dblclick/],
   ["prototype storage resets for rich demo data", /LOOP_DATA_VERSION[\s\S]*20260618-rich-demo-v1/],
@@ -102,6 +103,10 @@ const checks = [
   ["profile record map has all stations view with photo and checkin states", /所有站点[\s\S]*recordViewFromLabel[\s\S]*places[\s\S]*stationGridCells[\s\S]*has-checkin-no-photo/],
   ["active ordinary route cards show continue next station in map lists", /(?=[\s\S]*function isOrdinaryRouteActive\(routeItem\)[\s\S]*state\.explorationActive[\s\S]*state\.explorationRoute\?\.id === routeItem\.id)(?=[\s\S]*function ordinaryRouteCardActionText\(routeItem\)[\s\S]*继续下一站)(?=[\s\S]*routeCard[\s\S]*ordinaryRouteCardActionText\(routeItem\))/],
   ["profile renders ongoing ordinary interest maps separately", /interestMapSection[\s\S]*进行中的兴趣地图[\s\S]*renderOngoingInterestMap/],
+  ["demo profile seeds enough ongoing city pass cards to exercise horizontal scrolling", /(?=[\s\S]*DEMO_PREVIEW_PASS_TARGET\s*=\s*3)(?=[\s\S]*function demoPreviewFeaturedPassItems)(?=[\s\S]*renderOngoingFeaturedPasses\(demoPreviewFeaturedPassItems\(activeItems\)\))/],
+  ["demo profile seeds enough ongoing interest map cards to exercise horizontal scrolling", /(?=[\s\S]*DEMO_PREVIEW_INTEREST_MAP_TARGET\s*=\s*3)(?=[\s\S]*function demoPreviewInterestMapItems)(?=[\s\S]*routeItems\s*=\s*demoPreviewInterestMapItems\(routeItem\))/],
+  ["profile ongoing interest maps use the same horizontal rail as city passes", /interestMapList\.className\s*=\s*`profile-pass-list interest-map-list is-compact has-tilted-covers/],
+  ["profile tilted ongoing rails allow horizontal touch panning", /\.profile-pass-list\.is-compact\.has-tilted-covers[\s\S]*touch-action:\s*pan-x/],
   ["profile floating top shortcut avoids ongoing exploration bar", /\.app-frame\.has-ongoing\s+\.record-scroll-float[\s\S]*bottom:\s*calc/],
   ["home refresh control uses a compact editorial tag", /save-bubble-mark[\s\S]*换灵感[\s\S]*\.save-bubble[\s\S]*border-radius:\s*12px[\s\S]*rgba\(32,\s*36,\s*43,\s*0\.30\)[\s\S]*\.save-bubble-mark[\s\S]*var\(--orange\)/],
   ["home reveal cue uses a quieter pull handle", /swipe-cue-handle/],
@@ -158,7 +163,7 @@ const checks = [
   ["pre-purchase screen does not show purchase-to-redeem buttons", { not: /购买后核销/ }],
   ["there is no continue payment or saved pending state", { not: /继续支付|pending_payment|待支付订单|未支付/ }],
   ["featured pass styles exist", /\.featured-pass|\.pass-stop|\.profile-pass/],
-  ["stylesheet cache key changed", /styles\.css\?v=20260618-rich-demo-v1/]
+  ["stylesheet cache key changed", /styles\.css\?v=20260624-mobile-rails/]
 ];
 
 const combined = `${index}\n${script}\n${styles}\n${favicon}`;
