@@ -22,16 +22,21 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 ## 当前已知可用基线
 
-`c726a5d Add iOS app Phase 1 implementation plan`
+阶段 1 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
+
+最新功能基线：
+
+`f500312 新增移动个人页 UI smoke checks`
 
 近期关键提交：
 
-- `c726a5d Add iOS app Phase 1 implementation plan`
+- `f500312 新增移动个人页 UI smoke checks`
+- `110844e 记录 native bridge message registry`
+- `5e9c45f 读取 LOOP 数据基础容器`
+- `4793079 同步 LOOP 数据到 iOS WebView bundle`
+- `beffe8f 新增 LOOP 数据基础容器`
+- `1d8ef3b 中文化项目文档`
 - `e92c9d8 Expand public cultural discovery data`
-- `7a83ce3 Add iOS app planning docs`
-- `1a314e5 Add iOS native bridge foundation`
-- `376169d Add iOS WebView app foundation`
-- `c680d1d Keep profile record header sticky`
 
 ## 当前工作区说明
 
@@ -48,17 +53,12 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 当前项目已有这些验证命令：
 
 ```sh
+npm run data:check
+npm run ui:check
 npm run check
 npm test
 npm run ios:check
 npm run ios:build
-```
-
-阶段 1 执行完成后还会加入：
-
-```sh
-npm run data:check
-npm run ui:check
 ```
 
 `npm run ios:build` 会先跑 `ios:check`，然后用关闭签名的 iOS Simulator 目标构建 Xcode 工程。
@@ -84,11 +84,20 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 
 ## 下一步任务
 
-继续执行：
+阶段 1 已完成：数据基础容器、iOS 数据同步、Web 安全读取 hook、native bridge registry、移动个人页 UI smoke check 均已落地。
 
-`docs/superpowers/plans/2026-06-24-loop-city-ios-app-implementation.md`
+最近完整验证时间：2026-06-24。
 
-先从 阶段 1 任务 1 开始：建立 LOOP 数据基础容器和验证脚本。
+已通过：
+
+- `npm run data:check`
+- `npm run ui:check`
+- `npm run check`
+- `npm test`
+- `npm run ios:check`
+- `npm run ios:build`
+
+如果 Vera 确认优先做照片记录，下一阶段编写并执行 camera/photo native bridge 计划。
 
 ## 新窗口启动提示
 
