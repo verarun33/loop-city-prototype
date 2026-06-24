@@ -6970,6 +6970,7 @@ function bindEvents() {
   dom.cityClose.addEventListener("click", closeCitySheet);
   dom.cityBackdrop.addEventListener("click", closeCitySheet);
   dom.routeClose.addEventListener("click", closeRouteDetail);
+  dom.routeShareButton.addEventListener("click", shareActiveRoute);
   dom.routeBackdrop.addEventListener("click", closeRouteDetail);
   dom.switchCancelButton.addEventListener("click", () => {
     closeExplorationSwitchConfirm();
@@ -7104,6 +7105,8 @@ const nativePhotoRequests = new Map();
 let nativePhotoRequestCounter = 0;
 const nativeLocationRequests = new Map();
 let nativeLocationRequestCounter = 0;
+const nativeShareRequests = new Map();
+let nativeShareRequestCounter = 0;
 
 function nativeBridgeCanPost(messageName) {
   const native = window.LoopNative;
@@ -7203,6 +7206,86 @@ function handleNativeLocationResult(event) {
   confirmCheckinAction(routeItem, locationAsset);
 }
 
+function shareRouteText(routeItem) {
+  const city = cities[routeItem.city || state.city]?.name || currentCity().name;
+  if (routeItem.isFeaturedPass) {
+    return `我在 LOOP 城市回路发现了${routeItem.title}：${routeItem.price}，${routeItem.validDays}天有效，${routeItem.benefits.length} 个城市站点。`;
+  }
+  return `我在 LOOP 城市回路发现了${routeItem.title}：${city} ${routeItem.stops.length} 站，适合${routeItem.bestFor || "今天出门"}。`;
+}
+
+function shareRoutePayload(routeItem) {
+  nativeShareRequestCounter += 1;
+  const requestId = `share-${Date.now()}-${nativeShareRequestCounter}`;
+  nativeShareRequests.set(requestId, {
+    routeId: routeItem.id,
+    routeTitle: routeItem.title,
+    createdAt: Date.now()
+  });
+  return {
+    requestId,
+    routeId: routeItem.id,
+    routeTitle: routeItem.title,
+    title: routeItem.title,
+    text: shareRouteText(routeItem),
+    url: LOOP_SHARE_URL,
+    subject: "LOOP 城市回路"
+  };
+}
+
+function requestNativeShare(routeItem) {
+  if (!nativeBridgeCanPost("share.open")) return false;
+  const payload = shareRoutePayload(routeItem);
+  window.LoopNative.post("share.open", payload);
+  showToast("正在打开系统分享...");
+  return true;
+}
+
+async function fallbackWebShare(routeItem) {
+  const payload = shareRoutePayload(routeItem);
+  nativeShareRequests.delete(payload.requestId);
+  const shareData = { title: payload.title, text: payload.text, url: payload.url };
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+      showToast("分享面板已打开。");
+    } catch (error) {
+      showToast(error?.name === "AbortError" ? "已取消分享。" : "暂时无法分享，请稍后再试。");
+    }
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(`${payload.text}\n${payload.url}`);
+    showToast("分享文案已复制。");
+  } catch {
+    showToast("分享文案已准备好，可以手动复制。");
+  }
+}
+
+function handleNativeShareResult(event) {
+  const detail = event.detail || {};
+  const requestId = detail.requestId || "";
+  const request = nativeShareRequests.get(requestId);
+  if (!request) return;
+  nativeShareRequests.delete(requestId);
+  if (detail.ok && detail.completed) {
+    showToast("已完成分享。");
+    return;
+  }
+  if (detail.reason === "cancelled") showToast("已取消分享。");
+  else showToast(detail.message || "暂时无法分享，请稍后再试。");
+}
+
+function shareActiveRoute() {
+  const routeItem = state.activeRoute;
+  if (!routeItem) {
+    showToast("先打开一张地图再分享。");
+    return;
+  }
+  if (requestNativeShare(routeItem)) return;
+  void fallbackWebShare(routeItem);
+}
+
 function handleNativePhotoResult(event) {
   const detail = event.detail || {};
   const requestId = detail.requestId || "";
@@ -7255,6 +7338,7 @@ function installNativeShellBridge() {
 
 window.addEventListener("loopnative:photo-result", handleNativePhotoResult);
 window.addEventListener("loopnative:location-result", handleNativeLocationResult);
+window.addEventListener("loopnative:share-result", handleNativeShareResult);
 installNativeShellBridge();
 installAppInteractionGuards();
 resetPrototypeStorageIfNeeded();

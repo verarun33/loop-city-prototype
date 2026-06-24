@@ -22,14 +22,20 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 ## 当前已知可用基线
 
-阶段 1、阶段 2A、阶段 2B 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
+阶段 1、阶段 2A、阶段 2B、阶段 2C 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
 
 最新功能基线：
 
-阶段 2B 定位 native bridge 已完成。精确提交请用 `git log -1 --oneline` 查看。
+阶段 2C 分享 native bridge 已完成。精确提交请用 `git log -1 --oneline` 查看。
 
 近期关键提交：
 
+- `fffdb1b 实现 iOS 分享 bridge handler`
+- `e484302 接入 Web 原生分享 bridge adapter`
+- `aa44fd4 记录分享 native bridge 协议`
+- `86e69a9 新增分享 bridge 失败检查`
+- `d1122f7 规划分享 native bridge`
+- `bbfb06e 完成定位 bridge 阶段状态`
 - `d7216a8 实现 iOS 定位 bridge handler`
 - `53c2468 接入 Web 原生定位 bridge adapter`
 - `e658744 记录定位 native bridge 协议`
@@ -92,12 +98,16 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 
 阶段 2B 已完成：定位 native bridge 已接入。Web 浏览器模式保留原模拟确认流程，iOS app 模式可通过 `location.request` 请求一次系统定位，并通过 `loopnative:location-result` 写回现有定位打卡流程。
 
+阶段 2C 已完成：分享 native bridge 已接入。路线详情和城市通行证详情可以通过轻量分享入口触发 `share.open`，iOS app 模式打开系统分享面板，并通过 `loopnative:share-result` 回传完成、取消或失败；浏览器模式保留 `navigator.share` 和复制 fallback。
+
 相关文档：
 
 - `docs/superpowers/specs/2026-06-24-camera-photo-native-bridge-design.md`
 - `docs/superpowers/plans/2026-06-24-camera-photo-native-bridge-implementation.md`
 - `docs/superpowers/specs/2026-06-24-location-native-bridge-design.md`
 - `docs/superpowers/plans/2026-06-24-location-native-bridge-implementation.md`
+- `docs/superpowers/specs/2026-06-24-share-native-bridge-design.md`
+- `docs/superpowers/plans/2026-06-24-share-native-bridge-implementation.md`
 
 最近完整验证时间：2026-06-24。
 
@@ -110,7 +120,7 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `npm run ios:check`
 - `npm run ios:build`
 
-下一步可继续规划分享 bridge、照片记录真实后端持久化或 TestFlight 准备。
+下一步可继续规划照片记录真实后端持久化、TestFlight 准备或推送提醒。
 
 ## 新窗口启动提示
 
