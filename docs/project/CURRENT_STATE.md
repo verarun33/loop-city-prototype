@@ -86,6 +86,11 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 
 阶段 1 已完成：数据基础容器、iOS 数据同步、Web 安全读取 hook、native bridge registry、移动个人页 UI smoke check 均已落地。
 
+阶段 2A 的相机/相册 native bridge 设计和实施计划已准备好：
+
+- `docs/superpowers/specs/2026-06-24-camera-photo-native-bridge-design.md`
+- `docs/superpowers/plans/2026-06-24-camera-photo-native-bridge-implementation.md`
+
 最近完整验证时间：2026-06-24。
 
 已通过：
@@ -97,7 +102,7 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `npm run ios:check`
 - `npm run ios:build`
 
-如果 Vera 确认优先做照片记录，下一阶段编写并执行 camera/photo native bridge 计划。
+如果 Vera 确认继续执行照片记录，下一阶段按 `docs/superpowers/plans/2026-06-24-camera-photo-native-bridge-implementation.md` 逐 task 开发，并在每个代码任务使用 TDD。
 
 ## 新窗口启动提示
 
