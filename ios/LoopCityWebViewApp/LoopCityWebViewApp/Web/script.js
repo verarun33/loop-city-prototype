@@ -5796,18 +5796,29 @@ function confirmPhotoAction(routeItem, source = "camera") {
   if (state.view === "folio") renderProfile();
 }
 
-function savePhotoRecord(routeItem, source = "camera") {
-  const stop = currentActionStop(routeItem);
+function savePhotoRecord(routeItem, source = "camera", photoAsset = null) {
+  const fallbackStop = currentActionStop(routeItem);
+  const stop = Number.isInteger(photoAsset?.stopIndex)
+    ? {
+      ...fallbackStop,
+      index: photoAsset.stopIndex,
+      name: photoAsset.station || fallbackStop.name
+    }
+    : fallbackStop;
   const sourceText = source === "upload" ? "上传照片" : "拍照";
   const day = dayOfYear(new Date());
   const dateISO = new Date().toISOString().slice(0, 10);
   const recordId = `rec-photo-${day}-${routeItem.id}`;
   const routeStops = routeItem.isFeaturedPass ? routeItem.benefits.map((item) => item.store) : routeItem.stops;
+  const photoUrl = photoAsset?.imageDataUrl || photoPreviewForRoute(routeItem);
   const photo = {
     station: stop.name,
     stopIndex: stop.index,
     source: sourceText,
-    url: photoPreviewForRoute(routeItem)
+    url: photoUrl,
+    mimeType: photoAsset?.mimeType || "",
+    width: photoAsset?.width || 0,
+    height: photoAsset?.height || 0
   };
   const existing = state.records.find((record) => record.id === recordId);
   if (existing) {
@@ -6999,7 +7010,10 @@ function bindEvents() {
   dom.passActionSheet.addEventListener("click", (event) => {
     const photoSourceButton = event.target.closest("[data-photo-source]");
     if (photoSourceButton) {
-      state.passActionMode = photoSourceButton.dataset.photoSource;
+      const source = photoSourceButton.dataset.photoSource;
+      const routeItem = routeById(state.passActionRouteId);
+      if (routeItem && requestNativePhoto(source, routeItem)) return;
+      state.passActionMode = source;
       renderPassActionSheet();
       return;
     }
@@ -7074,7 +7088,86 @@ function installAppInteractionGuards() {
   }, { capture: true, passive: false });
 }
 
-const LOOP_NATIVE_BRIDGE_MESSAGES = Object.freeze(["ready", "haptic"]);
+const LOOP_NATIVE_BRIDGE_MESSAGES = Object.freeze(["ready", "haptic", "camera.capture", "photo.pick"]);
+const nativePhotoRequests = new Map();
+let nativePhotoRequestCounter = 0;
+
+function nativeBridgeCanPost(messageName) {
+  const native = window.LoopNative;
+  return Boolean(
+    native &&
+    native.platform === "ios" &&
+    typeof native.post === "function" &&
+    LOOP_NATIVE_BRIDGE_MESSAGES.includes(messageName)
+  );
+}
+
+function nativePhotoPayload(routeItem, source) {
+  const stop = currentActionStop(routeItem);
+  nativePhotoRequestCounter += 1;
+  const requestId = `photo-${Date.now()}-${nativePhotoRequestCounter}`;
+  nativePhotoRequests.set(requestId, {
+    routeId: routeItem.id,
+    stopIndex: stop.index,
+    station: stop.name,
+    source,
+    createdAt: Date.now()
+  });
+  return {
+    requestId,
+    routeId: routeItem.id,
+    routeTitle: routeItem.title,
+    stopIndex: stop.index,
+    stopName: stop.name,
+    maxDimension: 1280,
+    jpegQuality: 0.78
+  };
+}
+
+function requestNativePhoto(source, routeItem) {
+  const messageName = source === "upload" ? "photo.pick" : "camera.capture";
+  if (!nativeBridgeCanPost(messageName)) return false;
+  const payload = nativePhotoPayload(routeItem, source);
+  window.LoopNative.post(messageName, payload);
+  closePassActionSheet();
+  showToast(source === "upload" ? "正在打开系统相册..." : "正在打开系统相机...");
+  return true;
+}
+
+function handleNativePhotoResult(event) {
+  const detail = event.detail || {};
+  const requestId = detail.requestId || "";
+  const request = nativePhotoRequests.get(requestId);
+  if (!request) return;
+  nativePhotoRequests.delete(requestId);
+  const routeItem = routeById(request.routeId);
+  if (!routeItem) return;
+  if (!detail.ok) {
+    if (detail.reason === "cancelled") showToast("已取消照片记录。");
+    else if (detail.reason === "unavailable") showToast("当前设备无法打开这个系统入口。");
+    else showToast(detail.message || "照片没有保存，请稍后再试。");
+    return;
+  }
+  const photoAsset = {
+    imageDataUrl: detail.imageDataUrl || "",
+    mimeType: detail.mimeType || "image/jpeg",
+    width: Number(detail.width) || 0,
+    height: Number(detail.height) || 0,
+    stopIndex: request.stopIndex,
+    station: request.station
+  };
+  if (!photoAsset.imageDataUrl.startsWith("data:image/")) {
+    showToast("照片格式暂时无法保存。");
+    return;
+  }
+  const saved = savePhotoRecord(routeItem, request.source, photoAsset);
+  state.photoTaken = saved || state.photoTaken;
+  showToast(saved ? `${photoAsset.station} 的照片已保存到我的 LOOP。` : "这一站已经保存过照片，每个站点只能保留一张。");
+  persistUserState();
+  renderRouteDetail();
+  renderOngoingExploration();
+  if (state.view === "folio") renderProfile();
+}
 
 function installNativeShellBridge() {
   const markNativeShell = () => {
@@ -7091,6 +7184,7 @@ function installNativeShellBridge() {
   markNativeShell();
 }
 
+window.addEventListener("loopnative:photo-result", handleNativePhotoResult);
 installNativeShellBridge();
 installAppInteractionGuards();
 resetPrototypeStorageIfNeeded();

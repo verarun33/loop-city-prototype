@@ -91,6 +91,8 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `docs/superpowers/specs/2026-06-24-camera-photo-native-bridge-design.md`
 - `docs/superpowers/plans/2026-06-24-camera-photo-native-bridge-implementation.md`
 
+阶段 2A 已完成：相机/相册 native bridge 已接入。Web 浏览器模式保留原模拟照片流程，iOS app 模式可通过 `camera.capture` 和 `photo.pick` 打开系统入口，并通过 `loopnative:photo-result` 写回现有照片记录。
+
 最近完整验证时间：2026-06-24。
 
 已通过：
@@ -102,7 +104,7 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `npm run ios:check`
 - `npm run ios:build`
 
-如果 Vera 确认继续执行照片记录，下一阶段按 `docs/superpowers/plans/2026-06-24-camera-photo-native-bridge-implementation.md` 逐 task 开发，并在每个代码任务使用 TDD。
+下一步可继续规划定位 bridge、分享 bridge 或照片记录的真实后端持久化。
 
 ## 新窗口启动提示
 
