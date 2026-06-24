@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <title>LOOP 城市回路</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css?v=20260624-pass-price" />
+  </head>
+  <body>
+    <section class="splash-screen" id="splashScreen" aria-label="LOOP 开屏">
+      <div class="splash-map" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="splash-logo logo-copy">
+        <span class="logo-card-mark" aria-hidden="true">
+          <span class="logo-band is-blue"></span>
+          <span class="logo-band is-orange"></span>
+          <span class="logo-band is-paper"></span>
+        </span>
+        <span class="logo-type">
+          <strong>LOOP</strong>
+          <small>城市回路</small>
+        </span>
+      </div>
+      <div class="splash-copy">
+        <p>CITY MOOD ENGINE</p>
+        <h1>把熟悉的城市，重新打开。</h1>
+      </div>
+      <div class="splash-progress" aria-hidden="true"><span></span></div>
+    </section>
+
+    <section class="auth-gate" id="authGate" hidden aria-labelledby="authTitle">
+      <div class="auth-shell">
+        <div class="auth-brand">
+          <div class="logo-copy">
+            <span class="logo-card-mark" aria-hidden="true">
+              <span class="logo-band is-blue"></span>
+              <span class="logo-band is-orange"></span>
+              <span class="logo-band is-paper"></span>
+            </span>
+            <span class="logo-type">
+              <strong>LOOP</strong>
+              <small>城市回路</small>
+            </span>
+          </div>
+          <span>PRIVATE CITY EXPLORATION</span>
+        </div>
+
+        <div class="auth-cover">
+          <p class="eyebrow">WELCOME</p>
+          <h1 id="authTitle">先把你的城市回路留住。</h1>
+          <p>登录后，今日灵感、探索路线、打卡照片和年度记录会只保存在你的个人空间里。</p>
+          <div class="auth-level-preview">
+            <span>LV.03</span>
+            <strong>城市感知者</strong>
+            <small>完成探索、记录照片和连续出门都会提升等级。</small>
+          </div>
+        </div>
+
+        <div class="auth-card">
+          <form class="auth-form auth-screen" id="loginForm" autocomplete="on">
+            <div class="auth-screen-head">
+              <span>LOGIN</span>
+              <h2>登录 LOOP</h2>
+              <p>继续查看你的城市探索、打卡记录和年度 A4。</p>
+            </div>
+            <label>
+              <span>邮箱或手机号</span>
+              <input id="loginAccount" name="loginAccount" type="text" inputmode="email" autocomplete="username" placeholder="hello@loop.city" />
+            </label>
+            <label>
+              <span>密码</span>
+              <input id="loginPassword" name="loginPassword" type="password" autocomplete="current-password" placeholder="至少 6 位" />
+            </label>
+            <div class="auth-row">
+              <label class="auth-check">
+                <input id="rememberMe" type="checkbox" checked />
+                <span>保持登录</span>
+              </label>
+              <button class="text-button" id="forgotButton" type="button">忘记密码</button>
+            </div>
+            <button class="auth-submit" type="submit">进入 LOOP</button>
+            <button class="auth-demo" id="demoLoginButton" type="button">使用体验账号</button>
+            <button class="text-button auth-switch" type="button" data-auth-mode="register">创建新账号</button>
+          </form>
+
+          <form class="auth-form auth-screen" id="registerForm" autocomplete="on" hidden>
+            <div class="auth-screen-head">
+              <span>STEP 01 / ACCOUNT</span>
+              <h2>注册账号</h2>
+              <p>先设置用于登录和找回密码的账号。</p>
+            </div>
+            <label>
+              <span>邮箱或手机号</span>
+              <input id="registerAccount" name="registerAccount" type="text" inputmode="email" autocomplete="username" placeholder="用于登录和找回账号" />
+            </label>
+            <label>
+              <span>设置密码</span>
+              <input id="registerPassword" name="registerPassword" type="password" autocomplete="new-password" placeholder="至少 6 位" />
+            </label>
+            <label>
+              <span>确认密码</span>
+              <input id="registerConfirm" name="registerConfirm" type="password" autocomplete="new-password" placeholder="再输入一次" />
+            </label>
+            <label class="auth-check">
+              <input id="agreeTerms" type="checkbox" />
+              <span>同意仅用于保存个人探索记录和账号登录</span>
+            </label>
+            <button class="auth-submit" type="submit">创建账号</button>
+            <button class="text-button auth-switch" type="button" data-auth-mode="login">已有账号，去登录</button>
+          </form>
+
+          <form class="auth-form auth-screen" id="profileForm" autocomplete="on" hidden>
+            <div class="auth-screen-head">
+              <span>FIRST SETUP / PROFILE</span>
+              <h2>认识一下你</h2>
+              <p>这些信息只影响推荐：既会靠近你的兴趣，也会带你体验和日常完全不同的路线。</p>
+              <button class="setup-close" type="button" data-setup-close aria-label="关闭首次设置">×</button>
+            </div>
+            <label>
+              <span>昵称</span>
+              <input id="registerName" name="registerName" type="text" autocomplete="name" placeholder="给自己一个城市名字" />
+            </label>
+            <label>
+              <span>常驻城市</span>
+              <select id="registerCity" name="registerCity">
+                <option value="shanghai">上海</option>
+                <option value="chengdu">成都</option>
+                <option value="abudhabi">阿布扎比</option>
+              </select>
+            </label>
+            <label>
+              <span>身份 / 行业</span>
+              <select id="registerRole" name="registerRole">
+                <option value="student">学生</option>
+                <option value="creative">创意 / 设计 / 媒体</option>
+                <option value="tech">互联网 / 科技</option>
+                <option value="finance">金融 / 咨询 / 商务</option>
+                <option value="service">服务业 / 零售 / 餐饮</option>
+                <option value="freelance">自由职业</option>
+                <option value="other">其他</option>
+              </select>
+            </label>
+            <label>
+              <span>日常节奏</span>
+              <select id="registerRoutine" name="registerRoutine">
+                <option value="regular">规律通勤</option>
+                <option value="late">经常晚归</option>
+                <option value="flexible">时间自由</option>
+                <option value="campus">校园生活</option>
+                <option value="travel">经常出差 / 旅行</option>
+              </select>
+            </label>
+            <div class="auth-actions">
+              <button class="auth-demo" type="button" data-setup-close>返回</button>
+              <button class="auth-submit" type="submit">继续</button>
+            </div>
+          </form>
+
+          <form class="auth-form auth-screen" id="interestForm" autocomplete="on" hidden>
+            <div class="auth-screen-head">
+              <span>STEP 03 / INTEREST</span>
+              <h2>选择城市入口</h2>
+              <p>选择几个想被城市重新打开的入口，之后可以随时改。</p>
+              <button class="setup-close" type="button" data-setup-close aria-label="关闭首次设置">×</button>
+            </div>
+            <label>
+              <span>想探索的方向</span>
+              <button class="select-all-interest" id="selectAllInterests" type="button">全选</button>
+              <div class="auth-interest" id="registerInterestList" aria-label="想探索的方向"></div>
+            </label>
+            <div class="auth-actions">
+              <button class="auth-demo" type="button" data-auth-mode="profile">上一步</button>
+              <button class="auth-submit" type="submit">完成注册</button>
+            </div>
+          </form>
+
+          <form class="auth-form auth-screen reset-form" id="resetForm" autocomplete="on" hidden>
+            <div class="auth-screen-head">
+              <span>RECOVERY</span>
+              <h2>找回密码</h2>
+              <p>输入已注册账号和新密码，即可在原型里完成重设。</p>
+            </div>
+            <label>
+              <span>邮箱或手机号</span>
+              <input id="resetAccount" name="resetAccount" type="text" inputmode="email" autocomplete="username" />
+            </label>
+            <label>
+              <span>新密码</span>
+              <input id="resetPassword" name="resetPassword" type="password" autocomplete="new-password" />
+            </label>
+            <button class="auth-submit" type="submit">更新密码</button>
+            <button class="auth-demo" id="backToLoginButton" type="button">返回</button>
+          </form>
+
+          <p class="auth-message" id="authMessage" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <div class="app-frame" id="appFrame" hidden>
+      <header class="app-header">
+        <button class="wordmark" type="button" data-view-target="home" aria-label="回到首页">
+          <span class="logo-copy">
+            <span class="logo-card-mark" aria-hidden="true">
+              <span class="logo-band is-blue"></span>
+              <span class="logo-band is-orange"></span>
+              <span class="logo-band is-paper"></span>
+            </span>
+            <span class="logo-type">
+              <strong>LOOP</strong>
+              <small>城市回路</small>
+            </span>
+          </span>
+        </button>
+        <button class="city-pill" type="button" id="cityEntry" aria-haspopup="dialog">
+          <span id="cityEntryName">上海</span>
+          <small id="cityEntryLine">地图探索计划</small>
+        </button>
+        <button class="language-dot" type="button" id="langButton" aria-label="切换英文">EN</button>
+      </header>
+
+      <main class="app-main">
+        <section class="view is-active" id="view-home" aria-labelledby="homeTitle">
+          <div class="hero-card" id="heroCard">
+            <div class="hero-visual" id="heroVisual">
+              <div class="photo-noise" aria-hidden="true"></div>
+              <button class="save-bubble" type="button" id="heroSave" aria-label="换一组今日灵感">
+                <span class="save-bubble-mark" aria-hidden="true"></span>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M20 6v5h-5" />
+                  <path d="M4 18v-5h5" />
+                  <path d="M18.2 9A7 7 0 0 0 6.4 6.1L4 8.5" />
+                  <path d="M5.8 15A7 7 0 0 0 17.6 17.9L20 15.5" />
+                </svg>
+                <span class="save-bubble-label">换灵感</span>
+              </button>
+              <div class="hero-copy">
+                <p class="eyebrow" id="homeKicker">MUSIC / 坂本龙一</p>
+                <h1 id="homeTitle">今日灵感</h1>
+                <p id="homeIntro">从一首歌、一部电影或一本书开始，让 LOOP 判断今天适合哪条城市路线。</p>
+              </div>
+            </div>
+            <div class="hero-panel mood-panel">
+              <div class="context-row" id="contextRow" hidden></div>
+              <div class="mood-grid" id="moodGrid" aria-label="选择今日灵感"></div>
+              <div class="inspiration-card" id="inspirationCard"></div>
+              <div class="city-resonance" id="cityResonance"></div>
+              <button class="swipe-up-cue" id="swipeUpCue" type="button" hidden>
+                <span class="swipe-cue-handle" aria-hidden="true"><i></i></span>
+                <span class="swipe-cue-copy">
+                  <strong>向下滑动生成地图</strong>
+                  <small>LOOP 会把灵感变成路线</small>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="route-reveal" id="routeReveal" hidden aria-live="polite">
+            <div class="route-reveal-map" aria-hidden="true">
+              <div class="route-map-sheet">
+                <span class="route-map-caption">正在生成今日私人路线</span>
+                <svg viewBox="0 0 220 128">
+                  <path class="city-trace" d="M24 92 C50 56 76 76 96 45 S150 31 173 63 S192 92 206 40" />
+                  <circle class="route-node route-node-1" cx="24" cy="92" r="5" />
+                  <circle class="route-node route-node-2" cx="96" cy="45" r="5" />
+                  <circle class="route-node route-node-3" cx="173" cy="63" r="5" />
+                  <circle class="route-node route-node-4" cx="206" cy="40" r="5" />
+                  <circle class="route-pulse" cx="206" cy="40" r="12" />
+                </svg>
+              </div>
+            </div>
+            <div class="route-reveal-copy">
+              <strong>正在生成今日私人路线</strong>
+              <span>匹配灵感、街区和步行顺序</span>
+            </div>
+          </div>
+
+          <section class="recommend-section" id="recommendSection" aria-labelledby="recommendTitle" hidden>
+            <div class="section-head compact-head">
+              <div>
+                <span class="mini-label">TODAY'S LOOP</span>
+                <h2 id="recommendTitle">今日路线</h2>
+              </div>
+              <button type="button" id="goAtlasFromHome" hidden aria-hidden="true"></button>
+            </div>
+            <p class="swipe-hint" id="recommendHint">几段适合今天的城市走法，先看氛围，再决定出门。</p>
+            <div class="recommend-carousel" id="recommendCarousel"></div>
+          </section>
+        </section>
+
+        <section class="view" id="view-atlas" aria-labelledby="atlasTitle">
+          <div class="lookbook-head compact-map-head">
+            <p class="eyebrow">CITY ATLAS / EDITOR'S NOTE</p>
+            <h1 id="atlasTitle">上海兴趣地图</h1>
+            <p id="atlasIntro">每张兴趣地图都由编辑先确定城市气质，再把地点串成可实际完成的探索路线。</p>
+          </div>
+
+          <section class="filter-panel" aria-label="兴趣筛选">
+            <button class="secret-feature" type="button" id="secretFeatureButton">
+              <span>秘境探索</span>
+              <strong>用线索重新认识城市</strong>
+            </button>
+            <div class="filter-head">
+              <span>兴趣筛选</span>
+              <button type="button" id="filterToggle">展开全部</button>
+            </div>
+            <div class="layer-switch is-collapsed" id="layerTabs" aria-label="地图分类"></div>
+          </section>
+
+          <div class="sort-row" id="sortRow" aria-label="路线排序"></div>
+
+          <div class="atlas-stage" hidden>
+            <div class="atlas-title-card">
+              <span id="atlasNumber">03</span>
+              <strong id="atlasFeatureTitle">咖啡地图</strong>
+              <small id="atlasFeatureSub">不赶路的下午路线</small>
+            </div>
+            <div class="atlas-map" id="atlasMap">
+              <div class="map-texture" aria-hidden="true"></div>
+              <div class="district district-a" id="districtA">衡复街区</div>
+              <div class="district district-b" id="districtB">西岸</div>
+              <div class="district district-c" id="districtC">静安</div>
+              <div class="pin-layer" id="pinLayer"></div>
+            </div>
+          </div>
+
+          <div class="route-stack" id="routeList"></div>
+        </section>
+
+        <section class="view" id="view-secrets" aria-labelledby="secretTitle">
+          <article class="story-cover" id="secretCover">
+            <div class="story-backdrop" aria-hidden="true"></div>
+            <button class="back-soft" type="button" data-view-target="home" aria-label="返回">‹</button>
+            <div class="story-copy">
+              <p class="eyebrow">CITY QUEST</p>
+              <h1 id="secretTitle">城市秘境</h1>
+              <p id="secretIntro">用实景线索、历史碎片和小谜题，找回城市里被忽略的美好。</p>
+            </div>
+            <div class="story-dock" id="secretDock"></div>
+          </article>
+          <section class="quest-mode-section">
+            <div class="section-head compact-head">
+              <div>
+                <span class="mini-label">QUICK PLAY</span>
+                <h2>附近快速玩起来</h2>
+              </div>
+            </div>
+            <div class="quest-row" id="quickQuestRow"></div>
+          </section>
+          <section class="quest-mode-section">
+            <div class="section-head compact-head">
+              <div>
+                <span class="mini-label">FULL QUEST</span>
+                <h2>完整秘境游戏</h2>
+              </div>
+            </div>
+          </section>
+          <div class="secret-stack" id="secretStack"></div>
+        </section>
+
+        <section class="view" id="view-folio" aria-labelledby="folioTitle">
+          <div class="folio-hero">
+            <p class="eyebrow">MY LOOP</p>
+            <h1 id="folioTitle">我的 LOOP</h1>
+            <div class="profile-card">
+              <div class="avatar-mark" id="profileAvatar">K</div>
+              <div>
+                <strong id="profileName">城市探索者</strong>
+                <span id="profileSubline">本年完成 18 次探索 / 连续记录 5 天</span>
+                <small id="profileAccount">仅自己可见</small>
+              </div>
+              <div class="profile-level" id="profileLevel">LV.03</div>
+              <div class="profile-tools" aria-label="账户工具">
+                <button type="button" id="ordersButton">订单</button>
+                <button type="button" id="settingsButton">设置</button>
+              </div>
+              <button class="logout-button" type="button" id="logoutButton">退出</button>
+            </div>
+            <div class="folio-ticket" id="folioCover" hidden></div>
+          </div>
+
+          <section class="section-block pass-section" id="featuredPassSection" hidden>
+            <div class="section-head">
+              <h2>进行中的城市通行证</h2>
+              <button type="button" id="passMapButton">去地图</button>
+            </div>
+            <div class="profile-pass-list" id="featuredPassList"></div>
+          </section>
+
+          <section class="section-block interest-map-section" id="interestMapSection" hidden>
+            <div class="section-head">
+              <h2>进行中的兴趣地图</h2>
+              <button type="button" id="interestMapButton">去地图</button>
+            </div>
+            <div class="profile-pass-list interest-map-list" id="interestMapList"></div>
+          </section>
+
+          <section class="section-block profile-record-section">
+            <div class="profile-record-sticky-head">
+              <div class="section-head">
+                <h2 id="recordListTitle">今日探索</h2>
+              </div>
+              <div class="period-overview" id="periodOverview"></div>
+            </div>
+            <div class="record-list" id="recordList"></div>
+          </section>
+
+          <section class="section-block">
+            <div class="section-head">
+              <h2>时间纵览</h2>
+              <button type="button">导出</button>
+            </div>
+            <div class="time-lens" id="timeLens"></div>
+            <div class="year-board">
+              <div class="year-label">
+                <strong>2026</strong>
+                <span>MY YEAR IN LOOPS</span>
+              </div>
+              <div class="year-sheet" id="yearSheet" aria-label="年度 365 天记录"></div>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <button class="ongoing-exploration" id="ongoingExploration" type="button" hidden aria-live="polite">
+        <span class="ongoing-pulse" aria-hidden="true"></span>
+        <span class="ongoing-copy">
+          <small id="ongoingStatus">正在探索</small>
+          <strong id="ongoingTitle">路线名称</strong>
+          <em id="ongoingMeta">第 1 站</em>
+        </span>
+        <span class="ongoing-progress" aria-hidden="true"><i id="ongoingProgressBar"></i></span>
+        <span class="ongoing-action">继续</span>
+      </button>
+
+      <div class="record-scroll-float" id="recordScrollFloat" hidden aria-label="记录列表快捷滚动">
+        <button type="button" data-record-float-action="top" aria-label="回到记录顶部">回到顶部</button>
+      </div>
+
+      <nav class="bottom-nav" aria-label="主导航">
+        <button class="nav-item is-active" type="button" data-view-target="home">
+          <span class="nav-symbol" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2.5v3" />
+              <path d="M12 18.5v3" />
+              <path d="M4.6 4.6l2.1 2.1" />
+              <path d="M17.3 17.3l2.1 2.1" />
+              <path d="M2.5 12h3" />
+              <path d="M18.5 12h3" />
+            </svg>
+          </span>
+          <span>今日</span>
+        </button>
+        <button class="nav-item" type="button" data-view-target="atlas">
+          <span class="nav-symbol" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M8 5l8-3 5 2v15l-5-2-8 3-5-2V3z" />
+              <path d="M8 5v15" />
+              <path d="M16 2v15" />
+            </svg>
+          </span>
+          <span>地图</span>
+        </button>
+        <button class="nav-item" type="button" data-view-target="secrets">
+          <span class="nav-symbol" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M5 19c5-8 9 2 14-6" />
+              <circle cx="5" cy="19" r="2" />
+              <circle cx="19" cy="13" r="2" />
+              <path d="M14 5l1.1 2.3L17.5 8l-2.4.7L14 11l-1.1-2.3L10.5 8l2.4-.7z" />
+            </svg>
+          </span>
+          <span>秘境</span>
+        </button>
+        <button class="nav-item" type="button" data-view-target="folio">
+          <span class="nav-symbol" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="3.2" />
+              <path d="M5.5 20c1.1-4 3.2-6 6.5-6s5.4 2 6.5 6" />
+            </svg>
+          </span>
+          <span>我的</span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="sheet-backdrop" id="cityBackdrop" hidden></div>
+    <section class="city-sheet" id="citySheet" role="dialog" aria-modal="true" aria-labelledby="citySheetTitle" hidden>
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <div>
+          <p class="eyebrow">SELECT CITY</p>
+          <h2 id="citySheetTitle">选一座今天要探索的城市</h2>
+        </div>
+        <button class="close-button" type="button" id="cityClose" aria-label="关闭">×</button>
+      </div>
+      <div class="city-deck" id="cityCardList"></div>
+    </section>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <div class="welcome-burst" id="welcomeBurst" hidden aria-live="polite">
+      <div>
+        <span>LOOP</span>
+        <strong>你的城市回路已开启</strong>
+        <small>今天从一个灵感开始。</small>
+      </div>
+    </div>
+
+    <div class="sheet-backdrop route-backdrop" id="routeBackdrop" hidden></div>
+    <section class="route-detail-sheet" id="routeDetailSheet" role="dialog" aria-modal="true" aria-labelledby="routeDetailTitle" hidden>
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="route-detail-head">
+        <div>
+          <p class="eyebrow" id="routeDetailCode">ROUTE</p>
+          <h2 id="routeDetailTitle">路线详情</h2>
+          <span id="routeDetailMeta">2.5h / ¥120 / 1.8km</span>
+        </div>
+        <button class="close-button" type="button" id="routeClose" aria-label="关闭">×</button>
+      </div>
+      <div class="virtual-map" id="virtualMap"></div>
+      <div class="route-detail-photo" id="routeDetailPhoto" aria-hidden="true"></div>
+      <div class="route-progress" id="routeProgress"></div>
+      <div class="route-actions">
+        <button class="secondary-button" type="button" id="checkinButton">定位打卡</button>
+        <button class="primary-button" type="button" id="photoButton">拍照记录</button>
+        <button class="primary-button route-complete" type="button" id="completeRouteButton">完成探索</button>
+      </div>
+    </section>
+
+    <div class="sheet-backdrop switch-confirm-backdrop" id="switchConfirmBackdrop" hidden></div>
+    <section class="switch-confirm-sheet" id="switchConfirmSheet" role="dialog" aria-modal="true" aria-labelledby="switchConfirmTitle" hidden>
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <p class="eyebrow">SWITCH MAP</p>
+      <h2 id="switchConfirmTitle">切换到新地图？</h2>
+      <p id="switchConfirmBody">当前探索会先保存到历史记录，然后再开启新地图。</p>
+      <div class="switch-confirm-summary">
+        <span id="switchCurrentRoute">当前地图</span>
+        <strong id="switchNextRoute">新地图</strong>
+      </div>
+      <div class="switch-confirm-actions">
+        <button class="secondary-button" type="button" id="switchCancelButton">继续当前地图</button>
+        <button class="primary-button" type="button" id="switchConfirmButton">保存并切换</button>
+      </div>
+    </section>
+
+    <div class="sheet-backdrop pass-action-backdrop" id="passActionBackdrop" hidden></div>
+    <section class="pass-action-sheet" id="passActionSheet" role="dialog" aria-modal="true" aria-labelledby="passActionTitle" hidden>
+      <button class="close-button pass-action-close" type="button" id="passActionClose" aria-label="关闭">×</button>
+      <div class="pass-action-content" id="passActionContent"></div>
+    </section>
+
+    <div class="sheet-backdrop day-backdrop" id="dayBackdrop" hidden></div>
+    <section class="day-detail-sheet" id="dayDetailSheet" role="dialog" aria-modal="true" aria-labelledby="dayDetailTitle" hidden>
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="route-detail-head">
+        <div>
+          <p class="eyebrow" id="dayDetailCode">DAY RECORD</p>
+          <h2 id="dayDetailTitle">当天记录</h2>
+          <span id="dayDetailMeta">0 条探索</span>
+        </div>
+        <button class="close-button" type="button" id="dayClose" aria-label="关闭">×</button>
+      </div>
+      <div class="day-detail-photo" id="dayDetailPhoto" aria-hidden="true"></div>
+      <div class="day-record-list" id="dayRecordList"></div>
+    </section>
+
+    <div class="sheet-backdrop account-backdrop" id="accountBackdrop" hidden></div>
+    <section class="account-sheet" id="accountSheet" role="dialog" aria-modal="true" aria-labelledby="accountSheetTitle" hidden>
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="route-detail-head">
+        <div>
+          <p class="eyebrow" id="accountSheetKicker">ACCOUNT</p>
+          <h2 id="accountSheetTitle">账户</h2>
+          <span id="accountSheetMeta">订单和设置</span>
+        </div>
+        <button class="close-button" type="button" id="accountClose" aria-label="关闭">×</button>
+      </div>
+      <div class="account-panel" id="accountPanel"></div>
+    </section>
+
+    <script src="script.js?v=20260624-pass-price"></script>
+  </body>
+</html>

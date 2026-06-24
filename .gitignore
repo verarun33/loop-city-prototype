@@ -3,3 +3,5 @@
 .playwright-cli/
 .superpowers/
 node_modules/
+xcuserdata/
+*.xcuserstate
