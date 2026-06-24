@@ -49,6 +49,11 @@ for (const expected of ["WKUserContentController", "WKUserScript", "LoopNative",
     throw new Error(`WebViewScreen.swift must include native bridge piece: ${expected}`);
   }
 }
+for (const expected of ["camera.capture", "photo.pick", "loopnative:photo-result", "UIImagePickerController", "PHPickerViewController"]) {
+  if (!webViewScreen.includes(expected)) {
+    throw new Error(`WebViewScreen.swift 必须实现 native photo bridge：${expected}`);
+  }
+}
 
 const script = readFileSync(join(root, "script.js"), "utf8");
 for (const expected of ["installNativeShellBridge", "loopnative:ready", "nativeShell"]) {
@@ -61,6 +66,11 @@ const bridgeRegistry = readFileSync(join(root, "docs", "architecture", "native-b
 for (const expected of ["ready", "haptic", "camera.capture", "photo.pick", "location.request", "share.open"]) {
   if (!bridgeRegistry.includes(`\`${expected}\``)) {
     throw new Error(`native-bridge-registry.md 必须记录 bridge message：${expected}`);
+  }
+}
+for (const expected of ["loopnative:photo-result", "invalid-payload", "encode-failed", "unavailable", "cancelled"]) {
+  if (!bridgeRegistry.includes(expected)) {
+    throw new Error(`native-bridge-registry.md 必须记录 photo bridge 结果：${expected}`);
   }
 }
 
