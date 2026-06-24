@@ -9,6 +9,11 @@ const palette = {
 const AUTH_USERS_KEY = "loop-city-users";
 const AUTH_SESSION_KEY = "loop-city-session";
 const LOOP_DATA_VERSION = "20260624-deep-culture-v1";
+const LOOP_EXTERNAL_DATA = typeof window !== "undefined" && window.LOOP_DATA_V01 && typeof window.LOOP_DATA_V01 === "object"
+  ? window.LOOP_DATA_V01
+  : null;
+const LOOP_EXTERNAL_CITIES = Array.isArray(LOOP_EXTERNAL_DATA?.cities) ? LOOP_EXTERNAL_DATA.cities : [];
+const LOOP_EXTERNAL_SOURCE_GROUPS = Array.isArray(LOOP_EXTERNAL_DATA?.sourceGroups) ? LOOP_EXTERNAL_DATA.sourceGroups : [];
 const LOOP_DATA_VERSION_KEY = "loop-city-data-version";
 const DEMO_ACCOUNT = "demo@loop.city";
 const DEMO_PASSWORD = "loop2026";

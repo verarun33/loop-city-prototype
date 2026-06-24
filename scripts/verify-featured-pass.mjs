@@ -19,6 +19,7 @@ const checks = [
   ["app shell disables text selection and touch callout", /user-select:\s*none[\s\S]*-webkit-user-select:\s*none[\s\S]*-webkit-touch-callout:\s*none/],
   ["app shell disables copy paste selection browser gestures", /installAppInteractionGuards[\s\S]*\["copy",\s*"cut",\s*"paste",\s*"selectstart",\s*"contextmenu",\s*"dragstart"\][\s\S]*gesturestart[\s\S]*dblclick/],
   ["prototype storage resets for deep homepage cultural demo data", /LOOP_DATA_VERSION[\s\S]*20260624-deep-culture-v1/],
+  ["web app 可选读取 LOOP 外部数据容器", /const LOOP_EXTERNAL_DATA[\s\S]*window\.LOOP_DATA_V01[\s\S]*LOOP_EXTERNAL_CITIES[\s\S]*LOOP_EXTERNAL_SOURCE_GROUPS/],
   ["demo account is seeded with rich records and pass orders", /function demoUserSnapshot[\s\S]*records:\s*defaultRecords\(\)[\s\S]*featuredPasses:\s*demoFeaturedPasses\(\)[\s\S]*completedRouteIds:\s*demoCompletedRouteIds\(\)/],
   ["demo data includes active completed and expired city pass states", /demoFeaturedPasses[\s\S]*"active"[\s\S]*"completed"[\s\S]*"expired"/],
   ["default simulated records include at least forty demo entries", /function defaultRecords\(\)[\s\S]*金桥周末宠物友好线/],
