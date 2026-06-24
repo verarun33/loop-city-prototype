@@ -22,21 +22,23 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 ## 当前已知可用基线
 
-阶段 1 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
+阶段 1、阶段 2A、阶段 2B 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
 
 最新功能基线：
 
-`f500312 新增移动个人页 UI smoke checks`
+阶段 2B 定位 native bridge 已完成。精确提交请用 `git log -1 --oneline` 查看。
 
 近期关键提交：
 
+- `d7216a8 实现 iOS 定位 bridge handler`
+- `53c2468 接入 Web 原生定位 bridge adapter`
+- `e658744 记录定位 native bridge 协议`
+- `f857359 新增定位 bridge 失败检查`
+- `15cada0 规划定位 native bridge`
+- `340fdb4 完成相机相册 bridge 阶段状态`
 - `f500312 新增移动个人页 UI smoke checks`
 - `110844e 记录 native bridge message registry`
 - `5e9c45f 读取 LOOP 数据基础容器`
-- `4793079 同步 LOOP 数据到 iOS WebView bundle`
-- `beffe8f 新增 LOOP 数据基础容器`
-- `1d8ef3b 中文化项目文档`
-- `e92c9d8 Expand public cultural discovery data`
 
 ## 当前工作区说明
 
@@ -86,12 +88,16 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 
 阶段 1 已完成：数据基础容器、iOS 数据同步、Web 安全读取 hook、native bridge registry、移动个人页 UI smoke check 均已落地。
 
-阶段 2A 的相机/相册 native bridge 设计和实施计划已准备好：
+阶段 2A 已完成：相机/相册 native bridge 已接入。Web 浏览器模式保留原模拟照片流程，iOS app 模式可通过 `camera.capture` 和 `photo.pick` 打开系统入口，并通过 `loopnative:photo-result` 写回现有照片记录。
+
+阶段 2B 已完成：定位 native bridge 已接入。Web 浏览器模式保留原模拟确认流程，iOS app 模式可通过 `location.request` 请求一次系统定位，并通过 `loopnative:location-result` 写回现有定位打卡流程。
+
+相关文档：
 
 - `docs/superpowers/specs/2026-06-24-camera-photo-native-bridge-design.md`
 - `docs/superpowers/plans/2026-06-24-camera-photo-native-bridge-implementation.md`
-
-阶段 2A 已完成：相机/相册 native bridge 已接入。Web 浏览器模式保留原模拟照片流程，iOS app 模式可通过 `camera.capture` 和 `photo.pick` 打开系统入口，并通过 `loopnative:photo-result` 写回现有照片记录。
+- `docs/superpowers/specs/2026-06-24-location-native-bridge-design.md`
+- `docs/superpowers/plans/2026-06-24-location-native-bridge-implementation.md`
 
 最近完整验证时间：2026-06-24。
 
@@ -104,7 +110,7 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `npm run ios:check`
 - `npm run ios:build`
 
-下一步可继续规划定位 bridge、分享 bridge 或照片记录的真实后端持久化。
+下一步可继续规划分享 bridge、照片记录真实后端持久化或 TestFlight 准备。
 
 ## 新窗口启动提示
 

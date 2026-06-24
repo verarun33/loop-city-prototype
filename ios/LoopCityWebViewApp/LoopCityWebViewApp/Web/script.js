@@ -1849,6 +1849,7 @@ const state = {
   activeRedemptionBenefitId: null,
   expandedFeaturedStopId: null,
   featuredPaymentRouteId: null,
+  lastCheckinLocation: null,
   passActionMode: "",
   passActionRouteId: null,
   passActionBenefitId: null,
@@ -5764,13 +5765,14 @@ function confirmPassAction() {
     return;
   }
   if (mode === "checkin") {
+    if (requestNativeLocation(routeItem)) return;
     confirmCheckinAction(routeItem);
     return;
   }
   if (mode === "camera" || mode === "upload") confirmPhotoAction(routeItem, mode);
 }
 
-function confirmCheckinAction(routeItem) {
+function confirmCheckinAction(routeItem, locationAsset = null) {
   const total = routeItem.stops.length;
   const lastIndex = total - 1;
   if (state.routeProgress < lastIndex) {
@@ -5780,6 +5782,13 @@ function confirmCheckinAction(routeItem) {
     showToast(`已完成本站定位，下一站：${routeItem.stops[state.routeProgress]}`);
   } else {
     showToast("已到最后一站，可以完成探索。");
+  }
+  if (locationAsset) {
+    state.lastCheckinLocation = {
+      ...locationAsset,
+      routeId: routeItem.id,
+      routeTitle: routeItem.title
+    };
   }
   persistUserState();
   renderRouteDetail();
@@ -7091,6 +7100,8 @@ function installAppInteractionGuards() {
 const LOOP_NATIVE_BRIDGE_MESSAGES = Object.freeze(["ready", "haptic", "camera.capture", "photo.pick", "location.request"]);
 const nativePhotoRequests = new Map();
 let nativePhotoRequestCounter = 0;
+const nativeLocationRequests = new Map();
+let nativeLocationRequestCounter = 0;
 
 function nativeBridgeCanPost(messageName) {
   const native = window.LoopNative;
@@ -7132,6 +7143,62 @@ function requestNativePhoto(source, routeItem) {
   closePassActionSheet();
   showToast(source === "upload" ? "正在打开系统相册..." : "正在打开系统相机...");
   return true;
+}
+
+function nativeLocationPayload(routeItem) {
+  const stop = currentActionStop(routeItem);
+  nativeLocationRequestCounter += 1;
+  const requestId = `location-${Date.now()}-${nativeLocationRequestCounter}`;
+  nativeLocationRequests.set(requestId, {
+    routeId: routeItem.id,
+    stopIndex: stop.index,
+    station: stop.name,
+    createdAt: Date.now()
+  });
+  return {
+    requestId,
+    routeId: routeItem.id,
+    routeTitle: routeItem.title,
+    stopIndex: stop.index,
+    stopName: stop.name,
+    timeoutMs: 12000
+  };
+}
+
+function requestNativeLocation(routeItem) {
+  if (!nativeBridgeCanPost("location.request")) return false;
+  const payload = nativeLocationPayload(routeItem);
+  window.LoopNative.post("location.request", payload);
+  closePassActionSheet();
+  showToast("正在确认定位...");
+  return true;
+}
+
+function handleNativeLocationResult(event) {
+  const detail = event.detail || {};
+  const requestId = detail.requestId || "";
+  const request = nativeLocationRequests.get(requestId);
+  if (!request) return;
+  nativeLocationRequests.delete(requestId);
+  const routeItem = routeById(request.routeId);
+  if (!routeItem) return;
+  if (!detail.ok) {
+    if (detail.reason === "denied" || detail.reason === "restricted") showToast("定位权限未开启，暂时不能确认到站。");
+    else if (detail.reason === "timeout") showToast("定位超时，请再试一次。");
+    else showToast(detail.message || "定位失败，请稍后重试。");
+    return;
+  }
+  const locationAsset = {
+    requestId,
+    latitude: Number(detail.latitude),
+    longitude: Number(detail.longitude),
+    accuracy: Number(detail.accuracy) || 0,
+    authorizationStatus: detail.authorizationStatus || "",
+    capturedAt: detail.capturedAt || new Date().toISOString(),
+    stopIndex: request.stopIndex,
+    station: request.station
+  };
+  confirmCheckinAction(routeItem, locationAsset);
 }
 
 function handleNativePhotoResult(event) {
@@ -7185,6 +7252,7 @@ function installNativeShellBridge() {
 }
 
 window.addEventListener("loopnative:photo-result", handleNativePhotoResult);
+window.addEventListener("loopnative:location-result", handleNativeLocationResult);
 installNativeShellBridge();
 installAppInteractionGuards();
 resetPrototypeStorageIfNeeded();
