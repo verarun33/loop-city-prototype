@@ -22,27 +22,24 @@ The current direction is WebView-first:
 
 ## Last Known Good Commit
 
-`1a314e5 Add iOS native bridge foundation`
+`e92c9d8 Expand public cultural discovery data`
 
 Recent useful commits:
 
+- `e92c9d8 Expand public cultural discovery data`
+- `7a83ce3 Add iOS app planning docs`
 - `1a314e5 Add iOS native bridge foundation`
 - `376169d Add iOS WebView app foundation`
 - `c680d1d Keep profile record header sticky`
 - `8ce8fd4 Show city pass price on profile cards`
-- `78927d3 Enhance mobile profile rails`
 
 ## Current Working Tree Notes
 
-At the time this file was created, the repo already had unrelated unstaged web data/cache-key changes:
+The previous web data/cache-key working changes were committed as:
 
-- `index.html`
-- `ios/LoopCityWebViewApp/LoopCityWebViewApp/Web/index.html`
-- `ios/LoopCityWebViewApp/LoopCityWebViewApp/Web/script.js`
-- `script.js`
-- `scripts/verify-featured-pass.mjs`
+`e92c9d8 Expand public cultural discovery data`
 
-Treat these as existing work in progress. Do not revert or commit them as part of documentation, architecture, or native bridge work unless their purpose has been inspected and explicitly included in a scoped change.
+Treat that commit as the current product-data baseline. Do not revert it unless Vera explicitly asks for a rollback.
 
 ## Verified Commands
 
@@ -74,13 +71,7 @@ The user explicitly wants disciplined work and prefers the assistant to use `sup
 
 ## Next Task
 
-Ask Vera to review these documents before writing the detailed implementation plan:
-
-- `docs/product/loop-city-ios-app-prd.md`
-- `docs/architecture/ios-webview-app-architecture.md`
-- `docs/superpowers/specs/2026-06-24-loop-city-ios-app-design.md`
-
-After review, write the implementation plan at:
+Execute the detailed implementation plan at:
 
 `docs/superpowers/plans/2026-06-24-loop-city-ios-app-implementation.md`
 
