@@ -2746,6 +2746,24 @@ button {
   align-items: start;
 }
 
+.route-detail-tools {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.route-share-button {
+  min-width: 44px;
+  min-height: 38px;
+  border: 1px solid rgba(37, 71, 208, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 1000;
+  box-shadow: 0 10px 24px rgba(32, 36, 43, 0.08);
+}
+
 .route-detail-head h2 {
   margin: 6px 0 6px;
   font-size: 22px;

@@ -1959,6 +1959,7 @@ const dom = {
   routeBackdrop: document.getElementById("routeBackdrop"),
   routeDetailSheet: document.getElementById("routeDetailSheet"),
   routeClose: document.getElementById("routeClose"),
+  routeShareButton: document.getElementById("routeShareButton"),
   routeDetailCode: document.getElementById("routeDetailCode"),
   routeDetailTitle: document.getElementById("routeDetailTitle"),
   routeDetailMeta: document.getElementById("routeDetailMeta"),
@@ -7097,7 +7098,8 @@ function installAppInteractionGuards() {
   }, { capture: true, passive: false });
 }
 
-const LOOP_NATIVE_BRIDGE_MESSAGES = Object.freeze(["ready", "haptic", "camera.capture", "photo.pick", "location.request"]);
+const LOOP_NATIVE_BRIDGE_MESSAGES = Object.freeze(["ready", "haptic", "camera.capture", "photo.pick", "location.request", "share.open"]);
+const LOOP_SHARE_URL = "https://verarun33.github.io/loop-city-prototype/";
 const nativePhotoRequests = new Map();
 let nativePhotoRequestCounter = 0;
 const nativeLocationRequests = new Map();

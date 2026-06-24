@@ -90,11 +90,31 @@ Payload：
 
 原生行为：请求 when-in-use 定位授权并获取一次当前位置。成功或失败后派发 `loopnative:location-result`。
 
+### `share.open`
+
+方向：Web 到原生
+
+用途：请求 iOS 打开系统分享面板，分享当前路线或城市通行证。
+
+Payload：
+
+```json
+{
+  "requestId": "share-1",
+  "routeId": "route-id",
+  "routeTitle": "上海咖啡地图 Vol.01",
+  "title": "上海咖啡地图 Vol.01",
+  "text": "我在 LOOP 城市回路发现了一张上海咖啡地图 Vol.01。",
+  "url": "https://verarun33.github.io/loop-city-prototype/",
+  "subject": "LOOP 城市回路"
+}
+```
+
+原生行为：打开 `UIActivityViewController`。完成、取消或失败后派发 `loopnative:share-result`。
+
 ## 预留消息
 
-以下消息只预留，不实现：
-
-- `share.open`
+当前没有预留消息。
 
 产品代码不要调用预留消息，直到对应实施计划定义 payload、response event、权限行为、失败行为和验证检查。
 
@@ -179,4 +199,41 @@ Payload：
 - `unavailable`
 - `timeout`
 - `invalid-payload`
+- `unknown`
+
+### `loopnative:share-result`
+
+方向：原生到 Web
+
+用途：返回系统分享面板结果。
+
+成功 detail：
+
+```json
+{
+  "requestId": "share-1",
+  "ok": true,
+  "completed": true,
+  "activityType": "com.apple.UIKit.activity.CopyToPasteboard"
+}
+```
+
+失败或取消 detail：
+
+```json
+{
+  "requestId": "share-1",
+  "ok": false,
+  "completed": false,
+  "reason": "cancelled",
+  "message": "用户取消了分享"
+}
+```
+
+允许的失败原因：
+
+- `cancelled`
+- `invalid-payload`
+- `unavailable`
+- `failed`
 - `unknown`
