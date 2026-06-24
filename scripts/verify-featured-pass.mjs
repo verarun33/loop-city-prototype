@@ -1,10 +1,12 @@
 import { existsSync, readFileSync } from "node:fs";
+import vm from "node:vm";
 
 const index = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const script = readFileSync(new URL("../script.js", import.meta.url), "utf8");
 const styles = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 const faviconExists = existsSync(new URL("../favicon.svg", import.meta.url));
 const favicon = faviconExists ? readFileSync(new URL("../favicon.svg", import.meta.url), "utf8") : "";
+const homepageStats = readHomepageStats();
 
 const checks = [
   ["page declares a favicon so browser preview does not 404", /<link\s+rel="icon"\s+href="favicon\.svg"\s+type="image\/svg\+xml"\s*\/?>/],
@@ -16,10 +18,34 @@ const checks = [
   ["mobile viewport allows safe-area fitting for iPhone app shell", /name="viewport"\s+content="[^"]*viewport-fit=cover/],
   ["app shell disables text selection and touch callout", /user-select:\s*none[\s\S]*-webkit-user-select:\s*none[\s\S]*-webkit-touch-callout:\s*none/],
   ["app shell disables copy paste selection browser gestures", /installAppInteractionGuards[\s\S]*\["copy",\s*"cut",\s*"paste",\s*"selectstart",\s*"contextmenu",\s*"dragstart"\][\s\S]*gesturestart[\s\S]*dblclick/],
-  ["prototype storage resets for rich demo data", /LOOP_DATA_VERSION[\s\S]*20260618-rich-demo-v1/],
+  ["prototype storage resets for deep homepage cultural demo data", /LOOP_DATA_VERSION[\s\S]*20260624-deep-culture-v1/],
   ["demo account is seeded with rich records and pass orders", /function demoUserSnapshot[\s\S]*records:\s*defaultRecords\(\)[\s\S]*featuredPasses:\s*demoFeaturedPasses\(\)[\s\S]*completedRouteIds:\s*demoCompletedRouteIds\(\)/],
   ["demo data includes active completed and expired city pass states", /demoFeaturedPasses[\s\S]*"active"[\s\S]*"completed"[\s\S]*"expired"/],
   ["default simulated records include at least forty demo entries", /function defaultRecords\(\)[\s\S]*金桥周末宠物友好线/],
+  ["public source registry records all three city source groups", /const publicSourceRegistry[\s\S]*shanghai[\s\S]*meet-in-shanghai[\s\S]*chengdu[\s\S]*a4artmuseum[\s\S]*abudhabi[\s\S]*visitabudhabi/],
+  ["public source seed loader merges POIs routes feeds and moods", /function loadPublicSourceSeedData[\s\S]*mergePublicPois[\s\S]*mergePublicRoutes[\s\S]*mergePublicLiveFeeds[\s\S]*mergePublicMoodEntries/],
+  ["Shanghai public-sourced POIs include official art bookstore and architecture anchors", /publicSourcePois[\s\S]*West Bund Museum[\s\S]*Power Station of Art[\s\S]*Fotografiska Shanghai[\s\S]*Tsutaya Books Columbia Circle[\s\S]*Wukang Mansion/],
+  ["Chengdu public-sourced POIs include museum music and tea anchors", /publicSourcePois[\s\S]*A4 Art Museum[\s\S]*Chengdu Museum[\s\S]*Dongjiao Memory[\s\S]*NU SPACE[\s\S]*Wangjianglou Park/],
+  ["Abu Dhabi public-sourced POIs include culture architecture and activity anchors", /publicSourcePois[\s\S]*Louvre Abu Dhabi[\s\S]*Qasr Al Hosn[\s\S]*Manarat Al Saadiyat[\s\S]*421 Arts Campus[\s\S]*CLYMB Abu Dhabi/],
+  ["public-source routes add at least three real-world anchored routes per launch city", /publicSourceRoutes[\s\S]*shanghai:\s*\[[\s\S]*sh-public-[\s\S]*sh-public-[\s\S]*sh-public-[\s\S]*chengdu:\s*\[[\s\S]*cd-public-[\s\S]*cd-public-[\s\S]*cd-public-[\s\S]*abudhabi:\s*\[[\s\S]*ad-public-[\s\S]*ad-public-[\s\S]*ad-public-/],
+  ["public-source live feeds expand every city refresh pool", /publicSourceLiveFeeds[\s\S]*shanghai:\s*\[[\s\S]*公开来源[\s\S]*chengdu:\s*\[[\s\S]*公开来源[\s\S]*abudhabi:\s*\[[\s\S]*公开来源/],
+  ["niche feedback registry records community and review sources", /const nicheFeedbackSourceRegistry[\s\S]*smartshanghai[\s\S]*reddit[\s\S]*tripadvisor[\s\S]*miza\.ae/],
+  ["niche feedback seed loader merges POIs places routes feeds and moods", /function loadNicheFeedbackSeedData[\s\S]*mergeNicheFeedbackPois[\s\S]*mergeNicheFeedbackPlaces[\s\S]*mergeNicheFeedbackRoutes[\s\S]*mergeNicheFeedbackLiveFeeds[\s\S]*mergeNicheFeedbackMoodEntries/],
+  ["Shanghai niche feedback POIs include record and independent bookstore anchors", /nicheFeedbackPois[\s\S]*fRUITYSHOP Record Store[\s\S]*Jōdo Space[\s\S]*Raccoon Records[\s\S]*The Mix Place/],
+  ["Chengdu niche feedback POIs include comics independent bookstores and social hostels", /nicheFeedbackPois[\s\S]*Comic Book Ren[\s\S]*You Xing Bookstore[\s\S]*Laishuxia Bookstore[\s\S]*Sonderia Bar/],
+  ["Abu Dhabi niche feedback POIs include third-space and creative community anchors", /nicheFeedbackPois[\s\S]*The Third Place Cafe[\s\S]*Cafe Arabia library floor[\s\S]*Ritual Cafe & Studio[\s\S]*The Alley at MiZa/],
+  ["niche feedback routes add two community-signal routes per launch city", /nicheFeedbackRoutes[\s\S]*sh-feedback-[\s\S]*sh-feedback-[\s\S]*cd-feedback-[\s\S]*cd-feedback-[\s\S]*ad-feedback-[\s\S]*ad-feedback-/],
+  ["niche feedback live feeds expand local discovery refresh pools", /nicheFeedbackLiveFeeds[\s\S]*用户反馈[\s\S]*唱片[\s\S]*用户反馈[\s\S]*独立书店[\s\S]*用户反馈[\s\S]*第三空间/],
+  ["homepage cultural source registry records music reading theatre and film sources", /const homepageCulturalSourceRegistry[\s\S]*Blue Note[\s\S]*Theatre YOUNG[\s\S]*NU SPACE[\s\S]*Comic Book Ren[\s\S]*Berklee Abu Dhabi[\s\S]*CineMAS/],
+  ["homepage cultural mood loader merges city mood pools", /function loadHomepageCulturalMoodEntries[\s\S]*mergeHomepageCulturalMoodEntries/],
+  ["homepage cultural entries cover every mood for Shanghai", /homepageCulturalMoodEntries[\s\S]*shanghai:\s*\{[\s\S]*music:\s*\[[\s\S]*reading:\s*\[[\s\S]*film:\s*\[[\s\S]*series:\s*\[[\s\S]*design:\s*\[[\s\S]*artist:\s*\[/],
+  ["homepage cultural entries cover every mood for Chengdu", /homepageCulturalMoodEntries[\s\S]*chengdu:\s*\{[\s\S]*music:\s*\[[\s\S]*reading:\s*\[[\s\S]*film:\s*\[[\s\S]*series:\s*\[[\s\S]*design:\s*\[[\s\S]*artist:\s*\[/],
+  ["homepage cultural entries cover every mood for Abu Dhabi", /homepageCulturalMoodEntries[\s\S]*abudhabi:\s*\{[\s\S]*music:\s*\[[\s\S]*reading:\s*\[[\s\S]*film:\s*\[[\s\S]*series:\s*\[[\s\S]*design:\s*\[[\s\S]*artist:\s*\[/],
+  ["homepage cultural entries add niche music bookstore theatre and cinema anchors", /homepageCulturalMoodEntries[\s\S]*fRUITYSHOP[\s\S]*The Mix Place[\s\S]*Theatre YOUNG[\s\S]*NU SPACE[\s\S]*Laishuxia[\s\S]*Comic Book Ren[\s\S]*Berklee Abu Dhabi[\s\S]*Cafe Arabia[\s\S]*CineMAS/],
+  ["deep homepage culture sources record fresh music bookstore theatre film anchors", /const homepageDeepCultureSourceRegistry[\s\S]*Yuyintang Music Town[\s\S]*Sinan Books Poetry Store[\s\S]*You Xing Bookstore[\s\S]*Warehouse421[\s\S]*Abu Dhabi Festival/],
+  ["deep homepage culture entries are generated from source-backed signals", /const homepageDeepCultureSignals[\s\S]*function homepageDeepCultureEntries[\s\S]*loadHomepageDeepCultureMoodEntries[\s\S]*mergeHomepageDeepCultureMoodEntries/],
+  ["homepage cultural recommendations are at least tripled", homepageStats.allMoodItems >= 234 ? /./ : /$a/],
+  ["every launch city has deep homepage recommendations for every mood", homepageStats.allCitiesDeep ? /./ : /$a/],
   ["city pass category is defined before 秘境探索", /id:\s*"featured"[\s\S]*?name:\s*"城市通行证"[\s\S]*?id:\s*"quest"[\s\S]*?name:\s*"秘境探索"/],
   ["city pass category has distinct styling hooks", /featuredLayerVisual|is-featured-layer|--featured-accent/],
   ["featured map pass data includes multi-city issues", /featuredPassMaps[\s\S]*?shanghai[\s\S]*?chengdu[\s\S]*?abudhabi/],
@@ -133,7 +159,7 @@ const checks = [
   ["home route reveal remains visible through the staged animation", /revealTimer\s*=\s*setTimeout\([\s\S]*\},\s*1050\)/],
   ["home route reveal avoids the old scan-strip loader", { not: /route-scan|routeScan/ }],
   ["old envelope route reveal markup is removed", { not: /envelope-back|envelope-fold|envelope-flap|tear-line|pull-tab/ }],
-  ["local prototype data uses a reset version", /LOOP_DATA_VERSION[\s\S]*20260618-rich-demo-v1[\s\S]*resetPrototypeStorageIfNeeded/],
+  ["local prototype data uses a reset version", /LOOP_DATA_VERSION[\s\S]*20260624-deep-culture-v1[\s\S]*resetPrototypeStorageIfNeeded/],
   ["default simulated records are varied and not duplicated filler", /defaultRecords\(\)[\s\S]*上海低光夜游地图[\s\S]*凌晨便利店霓虹短线[\s\S]*阿布扎比海风白墙记录/],
   ["profile ongoing city passes are compact and horizontally paged", /profile-pass-list[\s\S]*grid-auto-flow:\s*column[\s\S]*grid-auto-columns|profile-pass-list\.is-compact/],
   ["profile city pass more opens categorized pass library", /passMapButton[\s\S]*看更多|openAccountSheet\("passes"\)|renderPassLibraryPanel|pass-library-tabs/],
@@ -167,8 +193,8 @@ const checks = [
   ["pre-purchase screen does not show purchase-to-redeem buttons", { not: /购买后核销/ }],
   ["there is no continue payment or saved pending state", { not: /继续支付|pending_payment|待支付订单|未支付/ }],
   ["featured pass styles exist", /\.featured-pass|\.pass-stop|\.profile-pass/],
-  ["stylesheet cache key changed", /styles\.css\?v=20260624-pass-price/],
-  ["script cache key changed", /script\.js\?v=20260624-pass-price/]
+  ["stylesheet cache key remains current", /styles\.css\?v=20260624-pass-price/],
+  ["script cache key changed for deep homepage cultural seed data", /script\.js\?v=20260624-deep-culture/]
 ];
 
 const combined = `${index}\n${script}\n${styles}\n${favicon}`;
@@ -182,3 +208,38 @@ if (failures.length) {
 }
 
 console.log("Featured pass prototype checks passed.");
+
+function readHomepageStats() {
+  const dataPart = script.slice(0, script.indexOf("const state = {"));
+  const helpers = `
+function place(id, layer, x, y, title, desc) { return { id, layer, x, y, title, desc }; }
+function route(id, layer, code, title, desc, stops, duration, budget, bestFor, distance, hot) { return { id, layer, code, title, desc, stops, duration, budget, bestFor, distance, hot }; }
+function passStop(id, store, area, benefit, desc, hours, routeRole) { return { id, store, area, benefit, desc, hours, routeRole }; }
+function featuredPassMap({ id, city, code, title, issue, theme, desc, duration, distance, originalPrice, price, validDays, bestFor, hot, benefits }) { return { id, layer: "featured", code, title, issue, theme, desc, stops: benefits.map((item) => item.store), duration, budget: price, bestFor, distance, hot, city, isFeaturedPass: true, originalPrice, price, validDays, benefits }; }
+function secret(code, title, clue, mode, duration, distance = 1.2, area = "附近") { return { code, title, clue, mode, duration, distance, area }; }
+function spot(kicker, title, area, time, desc, tags) { return { kicker, title, area, time, desc, tags }; }
+function inspirationItem(title, meta, layers, line, spotArgs, art = "") { return { title, meta, layers, line, spot: spot(...spotArgs), art }; }
+function normalizeStop(stop) { return String(stop || "").trim().toLowerCase(); }
+function uniqueStops(stops) { const seen = new Set(); return stops.filter((stop) => { const key = normalizeStop(stop); if (!key || seen.has(key)) return false; seen.add(key); return true; }); }
+`;
+  const report = `
+const cityKeys = Object.keys(cities);
+const requiredMoodIds = moods.map((item) => item.id);
+const moodByCity = Object.fromEntries(cityKeys.map((cityKey) => {
+  const moodMap = inspirationPools[cityKey] || {};
+  return [cityKey, Object.fromEntries(requiredMoodIds.map((moodId) => [moodId, (moodMap[moodId] || []).length]))];
+}));
+const cityMoodItems = cityKeys.reduce((sum, cityKey) => {
+  return sum + Object.values(inspirationPools[cityKey] || {}).reduce((moodSum, entries) => moodSum + entries.length, 0);
+}, 0);
+const defaultMoodItems = Object.values(inspirationPools.default || {}).reduce((sum, entries) => sum + entries.length, 0);
+globalThis.__homepageStats = {
+  allMoodItems: cityMoodItems + defaultMoodItems,
+  moodByCity,
+  allCitiesDeep: cityKeys.every((cityKey) => requiredMoodIds.every((moodId) => ((inspirationPools[cityKey] || {})[moodId] || []).length >= 10))
+};
+`;
+  const context = {};
+  vm.runInNewContext(`${helpers}\n${dataPart}\n${report}`, context);
+  return context.__homepageStats;
+}

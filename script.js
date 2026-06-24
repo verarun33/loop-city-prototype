@@ -8,7 +8,7 @@ const palette = {
 
 const AUTH_USERS_KEY = "loop-city-users";
 const AUTH_SESSION_KEY = "loop-city-session";
-const LOOP_DATA_VERSION = "20260618-rich-demo-v1";
+const LOOP_DATA_VERSION = "20260624-deep-culture-v1";
 const LOOP_DATA_VERSION_KEY = "loop-city-data-version";
 const DEMO_ACCOUNT = "demo@loop.city";
 const DEMO_PASSWORD = "loop2026";
@@ -873,6 +873,934 @@ const mockLiveFeeds = {
     { title: "真实市场", layers: ["market", "foodie", "quest", "photography"], areas: ["Mina", "Al Hosn"], tone: "市场、声音、生活现场" }
   ]
 };
+
+// Source URLs keep the public-data seed traceable while the UI stays editorial.
+const publicSourceRegistry = {
+  shanghai: [
+    { label: "Shanghai official tourist attractions", url: "https://www.meet-in-shanghai.net/en/100-recommended-tourist-attractions-in-shanghai/" },
+    { label: "Power Station of Art guide", url: "https://www.meet-in-shanghai.net/en/guide/power-station-of-art-the-first-staterun-museum-of-contemporary-art-055343/" },
+    { label: "West Bund Museum", url: "https://wbmshanghai.com/" },
+    { label: "Fotografiska Shanghai", url: "https://shanghai.fotografiska.com/en" },
+    { label: "Tsutaya Books Shanghai government listing", url: "https://english.shanghai.gov.cn/en-BookstoresLibraries/20231220/4b3022baf2eb4265a10d31110a494dcf.html" },
+    { label: "Long Museum", url: "https://www.thelongmuseum.org/en/" }
+  ],
+  chengdu: [
+    { label: "A4 Art Museum visit page", url: "https://www.a4artmuseum.com/en/visit/plan-your-visit/" },
+    { label: "Chengdu Museum introduction", url: "https://www.cdmuseum.com/en/jianjie.html" },
+    { label: "Dongjiao Memory public guide", url: "https://www.chinaexploration.com/TopAttractions/Sichuan-attractions/dongjiao-memory.html" },
+    { label: "NU SPACE Chengdu listing", url: "https://chengdu-expat.com/places/nu-space/" },
+    { label: "Sichuan Museum collection page", url: "https://artsandculture.google.com/partner/sichuan-museum" },
+    { label: "Wangjianglou Park public listing", url: "https://www.trip.com/travel-guide/attraction/chengdu/wangjianglou-park-24653429/" }
+  ],
+  abudhabi: [
+    { label: "Visit Abu Dhabi culture guide", url: "https://visitabudhabi.ae/en/things-to-do/culture" },
+    { label: "Louvre Abu Dhabi", url: "https://www.louvreabudhabi.ae/" },
+    { label: "Qasr Al Hosn", url: "https://visitabudhabi.ae/en/things-to-do/culture/heritage/qasr-al-hosn" },
+    { label: "421 Arts Campus", url: "https://www.421.online/about/" },
+    { label: "The Arts Center at NYU Abu Dhabi", url: "https://nyuad.nyu.edu/en/about/the-nyuad-campus/arts-center.html" },
+    { label: "CLYMB Abu Dhabi", url: "https://www.clymbabudhabi.com/" }
+  ]
+};
+
+const publicSourcePois = {
+  shanghai: {
+    art: ["West Bund Museum", "Power Station of Art", "Long Museum West Bund", "Fotografiska Shanghai", "West Bund Art Center", "Yuz Museum", "Shanghai Museum East", "Rockbund Art Museum"],
+    bookstore: ["Tsutaya Books Columbia Circle", "Sinan Books", "Duoyun Books Flagship Store", "Shanghai Library East", "Hengshan Heji", "Jian Tou Bookstore"],
+    architecture: ["Wukang Mansion", "Sihang Warehouse", "Rockbund Historical Buildings", "Columbia Circle", "Moller Villa", "Shanghai Grand Theatre", "Zhangyuan", "Shanghai Postal Museum"],
+    theatre: ["Shanghai Grand Theatre", "YOUNG Theater", "Theatre YOUNG", "Shanghai Dramatic Arts Centre", "Majestic Theatre", "Asia Building Star Space"],
+    music: ["JZ Club", "Blue Note Shanghai", "Modern Sky LAB Shanghai", "MAO Livehouse Shanghai", "Yuyintang", "Jazz at Lincoln Center Shanghai"],
+    photography: ["Fotografiska Shanghai", "Sihang Warehouse", "Suzhou Creek bridge view", "Rockbund riverfront", "West Bund riverside", "Shanghai Postal Museum facade"],
+    citywalk: ["Wukang Road", "Anfu Road", "Yuanmingyuan Road", "Suzhou Creek Walk", "Columbia Circle", "Sinan Mansions"],
+    market: ["M50 Creative Park", "West Bund Art & Design fair area", "TX Huaihai pop-up market", "Columbia Circle weekend market", "Yuyuan Garden Malls", "Zhangyuan lifestyle market"],
+    quest: ["Wukang Mansion corner", "Sihang Warehouse river wall", "Rockbund old sign", "Columbia Circle side gate", "Power Station smokestack", "Fotografiska spiral stair"]
+  },
+  chengdu: {
+    art: ["A4 Art Museum", "Chengdu Museum", "Sichuan Museum", "Dongjiao Memory", "Luxelakes Eco Art Center", "Chengdu Contemporary Image Museum", "Blue Roof Museum", "Times Art Museum Chengdu"],
+    bookstore: ["Fangsuo Chengdu", "Wenxuan BOOKS", "Sisyphe Books Taikoo Li", "Dokuya Bookstore", "Sanlian Taofen Bookstore Chengdu", "Chengdu Museum book corner"],
+    music: ["NU SPACE", "Little Bar Fangqin", "MAO Livehouse Chengdu", "CH8 Livehouse", "Zhenghuo Art Center", "Berklee-style rehearsal room Chengdu"],
+    theatre: ["Sichuan Grand Theatre", "Chengdu City Music Hall", "Luhu Water Theatre", "Mahua FunAge Global Center Theatre", "Dongjiao Memory Performance Center", "Jinjiang Theatre"],
+    architecture: ["Dongjiao Memory", "Kuanzhai Alley", "Daci Temple", "Taikoo Li Chengdu", "Wangjianglou Park", "Chengdu Museum", "Sichuan University Huaxiba", "Eastern Suburb factory facade"],
+    tea: ["Wangjianglou Park", "People's Park Heming Teahouse", "Wenshu Monastery tea courtyard", "Yulin courtyard tea seat", "Huanhuaxi tea stop", "Jiuyan Bridge riverside tea"],
+    market: ["Dongjiao Memory market", "Kuixinglou Street", "Yulin lifestyle market", "Luxelakes weekend market", "Wangping Street shops", "Taikoo Li pop-up lane"],
+    citywalk: ["Yulin Road", "Kuixinglou Street", "Wangping Street", "Dongjiao Memory", "Wangjianglou Park", "Daci Temple lane"],
+    quest: ["Wangjianglou bamboo shadow", "Dongjiao Memory side gate", "Kuixinglou small storefront", "Yulin second doorplate", "Taikoo Li hidden courtyard", "Chengdu Museum evening facade"]
+  },
+  abudhabi: {
+    art: ["Louvre Abu Dhabi", "Manarat Al Saadiyat", "421 Arts Campus", "Cultural Foundation", "NYUAD Art Gallery", "teamLab Phenomena Abu Dhabi", "Natural History Museum Abu Dhabi", "House of Artisans"],
+    architecture: ["Qasr Al Hosn", "Qasr Al Watan", "Sheikh Zayed Grand Mosque", "Louvre Abu Dhabi Dome", "Etihad Towers", "Aldar HQ", "Abrahamic Family House", "Zayed National Museum"],
+    theatre: ["The Arts Center at NYU Abu Dhabi", "Cultural Foundation Theatre", "Etihad Arena", "Manarat Al Saadiyat Auditorium", "Berklee Abu Dhabi", "Abu Dhabi National Theatre"],
+    music: ["Berklee Abu Dhabi", "The Arts Center at NYU Abu Dhabi", "Etihad Arena", "Cultural Foundation", "Manarat Al Saadiyat", "NYUAD Black Box"],
+    climb: ["CLYMB Abu Dhabi", "Adventure HQ", "Circuit X Hudayriyat", "Yas Island activity zone", "Al Qana climbing wall", "Hudayriyat sports hub"],
+    riding: ["Abu Dhabi Equestrian Club", "Al Forsan Equestrian", "Mandara Equestrian Club", "Dhabian Equestrian Club", "Al Wathba riding experience", "Saadiyat riding trail"],
+    market: ["Mina Market", "Al Mina Fish Market", "Mina Zayed plant market", "World Trade Center Souk", "Souq Al Qattara", "Hudayriyat food market"],
+    wellness: ["Jubail Mangrove Park", "Corniche Beach", "Saadiyat Beach", "Eastern Mangroves", "Hudayriyat Beach", "Mamsha Al Saadiyat promenade"],
+    quest: ["Qasr Al Hosn watchtower", "Louvre Abu Dhabi rain of light", "421 Arts Campus warehouse wall", "Mina Zayed market sound", "Corniche evening wind", "Manarat Al Saadiyat courtyard"]
+  }
+};
+
+const publicSourcePlaces = {
+  shanghai: [
+    place("sh-src-wbm", "art", 70, 76, "West Bund Museum", "龙腾大道上的西岸艺术锚点，适合和滨江步行连起来。"),
+    place("sh-src-psa", "art", 58, 82, "Power Station of Art", "由旧电厂更新而来的当代艺术场馆。"),
+    place("sh-src-fotografiska", "photography", 30, 30, "Fotografiska Shanghai", "苏州河边的影像艺术中心，适合低光和夜间灵感。"),
+    place("sh-src-tsutaya", "bookstore", 44, 26, "Tsutaya Books Columbia Circle", "上生新所里的书店、咖啡和建筑更新样本。"),
+    place("sh-src-wukang", "architecture", 25, 58, "Wukang Mansion", "衡复街区建筑观察的经典起点。"),
+    place("sh-src-sihang", "quest", 34, 34, "Sihang Warehouse", "苏州河边更硬朗的历史墙面和夜色线索。")
+  ],
+  chengdu: [
+    place("cd-src-a4", "art", 70, 30, "A4 Art Museum", "麓湖边的展览、湖面和低饱和街区。"),
+    place("cd-src-museum", "art", 48, 42, "Chengdu Museum", "天府广场旁的城市历史入口。"),
+    place("cd-src-dongjiao", "architecture", 68, 64, "Dongjiao Memory", "旧厂房、展演和市集混合的城市更新场。"),
+    place("cd-src-nuspace", "music", 30, 46, "NU SPACE", "奎星楼附近的现场音乐入口。"),
+    place("cd-src-wangjiang", "tea", 18, 28, "Wangjianglou Park", "竹影、茶和河边慢走的成都样本。"),
+    place("cd-src-fangsuo", "bookstore", 37, 28, "Fangsuo Chengdu", "太古里地下书店，把阅读和商业街区揉在一起。")
+  ],
+  abudhabi: [
+    place("ad-src-louvre", "art", 42, 34, "Louvre Abu Dhabi", "穹顶、海面和艺术馆组成的 Saadiyat 核心。"),
+    place("ad-src-qasrhosn", "architecture", 28, 70, "Qasr Al Hosn", "城市历史和手工艺叙事的老城锚点。"),
+    place("ad-src-manarat", "art", 48, 30, "Manarat Al Saadiyat", "Saadiyat 的展览、讲座和社区艺术中心。"),
+    place("ad-src-421", "art", 30, 72, "421 Arts Campus", "Mina Zayed 的仓库艺术园区。"),
+    place("ad-src-nyuad", "theatre", 52, 64, "The Arts Center at NYU Abu Dhabi", "Saadiyat 岛上的剧场和现场艺术空间。"),
+    place("ad-src-clymb", "climb", 88, 58, "CLYMB Abu Dhabi", "Yas 岛的室内攀岩和飞行体验。")
+  ]
+};
+
+const publicSourceRoutes = {
+  shanghai: [
+    route("sh-public-art-01", "art", "SH-PUB-01", "西岸艺术馆连线", "从 West Bund Museum 到 Long Museum West Bund，把龙腾大道、展厅和江风排成一条真实艺术线。", ["West Bund Museum", "West Bund Art Center", "Long Museum West Bund", "Yuz Museum", "徐汇滨江"], "4h", "¥160", "看展半日", 2.6, 93),
+    route("sh-public-architecture-02", "architecture", "SH-PUB-02", "武康大楼到上生新所", "从 Wukang Mansion 出发，沿衡复街区、安福路和 Columbia Circle 看一条建筑更新线。", ["Wukang Mansion", "Wukang Road", "Anfu Road", "Columbia Circle", "Tsutaya Books Columbia Circle"], "3h", "¥80", "建筑观察", 2.3, 91),
+    route("sh-public-photo-03", "photography", "SH-PUB-03", "苏州河影像夜线", "Fotografiska、Sihang Warehouse 和外滩源旧建筑会让苏州河夜色更有层次。", ["Fotografiska Shanghai", "Sihang Warehouse", "Suzhou Creek bridge view", "Rockbund Historical Buildings", "Waibaidu Bridge"], "2.5h", "¥120", "夜间拍照", 2.0, 88),
+    route("sh-public-theatre-04", "theatre", "SH-PUB-04", "人民广场剧场前后", "上海大剧院、人民公园和老影院街角，把正式演出后的城市中心留久一点。", ["Shanghai Grand Theatre", "People's Park edge", "Majestic Theatre", "Nanjing West Road", "Da Guangming Cinema"], "3h", "¥220", "演出夜", 1.8, 84)
+  ],
+  chengdu: [
+    route("cd-public-art-01", "art", "CD-PUB-01", "麓湖 A4 与湖边展厅", "从 A4 Art Museum 开始，把湖边、展览和安静街区串成一条不赶路的下午。", ["A4 Art Museum", "Luxelakes Eco Art Center", "麓湖水边", "湖边咖啡", "麓镇小路"], "4h", "¥150", "湖边看展", 2.8, 90),
+    route("cd-public-music-02", "music", "CD-PUB-02", "NU SPACE 到小酒馆", "从 NU SPACE 的现场感切到玉林的小酒馆，让成都夜晚从音乐慢慢散开。", ["NU SPACE", "Kuixinglou Street", "Little Bar Fangqin", "Yulin night road", "深夜甜品窗口"], "3.5h", "¥180", "现场散场", 2.1, 92),
+    route("cd-public-architecture-03", "architecture", "CD-PUB-03", "东郊记忆旧厂房线", "Dongjiao Memory 的厂房墙面、演出入口和临时市集，很适合看成都城市更新的材质。", ["Dongjiao Memory", "旧厂房墙面", "Dongjiao Memory Performance Center", "周末市集", "建设南支路夜风"], "3h", "¥100", "城市更新", 2.2, 87),
+    route("cd-public-tea-04", "tea", "CD-PUB-04", "望江楼竹影茶线", "Wangjianglou Park、竹影和河边慢走，把茶馆生活做成很轻的一条路线。", ["Wangjianglou Park", "竹影茶座", "锦江河边慢走", "Jiuyan Bridge", "Yulin courtyard tea seat"], "2.5h", "¥60", "慢下午", 1.6, 86)
+  ],
+  abudhabi: [
+    route("ad-public-art-01", "art", "AD-PUB-01", "Saadiyat 文化区光影线", "Louvre Abu Dhabi、Manarat 和 NYUAD 的现场空间，把 Saadiyat 从观光点变成一条文化路线。", ["Louvre Abu Dhabi", "Manarat Al Saadiyat", "The Arts Center at NYU Abu Dhabi", "NYUAD Art Gallery", "Mamsha Al Saadiyat promenade"], "4h", "AED 180", "日落前", 3.1, 94),
+    route("ad-public-heritage-02", "architecture", "AD-PUB-02", "老城堡到宫殿建筑", "Qasr Al Hosn、House of Artisans 和 Qasr Al Watan 让阿布扎比的历史和仪式感连起来。", ["Qasr Al Hosn", "House of Artisans", "Cultural Foundation", "Qasr Al Watan", "Corniche evening wind"], "5h", "AED 120", "历史建筑", 6.8, 90),
+    route("ad-public-art-03", "art", "AD-PUB-03", "Mina Zayed 仓库艺术线", "421 Arts Campus 和 Mina Market 之间，是艺术园区和真实生活现场的连接。", ["421 Arts Campus", "Mina Market", "Al Mina Fish Market", "Mina Zayed plant market", "港口边界"], "3h", "AED 80", "真实城市", 2.4, 86),
+    route("ad-public-climb-04", "climb", "AD-PUB-04", "Yas 岛运动后收尾", "CLYMB Abu Dhabi 之后，把运动、电影和海湾夜路串成更轻的一天。", ["CLYMB Abu Dhabi", "Yas Mall", "VOX Cinemas Yas Mall", "Yas Bay Waterfront", "晚餐收尾"], "4h", "AED 260", "想动一下", 2.0, 84)
+  ]
+};
+
+const publicSourceLiveFeeds = {
+  shanghai: [
+    { title: "公开来源 / 西岸艺术带", layers: ["art", "architecture", "photography", "citywalk"], areas: ["西岸", "龙腾大道", "苏州河"], tone: "美术馆、江风、旧工业边界" },
+    { title: "公开来源 / 衡复建筑散步", layers: ["architecture", "bookstore", "coffee", "quest"], areas: ["武康路", "安福路", "上生新所"], tone: "梧桐、转角、书店和旧楼" },
+    { title: "公开来源 / 苏州河夜影像", layers: ["photography", "night", "art", "quest"], areas: ["光复路", "四行仓库", "外滩源"], tone: "仓库、反光、低光影像" }
+  ],
+  chengdu: [
+    { title: "公开来源 / 麓湖展厅下午", layers: ["art", "coffee", "wellness", "citywalk"], areas: ["麓湖", "A4", "麓镇"], tone: "湖边、展厅、低饱和街区" },
+    { title: "公开来源 / 东郊旧厂房", layers: ["architecture", "music", "market", "photography"], areas: ["东郊记忆", "建设南支路"], tone: "工业墙面、现场、周末市集" },
+    { title: "公开来源 / 玉林和望江楼", layers: ["tea", "drink", "bookstore", "quest"], areas: ["玉林", "望江楼", "九眼桥"], tone: "竹影、盖碗、夜风" }
+  ],
+  abudhabi: [
+    { title: "公开来源 / Saadiyat 文化区", layers: ["art", "architecture", "theatre", "wellness"], areas: ["Saadiyat", "Mamsha", "Louvre"], tone: "穹顶、白墙、海风和现场" },
+    { title: "公开来源 / 老城与手工艺", layers: ["architecture", "quest", "art", "market"], areas: ["Qasr Al Hosn", "Cultural Foundation", "Corniche"], tone: "堡垒、手工艺、城市历史" },
+    { title: "公开来源 / Yas 运动夜", layers: ["climb", "cinema", "night", "foodie"], areas: ["Yas", "Yas Bay"], tone: "室内攀岩、电影、海湾夜风" }
+  ]
+};
+
+const publicSourceMoodEntries = {
+  shanghai: {
+    design: [
+      inspirationItem("Tsutaya Books Columbia Circle", "书店、旧建筑、生活方式", ["bookstore", "architecture", "coffee"], "今天适合去看一本书如何住进一栋旧建筑。", ["在上海看见设计", "Tsutaya Books Columbia Circle", "上生新所", "午后", "书店、咖啡和建筑更新放在一起，会让城市有更清楚的层次。", ["书店", "建筑", "咖啡"]])
+    ],
+    artist: [
+      inspirationItem("Power Station of Art", "旧电厂、双年展、当代艺术", ["art", "architecture", "citywalk"], "今天适合从一座旧电厂开始看上海的当代艺术面。", ["在上海靠近艺术现场", "Power Station of Art", "黄浦滨江", "下午", "旧电厂体量和当代展览之间，有一种很上海的城市更新感。", ["当代艺术", "旧电厂", "滨江"]])
+    ]
+  },
+  chengdu: {
+    artist: [
+      inspirationItem("A4 Art Museum", "湖边、展览、城市文化", ["art", "wellness", "coffee"], "今天适合把展览和湖边慢走放在同一条线上。", ["在成都靠近艺术现场", "A4 Art Museum", "麓湖", "午后", "展厅、湖面和低饱和街区会把成都的慢变得更具体。", ["展厅", "湖边", "慢走"]])
+    ],
+    music: [
+      inspirationItem("NU SPACE 的散场前后", "现场、街区、夜风", ["music", "drink", "night"], "今天适合让现场音乐带你走出惯性夜路。", ["在成都听现场", "NU SPACE", "奎星楼街", "演出夜", "现场结束后沿小街多走十分钟，成都的夜会更有后劲。", ["现场", "散场", "夜风"]])
+    ]
+  },
+  abudhabi: {
+    artist: [
+      inspirationItem("Louvre Abu Dhabi 的穹顶光", "光影、海面、白墙", ["art", "architecture", "wellness"], "今天适合看光如何把一座城市变安静。", ["在阿布扎比靠近艺术现场", "Louvre Abu Dhabi", "Saadiyat", "日落前", "穹顶光、海面和白墙边界，会让一条路线像一张干净的明信片。", ["光影", "穹顶", "海风"]])
+    ],
+    design: [
+      inspirationItem("Qasr Al Hosn 的手工艺线索", "历史、织物、城市记忆", ["architecture", "quest", "art"], "今天适合从老城堡和手工艺里读一座城市。", ["在阿布扎比看见设计", "Qasr Al Hosn", "老城核心", "上午", "堡垒、手工艺和城市历史会把阿布扎比从现代天际线里拉回来。", ["历史", "手工艺", "老城"]])
+    ]
+  }
+};
+
+const nicheFeedbackSourceRegistry = {
+  shanghai: [
+    { label: "SmartShanghai fRUITYSHOP Record Store", url: "https://www.smartshanghai.com/venue/34362/fruityshop_record_store" },
+    { label: "SmartShanghai Jodo Space record store", url: "https://www.smartshanghai.com/venue/32209/jodo_space" },
+    { label: "SmartShanghai record shops collection", url: "https://www.smartshanghai.com/articles/music/the-collection-record-shops-in-shanghai" },
+    { label: "TimeOut Shanghai Raccoon Records", url: "https://www.timeoutshanghai.com/features/Music-Music/105194/5-super-chill-venues-to-listen-to-vinyl-records-in-Shanghai.html" },
+    { label: "Reddit Shanghai bookstore feedback", url: "https://www.reddit.com/r/shanghai/comments/iu8psm/best_bookshops_for_englishwestern_books/" }
+  ],
+  chengdu: [
+    { label: "Chengdu-Expat Comic Book Ren", url: "https://chengdu-expat.com/places/comic-book-ren/" },
+    { label: "Chengdu-Expat NU SPACE", url: "https://chengdu-expat.com/places/nu-space/" },
+    { label: "China Books Review Chengdu independent bookstores", url: "https://chinabooksreview.com/2026/01/29/bookstores/" },
+    { label: "MCLC You Xing Bookstore reprieve", url: "https://u.osu.edu/mclc/2025/11/12/you-xing-bookstore-gets-reprieve/" },
+    { label: "Reddit Chengdu hidden gems", url: "https://www.reddit.com/r/Chengdu/comments/c1mor5/does_anyone_want_to_share_their_hidden_gems_of/" }
+  ],
+  abudhabi: [
+    { label: "Reddit Abu Dhabi third spaces", url: "https://www.reddit.com/r/abudhabi/comments/14anlzz/where_is_your_third_space/" },
+    { label: "Tripadvisor Cafe Arabia community reviews", url: "https://www.tripadvisor.com/Restaurant_Review-g294013-d2016671-Reviews-Cafe_Arabia-Abu_Dhabi_Emirate_of_Abu_Dhabi.html" },
+    { label: "FLTR Third Place interview", url: "https://fltrmagazine.com/2022/07/13/a-cafe-borne-from-a-need-for-connection-and-disconnection/" },
+    { label: "MiZa The Alley community event", url: "https://www.miza.ae/event-details-registration/the-alley-season-04/form" },
+    { label: "Tripadvisor Ritual Cafe and Studio review", url: "https://www.tripadvisor.com/Restaurant_Review-g294013-d27454295-Reviews-Ritual_Cafe_And_Studio-Abu_Dhabi_Emirate_of_Abu_Dhabi.html" }
+  ]
+};
+
+const nicheFeedbackPois = {
+  shanghai: {
+    music: ["fRUITYSHOP Record Store", "Jōdo Space", "Raccoon Records", "Daily Vinyl call-ahead room", "Uptown Records n' Beer", "The Melting Pot"],
+    bookstore: ["The Mix Place", "BOOCUP", "1984 Book Store", "Lekai Books", "Guang Hai Bookstore", "Garden Books"],
+    vintage: ["fRUITYSHOP Changle Road", "Uptown Records n' Beer", "Raccoon Records merch shelf", "Daily Vinyl guesthouse crates"],
+    quest: ["Jōdo Space industrial park entrance", "Raccoon Records above BOOCUP", "Daily Vinyl call-ahead door", "The Mix Place magazine floor"]
+  },
+  chengdu: {
+    bookstore: ["Comic Book Ren", "You Xing Bookstore", "Laishuxia Bookstore", "UTE Bookshop", "AA Bookstore", "Dunbar lecture bar"],
+    anime: ["Comic Book Ren", "Tianfu International Animation City S12", "IFS tiny alley comic route", "Chenghua animation community"],
+    music: ["NU SPACE", "MiNTOWN creative workshop", "Little Bar Fangqin", "Sonderia Bar"],
+    tea: ["Wangjianglou bamboo tea ground", "Yulin courtyard tea seat", "Sonderia daytime reading corner", "Dunbar outdoor lecture stools"],
+    quest: ["Comic Book Ren third-floor entrance", "You Xing apricot-tree story", "Laishuxia reading event board", "Kuixinglou after-gig alley"]
+  },
+  abudhabi: {
+    coffee: ["The Third Place Cafe", "Cafe Arabia library floor", "Ritual Cafe & Studio", "Beans & Pages", "Alkalime", "Art House Cafe"],
+    bookstore: ["Cafe Arabia library floor", "Beans & Pages", "The Third Place library room", "Cultural Foundation reading corner"],
+    workshop: ["The Alley at MiZa", "MiZa maker containers", "Cultural Foundation classes", "421 Arts Campus talks", "NYUAD Arts Center workshops"],
+    boardgame: ["The Third Place upstairs room", "Cafe Arabia rooftop table", "Zayed Sports City bowling", "Ritual Cafe & Studio group table"],
+    quest: ["The Alley container row", "Cafe Arabia book-swap shelf", "The Third Place backyard", "Ritual Cafe mangrove view"]
+  }
+};
+
+const nicheFeedbackPlaces = {
+  shanghai: [
+    place("sh-niche-fruity", "music", 52, 40, "fRUITYSHOP Record Store", "长乐路上的唱片小店，公开店铺页把它描述成从 hip hop、jazz 到 city pop 都会出现的 curated room。"),
+    place("sh-niche-jodo", "music", 57, 74, "Jōdo Space", "局门路工业园里的地下音乐和本土发行小空间，适合做更小众的唱片线索。"),
+    place("sh-niche-raccoon", "vintage", 28, 54, "Raccoon Records", "岳阳路 BOOCUP 楼上的唱片点位，社区和媒体反馈都更像熟人推荐。"),
+    place("sh-niche-mixplace", "bookstore", 32, 58, "The Mix Place", "把书、杂志、影像和生活方式混在一起的书店空间，比传统景点更适合慢逛。")
+  ],
+  chengdu: [
+    place("cd-niche-comicren", "anime", 44, 38, "Comic Book Ren", "成都二次元和进口漫画的公开口碑点，适合把漫画店做成真实探索锚点。"),
+    place("cd-niche-youxing", "bookstore", 36, 46, "You Xing Bookstore", "社区文章里被反复提到的独立书店，重点不是打卡，而是活动和附近居民的停留。"),
+    place("cd-niche-laishuxia", "bookstore", 40, 42, "Laishuxia Bookstore", "成都独立书店生态里的女性主义书店信号，适合读书会和小活动路线。"),
+    place("cd-niche-sonderia", "coffee", 29, 42, "Sonderia Bar", "旅人社区反馈里更偏松弛社交的 hostel bar，可以承接夜晚但不喧闹的路线。")
+  ],
+  abudhabi: [
+    place("ad-niche-third", "coffee", 54, 58, "The Third Place Cafe", "Corniche 附近的 third-space cafe，公开采访强调社区、后院和 library room。"),
+    place("ad-niche-cafearabia", "bookstore", 42, 68, "Cafe Arabia library floor", "用户点评里常提到书、艺术和三层空间，适合做安静读书节点。"),
+    place("ad-niche-miza", "workshop", 28, 70, "The Alley at MiZa", "Mina Zayed 的 container alley，公开活动页把它定位成创意人、pop-up 和 workshop 的社区空间。"),
+    place("ad-niche-ritual", "coffee", 58, 42, "Ritual Cafe & Studio", "Al Reem 的小型 cafe/studio，点评里有 warm lighting 和 relaxed vibe 的安静信号。")
+  ]
+};
+
+const nicheFeedbackRoutes = {
+  shanghai: [
+    route("sh-feedback-vinyl-01", "music", "SH-FB-01", "用户反馈唱片挖掘线", "从长乐路唱片小店到局门路工业园，再绕去岳阳路楼上唱片空间，避开最响亮的景点。", ["fRUITYSHOP Record Store", "Changle Road backstreet", "Jōdo Space", "Raccoon Records", "BOOCUP"], "3h", "¥120", "唱片慢翻", 2.4, 87),
+    route("sh-feedback-book-02", "bookstore", "SH-FB-02", "小众书店和杂志墙", "把 The Mix Place、BOOCUP 和老派独立书店放在同一条线，适合用户自己发现架子上的城市。", ["The Mix Place", "BOOCUP", "1984 Book Store", "Lekai Books", "Anfu Road side shelf"], "3.5h", "¥90", "书店绕行", 2.8, 84)
+  ],
+  chengdu: [
+    route("cd-feedback-comic-01", "anime", "CD-FB-01", "漫画人和小巷上楼线", "用 Comic Book Ren 做起点，把成都的二次元、动画社区和小巷上楼感连成一条不大众的路线。", ["Comic Book Ren", "Tianfu International Animation City S12", "Comic Book Ren third-floor entrance", "Chenghua animation community"], "2.5h", "¥70", "漫画店探索", 1.9, 86),
+    route("cd-feedback-book-02", "bookstore", "CD-FB-02", "有杏到来树下读书会", "从 You Xing 到 Laishuxia，再接一个户外 lecture bar，把成都独立书店的公共讨论感留出来。", ["You Xing Bookstore", "Laishuxia Bookstore", "Dunbar lecture bar", "UTE Bookshop"], "3h", "¥80", "读书会", 2.2, 85)
+  ],
+  abudhabi: [
+    route("ad-feedback-third-01", "coffee", "AD-FB-01", "第三空间安静工作线", "用户反馈里的 cafe 和 library floor 组合，更适合找一个能停下来的阿布扎比下午。", ["The Third Place Cafe", "Cafe Arabia library floor", "Ritual Cafe & Studio", "Beans & Pages"], "3h", "AED 90", "安静工作", 4.1, 85),
+    route("ad-feedback-maker-02", "workshop", "AD-FB-02", "MiZa 和创意社区线", "把 Mina Zayed 的 container alley、421 和 Cultural Foundation 串起来，走创意社区而不是常规观光线。", ["The Alley at MiZa", "MiZa maker containers", "421 Arts Campus talks", "Cultural Foundation classes"], "3.5h", "AED 120", "社区活动", 3.3, 86)
+  ]
+};
+
+const nicheFeedbackLiveFeeds = {
+  shanghai: [
+    { title: "用户反馈 / 唱片挖掘", layers: ["music", "vintage", "bookstore", "quest"], areas: ["长乐路", "局门路", "岳阳路"], tone: "楼上唱片、工业园入口、熟人推荐感" },
+    { title: "用户反馈 / 小众书店", layers: ["bookstore", "coffee", "vintage", "citywalk"], areas: ["安福路", "衡复", "BOOCUP"], tone: "杂志墙、书架、慢翻和街角咖啡" }
+  ],
+  chengdu: [
+    { title: "用户反馈 / 独立书店", layers: ["bookstore", "tea", "anime", "music"], areas: ["有杏", "来树下", "奎星楼"], tone: "读书会、漫画、户外讲座和夜场前后" },
+    { title: "用户反馈 / 漫画与现场", layers: ["anime", "music", "quest", "citywalk"], areas: ["天府动漫城", "奎星楼", "玉林"], tone: "进口漫画、上楼入口、livehouse 散场" }
+  ],
+  abudhabi: [
+    { title: "用户反馈 / 第三空间", layers: ["coffee", "bookstore", "workshop", "boardgame"], areas: ["Corniche", "Reem", "Mina Zayed"], tone: "library room、后院、暖光和安静桌面" },
+    { title: "用户反馈 / 创意容器街", layers: ["workshop", "art", "market", "quest"], areas: ["MiZa", "421", "Cultural Foundation"], tone: "container alley、pop-up、talks 和小型演出" }
+  ]
+};
+
+const nicheFeedbackMoodEntries = {
+  shanghai: {
+    music: [
+      inspirationItem("fRUITYSHOP 到 Jōdo 的唱片线", "长乐路、局门路、楼上空间", ["music", "vintage", "quest"], "今天适合把城市声音从唱片架里翻出来。", ["在上海翻一条唱片线", "fRUITYSHOP Record Store", "长乐路 / 局门路", "下午", "这些点不是地标，而是用户会互相转发的声音入口。", ["唱片", "小店", "地下音乐"]])
+    ],
+    design: [
+      inspirationItem("The Mix Place 的杂志墙", "书、杂志、影像、生活方式", ["bookstore", "fashion", "coffee"], "今天适合去看书架如何替一座城市做排版。", ["在上海找小众书店", "The Mix Place", "衡复街区", "午后", "比起大景点，混合型书店更容易把城市品味暴露出来。", ["杂志", "书店", "街区"]])
+    ]
+  },
+  chengdu: {
+    reading: [
+      inspirationItem("You Xing 到 Laishuxia 的读书会", "独立书店、公共讨论、社区活动", ["bookstore", "tea", "quest"], "今天适合去一间小书店听城市说话。", ["在成都找新的书店气味", "You Xing Bookstore", "社区街巷", "下午", "独立书店的闪光点常常不是装修，而是它把谁留在了同一张桌上。", ["独立书店", "读书会", "社区"]])
+    ],
+    series: [
+      inspirationItem("Comic Book Ren 的进口漫画架", "漫画、动画社区、上楼入口", ["anime", "bookstore", "quest"], "今天适合从漫画店出发，走一条不太像旅游的路线。", ["在成都翻漫画地图", "Comic Book Ren", "天府动漫城", "周末", "漫画店是很好用的城市雷达，它会指向一群真实存在的人。", ["漫画", "二次元", "小众店"]])
+    ]
+  },
+  abudhabi: {
+    reading: [
+      inspirationItem("Cafe Arabia 和 Third Place 的安静桌", "书、后院、library room", ["coffee", "bookstore", "wellness"], "今天适合找一个不需要解释自己的第三空间。", ["在阿布扎比停下来阅读", "The Third Place Cafe", "Corniche / Al Nahyan", "上午", "用户反馈里的 library floor 和 backyard 比热门地标更像日常生活的入口。", ["第三空间", "阅读", "咖啡"]])
+    ],
+    artist: [
+      inspirationItem("MiZa The Alley 的创意容器街", "pop-up、talks、workshop", ["workshop", "art", "market"], "今天适合去看创意社区如何临时占领一条巷子。", ["在阿布扎比靠近创意社区", "The Alley at MiZa", "Mina Zayed", "傍晚", "container alley 的价值不只是建筑，而是它允许很多小型活动同时发生。", ["创意社区", "pop-up", "workshop"]])
+    ]
+  }
+};
+
+const homepageCulturalSourceRegistry = {
+  shanghai: [
+    { label: "SmartShanghai fRUITYSHOP record store", url: "https://www.smartshanghai.com/venue/34362/fruityshop_record_store" },
+    { label: "SmartShanghai Blue Note Shanghai", url: "https://www.smartshanghai.com/venue/17577/blue_note_jazz_club_sichuan_bei_lu" },
+    { label: "SmartShanghai Theatre YOUNG", url: "https://www.smartshanghai.com/venue/28018/theatre_young" },
+    { label: "Meet in Shanghai Theatre YOUNG season", url: "https://www.meet-in-shanghai.net/en/news/a-young-season-of-diversity-and-crossover-705353/" },
+    { label: "Shanghai indie bookstore guide", url: "https://english.shanghai.gov.cn/en-BookstoresLibraries/20260422/c2ff0ece50d940838a35422c9629e311.html" }
+  ],
+  chengdu: [
+    { label: "Chengdu-Expat NU SPACE", url: "https://chengdu-expat.com/places/nu-space/" },
+    { label: "Chengdu-Expat Comic Book Ren", url: "https://chengdu-expat.com/places/comic-book-ren/" },
+    { label: "China Books Review Laishuxia and Chengdu bookstores", url: "https://chinabooksreview.com/2026/01/29/bookstores/" },
+    { label: "MCLC You Xing Bookstore", url: "https://u.osu.edu/mclc/2025/11/12/you-xing-bookstore-gets-reprieve/" },
+    { label: "Chengdu-Expat English-language bookstore guide", url: "https://chengdu-expat.com/finding-english-language-books-chengdu/" }
+  ],
+  abudhabi: [
+    { label: "Berklee Abu Dhabi public performances", url: "https://www.berklee.edu/berklee-abu-dhabi" },
+    { label: "The Arts Center at NYU Abu Dhabi", url: "https://nyuad.nyu.edu/en/about/the-nyuad-campus/arts-center.html" },
+    { label: "Manarat Al Saadiyat CineMAS", url: "https://manaratalsaadiyat.ae/en/seeanddo/cinemas/" },
+    { label: "Manarat Al Saadiyat weekly cultural schedule", url: "https://manaratalsaadiyat.ae/en/seeanddo/weeklyschedule/" },
+    { label: "The Third Place Cafe official site", url: "https://www.thethirdplaceuae.com/" },
+    { label: "Cafe Arabia community reviews", url: "https://www.tripadvisor.com/Restaurant_Review-g294013-d2016671-Reviews-Cafe_Arabia-Abu_Dhabi_Emirate_of_Abu_Dhabi.html" }
+  ]
+};
+
+const homepageCulturalMoodEntries = {
+  shanghai: {
+    music: [
+      inspirationItem("fRUITYSHOP 的 city pop crate", "唱片、DJ、长乐路", ["music", "vintage", "citywalk"], "今天适合从一张唱片开始，让路线自己往小街里长。", ["在上海听这首歌", "fRUITYSHOP Record Store", "长乐路", "下午", "公开店铺页里的 hip hop、jazz、city pop 和电子乐信号，很适合做首页音乐灵感。", ["唱片", "DJ", "长乐路"]]),
+      inspirationItem("Blue Note Hongkou 爵士夜", "爵士、灰盒舞台、四川北路", ["music", "drink", "night"], "今天适合把夜晚留给一个真正有舞台感的现场。", ["在上海听这首歌", "Blue Note Jazz Club", "四川北路", "晚间", "这不是热门观光点，而是一个会把城市夜晚压低音量的爵士坐标。", ["爵士", "现场", "夜色"]])
+    ],
+    reading: [
+      inspirationItem("The Mix Place 的混合书架", "英文书、艺术陈列、独立书店", ["bookstore", "coffee", "fashion"], "今天适合去一个会让你随机改阅读方向的书架。", ["在上海读这本书", "The Mix Place", "衡山路 / 陶江路", "午后", "社区反馈说它适合 browsing，这正是首页灵感需要的随机性。", ["独立书店", "艺术书", "慢逛"]]),
+      inspirationItem("小众书店清单里的新书页", "独立书店、漫画、二手书", ["bookstore", "citywalk", "quest"], "今天适合把书店当作街区入口，而不是目的地。", ["在上海读这本书", "Muyunji 或 Sinan Books", "城市小街", "周末", "上海官方独立书店清单里有漫画、女性主题和二手书信号，适合刷新阅读池。", ["小众书店", "二手书", "漫画"]])
+    ],
+    film: [
+      inspirationItem("Theatre YOUNG 的舞台放映", "剧场影像、国际制作、散场路", ["theatre", "cinema", "citywalk"], "今天适合把电影感从银幕带到真实散场路。", ["在上海靠近这部电影", "Theatre YOUNG", "杨浦控江路", "演出夜", "舞台影像和剧场散场连在一起，会比普通影院更有城市后劲。", ["舞台影像", "剧场", "散场"]]),
+      inspirationItem("Fotografiska 到苏州河影像夜", "影像、河岸、低光", ["photography", "cinema", "night"], "今天适合让一组照片替你决定下一段路。", ["在上海靠近这部电影", "Fotografiska Shanghai", "苏州河", "傍晚", "影像中心、仓库墙和河面反光，适合把电影灵感做得更城市化。", ["影像", "河岸", "低光"]])
+    ],
+    series: [
+      inspirationItem("Theatre YOUNG 跨界剧场季", "青年剧场、电子音乐、公共演出", ["theatre", "music", "art"], "今天适合让一场实验剧变成路线开头。", ["在上海进入这部剧的节奏", "Theatre YOUNG", "杨浦", "演出前后", "新季有跨界和年轻创作信号，正好把剧集推荐从屏幕拉回现场。", ["小剧场", "跨界", "青年创作"]]),
+      inspirationItem("GOAT Unit 的新作者感", "小剧场、年轻艺术家、后街", ["theatre", "quest", "drink"], "今天适合去看一场不一定大众、但很可能有锋利边缘的现场。", ["在上海进入这部剧的节奏", "Theatre YOUNG 后街", "控江路", "散场后", "从小剧场出来多走十分钟，剧的情绪会落到街面上。", ["小剧场", "后街", "新作者"]])
+    ],
+    design: [
+      inspirationItem("Sinan Books Poetry Store 的旧教堂", "诗歌书店、历史建筑、钢结构", ["bookstore", "architecture", "art"], "今天适合看一间书店如何把建筑也变成文本。", ["在上海看见设计", "Sinan Books Poetry Store", "皋兰路", "午后", "独立书店和历史建筑的结合，会让阅读推荐更有空间质感。", ["诗歌", "建筑", "书店"]]),
+      inspirationItem("Blue Note 的灰盒舞台", "声学、舞台、爵士餐厅", ["music", "architecture", "night"], "今天适合看声音如何改变一个空间。", ["在上海看见设计", "Blue Note Jazz Club", "虹口", "夜晚", "舞台、灯光和座位距离会让设计不只是好看，而是可被听见。", ["舞台", "声学", "爵士"]])
+    ],
+    artist: [
+      inspirationItem("fRUITYSHOP 的 DJ crew 合作", "唱片、服装、地下社区", ["music", "fashion", "vintage"], "今天适合靠近那些正在发生的小型合作。", ["在上海靠近这位艺术家", "fRUITYSHOP Record Store", "长乐路", "下午到夜晚", "唱片店和服装、DJ、音乐设备的合作，比单一展览更像城市文化现场。", ["DJ", "唱片", "合作"]]),
+      inspirationItem("Theatre YOUNG 的年轻创作者场", "公共演出、实验舞台、社区", ["theatre", "art", "citywalk"], "今天适合把一位年轻创作者的作品走成一条路。", ["在上海靠近这位艺术家", "Theatre YOUNG", "杨浦", "演出夜", "年轻创作者、公共剧场和散场街区放在一起，会让艺术家灵感更具体。", ["剧场", "青年艺术", "社区"]])
+    ]
+  },
+  chengdu: {
+    music: [
+      inspirationItem("NU SPACE 奎星楼现场", "livehouse、亚文化、晚饭前后", ["music", "drink", "night"], "今天适合让一场 livehouse 把成都夜晚打开。", ["在成都听这首歌", "NU SPACE", "奎星楼街", "演出夜", "公开介绍里它从咖啡工作空间长成 livehouse 和亚文化中心，很适合做首页音乐入口。", ["现场", "亚文化", "奎星楼"]]),
+      inspirationItem("Little Bar Fangqin 的散场", "小酒馆、现场、玉林夜风", ["music", "drink", "citywalk"], "今天适合把音乐留到散场后的街上。", ["在成都听这首歌", "Little Bar Fangqin", "玉林", "夜晚", "成都的现场音乐不只在台上，散场后的街区也会继续发声。", ["小酒馆", "散场", "夜风"]])
+    ],
+    reading: [
+      inspirationItem("Laishuxia 的女性主义书架", "独立书店、公共讨论、2023 新店", ["bookstore", "tea", "quest"], "今天适合读一本会把人留在现场讨论的书。", ["在成都读这本书", "Laishuxia Bookstore", "成都中心街区", "下午", "这类书店的价值是活动、讨论和小社区，不只是书架漂亮。", ["女性主义", "读书会", "社区"]]),
+      inspirationItem("You Xing Bookstore 的公共活动", "书店、咖啡、免费公共活动", ["bookstore", "coffee", "citywalk"], "今天适合去一间书店看见城市正在谈什么。", ["在成都读这本书", "You Xing Bookstore", "社区街巷", "周末", "用户不会只为了景点而来，但可能因为一场活动留下。", ["公共活动", "独立书店", "咖啡"]])
+    ],
+    film: [
+      inspirationItem("峨影 1958 的老厂区电影夜", "电影、厂区、散场", ["cinema", "architecture", "night"], "今天适合把电影夜留在厂区和路灯之间。", ["在成都靠近这部电影", "峨影 1958", "厂区街巷", "夜晚", "老厂区的空间感会让电影推荐更像真实路线。", ["电影", "厂区", "散场"]]),
+      inspirationItem("NU SPACE 的 viewing session", "放映、音乐、艺术社区", ["cinema", "music", "bookstore"], "今天适合去一个不是影院的地方看影像。", ["在成都靠近这部电影", "NU SPACE", "奎星楼", "活动夜", "公开资料提到 seminar 和 viewing session，这种混合空间比标准影院更有发现感。", ["放映", "音乐", "混合空间"]])
+    ],
+    series: [
+      inspirationItem("Comic Book Ren 的章节感", "漫画、进口书架、动画社区", ["anime", "bookstore", "quest"], "今天适合把一集故事翻成一条现实路线。", ["在成都进入这部剧的节奏", "Comic Book Ren", "天府动漫城", "周末", "漫画店的连续性很适合承接剧集灵感，尤其是用户想要小众入口时。", ["漫画", "动画", "上楼"]]),
+      inspirationItem("Dunbar lecture bar 的一集谈话", "讲座、户外桌、读书会", ["bookstore", "tea", "theatre"], "今天适合把剧集感换成一场真实谈话。", ["在成都进入这部剧的节奏", "Dunbar lecture bar", "社区街区", "傍晚", "独立书店生态里的小型讨论，会比屏幕内容更有城市现场感。", ["讲座", "读书会", "对话"]])
+    ],
+    design: [
+      inspirationItem("东郊记忆旧厂房排版", "工业墙面、演出入口、市集", ["architecture", "music", "market"], "今天适合看粗糙墙面如何承接新内容。", ["在成都看见设计", "Dongjiao Memory", "建设南支路", "周末", "旧厂房、现场和市集放在一起，是成都设计感更生活化的一面。", ["旧厂房", "市集", "墙面"]]),
+      inspirationItem("A4 湖边展厅的低饱和", "湖面、展厅、咖啡", ["art", "architecture", "coffee"], "今天适合看一个展厅如何把下午降速。", ["在成都看见设计", "A4 Art Museum", "麓湖", "午后", "湖边、展厅和低饱和街区能让设计推荐从物件变成节奏。", ["湖边", "展厅", "低饱和"]])
+    ],
+    artist: [
+      inspirationItem("NU SPACE 的视听混合现场", "电子、影像、新音乐", ["music", "art", "night"], "今天适合靠近一个正在试东西的舞台。", ["在成都靠近这位艺术家", "NU SPACE", "奎星楼", "演出夜", "它的 hybrid audiovisual 信号很适合把艺术家推荐从画廊拓展到现场。", ["视听", "电子", "新音乐"]]),
+      inspirationItem("Comic Book Ren 的活动墙", "漫画作者、签名本、同好", ["anime", "bookstore", "art"], "今天适合把漫画店当成城市创作者入口。", ["在成都靠近这位艺术家", "Comic Book Ren", "天府动漫城", "周末", "进口漫画、活动和同好聚集，比普通书店更有角色和作者感。", ["漫画作者", "同好", "活动"]])
+    ]
+  },
+  abudhabi: {
+    music: [
+      inspirationItem("Berklee Abu Dhabi 的公开演出", "音乐教育、公共表演、MENA 声音", ["music", "theatre", "art"], "今天适合听见阿布扎比不只是安静，也有舞台。", ["在阿布扎比听这首歌", "Berklee Abu Dhabi", "Saadiyat / Cultural District", "演出夜", "Berklee 的公开演出和教育资源，让音乐推荐有真实城市文化支点。", ["Berklee", "公开演出", "音乐教育"]]),
+      inspirationItem("NYUAD Blue Hall 的小型音乐会", "小厅、声学、校园艺术", ["music", "theatre", "cinema"], "今天适合把一场小型演出当作海岛夜路开头。", ["在阿布扎比听这首歌", "The Arts Center at NYU Abu Dhabi", "Saadiyat", "夜晚", "Blue Hall 和 Black Box 这种空间，能让首页音乐灵感更具体。", ["小厅", "声学", "Saadiyat"]])
+    ],
+    reading: [
+      inspirationItem("Cafe Arabia library floor", "书、艺术、三层空间", ["bookstore", "coffee", "art"], "今天适合找一层可以读书、看画、慢慢吃饭的空间。", ["在阿布扎比读这本书", "Cafe Arabia library floor", "Al Mushrif", "午后", "用户点评反复提到书和艺术，适合让阅读推荐更贴近日常。", ["书架", "艺术", "咖啡"]]),
+      inspirationItem("The Third Place library room", "后院、安静房间、社区咖啡", ["coffee", "bookstore", "wellness"], "今天适合找一个既不是家也不是工作的地方。", ["在阿布扎比读这本书", "The Third Place Cafe", "Corniche 附近", "上午", "官方和社区资料都强调第三空间，很适合首页阅读灵感。", ["第三空间", "library room", "后院"]])
+    ],
+    film: [
+      inspirationItem("CineMAS 的 shared attention", "独立电影、Manarat、七天影像", ["cinema", "art", "citywalk"], "今天适合把看电影变成一次共同注意力练习。", ["在阿布扎比靠近这部电影", "CineMAS at Manarat Al Saadiyat", "Saadiyat", "电影节期间", "CineMAS 把 cinema 写成 place、memory 和 each other，很适合首页电影推荐。", ["独立电影", "Manarat", "电影节"]]),
+      inspirationItem("Manarat Family Reel 午后", "国际电影、社区放映、艺术中心", ["cinema", "art", "workshop"], "今天适合去一个艺术中心看一场不那么商业的放映。", ["在阿布扎比靠近这部电影", "Manarat Al Saadiyat", "Saadiyat", "午后", "公开日程里有 film、workshop 和 photography meetup，可以让电影池更有活动感。", ["放映", "社区", "艺术中心"]])
+    ],
+    series: [
+      inspirationItem("NYUAD Black Box 的一集现场", "黑盒、实验剧场、学生和专业制作", ["theatre", "music", "art"], "今天适合让剧集推荐变成一场真实演出。", ["在阿布扎比进入这部剧的节奏", "NYUAD Black Box", "Saadiyat", "演出夜", "黑盒剧场天然适合承接 series 的节奏感，一集结束后还能走进夜风里。", ["黑盒", "实验剧场", "现场"]]),
+      inspirationItem("Red Theater 的长篇舞台感", "大剧场、舞蹈、电影放映", ["theatre", "cinema", "music"], "今天适合把一部长剧的重量交给真实舞台。", ["在阿布扎比进入这部剧的节奏", "The Arts Center Red Theater", "NYUAD", "夜晚", "Red Theater 同时适合 music、dance、theater 和 film，能让首页推荐跨类型。", ["大剧场", "舞蹈", "电影"]])
+    ],
+    design: [
+      inspirationItem("MiZa The Alley 的容器街", "container、pop-up、创意摊位", ["workshop", "market", "art"], "今天适合看一条临时巷子如何变成创意界面。", ["在阿布扎比看见设计", "The Alley at MiZa", "Mina Zayed", "傍晚", "container 和 pop-up 的组合适合把设计推荐从物件带到社区。", ["container", "pop-up", "创意社区"]]),
+      inspirationItem("Manarat Art Studio 的材料课", "workshop、摄影、家庭项目", ["workshop", "art", "photography"], "今天适合用材料和手，把城市文化摸一遍。", ["在阿布扎比看见设计", "Manarat Al Saadiyat Art Studio", "Saadiyat", "上午", "公开日程里的 studio workshop 和摄影 meetup，让设计池更像可参与的体验。", ["材料", "工作坊", "摄影"]])
+    ],
+    artist: [
+      inspirationItem("Al Qomra Photography Meetup", "摄影社区、workshop、经验分享", ["photography", "art", "workshop"], "今天适合靠近一群正在互相看照片的人。", ["在阿布扎比靠近这位艺术家", "Manarat Al Saadiyat Photography Studio", "Saadiyat", "bi-weekly", "摄影 meetup 把艺术家推荐从名人转向真实社区。", ["摄影", "meetup", "社区"]]),
+      inspirationItem("NYUAD Project Space 的学生展", "学生作品、研究、实验空间", ["art", "theatre", "workshop"], "今天适合去看还没被大众熟知的创作。", ["在阿布扎比靠近这位艺术家", "NYUAD Project Space", "Saadiyat", "下午", "学生、教师和社区制作能让艺术家灵感更年轻，也更有发现感。", ["学生展", "实验", "社区制作"]])
+    ]
+  }
+};
+
+const homepageDeepCultureSourceRegistry = {
+  shanghai: [
+    { label: "Yuyintang Music Town Changning public news", url: "https://www.shcn.gov.cn/english/col1140/20260415/1308356.html" },
+    { label: "Sinan Books Poetry Store architecture feature", url: "https://www.archdaily.com/935282/sinan-books-poetry-store-wutopia-lab" },
+    { label: "Shanghai indie bookstore guide", url: "https://english.shanghai.gov.cn/en-BookstoresLibraries/20260422/c2ff0ece50d940838a35422c9629e311.html" },
+    { label: "Theatre YOUNG new season", url: "https://www.meet-in-shanghai.net/en/news/a-young-season-of-diversity-and-crossover-705353/" },
+    { label: "SmartShanghai Theatre YOUNG venue", url: "https://www.smartshanghai.com/venue/28018/theatre_young" }
+  ],
+  chengdu: [
+    { label: "You Xing Bookstore public-space reporting", url: "https://chinadigitaltimes.net/2025/11/translations-as-tributes-pour-in-chengdus-you-xing-bookstore-gets-a-reprieve-from-feared-closure/" },
+    { label: "China Books Review Chengdu independent bookstores", url: "https://chinabooksreview.com/2026/01/29/bookstores/" },
+    { label: "Chengdu-Expat NU SPACE", url: "https://chengdu-expat.com/places/nu-space/" },
+    { label: "Chengdu-Expat Comic Book Ren", url: "https://chengdu-expat.com/places/comic-book-ren/" },
+    { label: "Chengdu-Expat English-language bookstores", url: "https://chengdu-expat.com/finding-english-language-books-chengdu/" }
+  ],
+  abudhabi: [
+    { label: "Warehouse421 creative community space", url: "https://www.shf.ae/en/what-we-do/arts-culture-heritage/warehouse421/" },
+    { label: "Abu Dhabi Festival and ADMAF culture programs", url: "https://www.abudhabifestival.ae/" },
+    { label: "NYU Abu Dhabi Arts Center Season 12", url: "https://en.aletihad.ae/news/culture/4670373/the-arts-center-at-nyu-abu-dhabi-presents-a-festival-of-musi" },
+    { label: "Manarat Al Saadiyat CineMAS 2026", url: "https://manaratalsaadiyat.ae/en/seeanddo/cinemas/" },
+    { label: "Cultural Foundation Abu Dhabi programmes", url: "https://moc.gov.ae/en/our-initiatives/the-cultural-foundation/" }
+  ]
+};
+
+const homepageDeepCultureKickers = {
+  music: "在城市听这首歌",
+  reading: "在城市读这本书",
+  film: "在城市靠近这部电影",
+  series: "在城市进入这部剧的节奏",
+  design: "在城市看见设计",
+  artist: "在城市靠近这位艺术家"
+};
+
+const homepageDeepCultureSignals = {
+  shanghai: {
+    music: {
+      meta: "地下音乐、唱片、夜间现场",
+      layers: ["music", "vintage", "night"],
+      line: "今天适合让一条音乐线从地下场地长出来。",
+      items: [
+        ["Yuyintang Music Town 双厅夜", "Yuyintang Music Town", "Haisu Cultural Plaza", "夜晚", "两个演出空间、地下动线和 emerging bands 的信号，适合把首页音乐推荐做得更年轻。", ["地下", "livehouse", "新乐队"]],
+        ["REACTOR techno record library", "REACTOR", "Changning underground", "深夜前", "电子俱乐部和免费黑胶借阅库放在一起，比常规酒吧更像音乐地图入口。", ["techno", "黑胶", "夜场"]],
+        ["Specters 舞台回声", "Specters", "Yuyintang Music Town", "周末夜", "老现场记忆转进新地下音乐公园，适合让用户感觉城市还在更新。", ["舞台", "摇滚", "地下"]],
+        ["Wigwam 小型演出前", "Wigwam", "Haisu Cultural Plaza", "傍晚", "把 live performance、酒和快餐厨房放在同一条线，能给音乐灵感一点生活感。", ["现场", "晚餐", "小场"]],
+        ["Yuyintang public creative space", "Yuyintang public creative space", "Changning", "下午到夜晚", "面向年轻音乐人的开放空间，比热门场馆更像可偶遇的城市线索。", ["创作", "新声音", "青年"]],
+        ["fRUITYSHOP DJ shelf", "fRUITYSHOP Record Store", "长乐路", "下午", "唱片店、服装和 DJ crew 合作，可以把音乐推荐从听歌带到真实街角。", ["唱片", "DJ", "长乐路"]],
+        ["Blue Note grey-box stage", "Blue Note Jazz Club", "虹口", "晚间", "国际爵士俱乐部的舞台感适合承接慢一点、深一点的夜间灵感。", ["爵士", "舞台", "低光"]],
+        ["JZ Club before midnight", "JZ Club", "衡复街区", "22:00 后", "上海老牌爵士夜和衡复夜路能做一条不喧哗的音乐线。", ["爵士", "夜路", "微醺"]],
+        ["Yuyintang Cube 小型大舞台", "Yuyintang Cube", "Changning", "周末", "350 人左右的空间保留小场亲密度，又有更完整的声光。", ["新场地", "声光", "乐队"]]
+      ]
+    },
+    reading: {
+      meta: "独立书店、杂志、二手书",
+      layers: ["bookstore", "coffee", "citywalk"],
+      line: "今天适合让书架替你换一条街。",
+      items: [
+        ["Muyunji 黑石公寓阅读", "Muyunji", "复兴中路", "午后", "AI 阅读、传统书籍、黑石公寓和黑胶墙混在一起，适合首页阅读卡。", ["生活文化", "黑胶", "历史建筑"]],
+        ["Yueze manga day", "Yueze Bookstore", "光启城", "周末", "漫画文化、签售和 cafe 区能把阅读推荐做得更年轻。", ["漫画", "签售", "咖啡"]],
+        ["Kubrick 电影书窗", "Kubrick", "前滩太古里", "电影前后", "靠近影院的电影与文学书架，让阅读和电影 mood 自然交叉。", ["电影书", "文学", "窗边"]],
+        ["Archipelago Books 西岸客厅", "Archipelago Books", "West Bund Dream Center", "下午", "设计对象、展览、咖啡和深阅读放在同一空间，适合不赶路的阅读灵感。", ["设计书", "展览", "客厅"]],
+        ["Banana Fish 自出版墙", "Banana Fish Books", "红宝石路", "下午", "独立杂志、自出版和工作坊气质，比大众书店更有发现感。", ["独立杂志", "自出版", "工作坊"]],
+        ["Rhino Bookstore 旧版书", "Rhino Bookstore", "北苏州路", "傍晚", "旧版书和收藏书适合把城市读成一条时间线。", ["二手书", "收藏", "苏州河"]],
+        ["Paper Moon women topics shelf", "Paper Moon", "天平路", "午后", "女性议题书架和紧凑空间，适合更私人、更明确的阅读推荐。", ["女性议题", "小空间", "独立书店"]],
+        ["dododo book 轨道书架", "dododo book", "Power Station of Art", "看展后", "艺术、建筑、设计和哲学书被放进明亮轨道书架，适合展后继续读。", ["艺术书", "设计", "展后"]],
+        ["The Mix Place browse hour", "The Mix Place", "衡山路 / 陶江路", "周日下午", "社区反馈里它适合 browsing，这种随机性正好解决首页重复感。", ["英文书", "艺术陈列", "慢逛"]]
+      ]
+    },
+    film: {
+      meta: "影像、舞台放映、散场路",
+      layers: ["cinema", "theatre", "photography"],
+      line: "今天适合把电影感走到街面上。",
+      items: [
+        ["Kubrick cinema-adjacent shelf", "Kubrick", "前滩太古里", "电影前", "电影书店挨着影院，能把电影推荐变成先读再看的小路线。", ["电影书", "影院旁", "前滩"]],
+        ["Theatre YOUNG stage recording", "Theatre YOUNG", "控江路", "演出夜", "舞台影像、国际制作和散场路，比普通影厅更有现场余温。", ["舞台影像", "剧场", "散场"]],
+        ["Fotografiska late image walk", "Fotografiska Shanghai", "苏州河", "傍晚", "影像中心和苏州河夜色能让电影 mood 更像摄影散步。", ["影像", "河岸", "低光"]],
+        ["大光明老影院散场", "大光明电影院", "南京西路", "夜晚", "老影院门口、招牌和夜咖啡给电影推荐一点城市年代感。", ["老影院", "招牌", "夜咖啡"]],
+        ["上海影城片后散步", "上海影城", "新华路", "电影后", "片尾字幕之后多走一段新华路，电影感会留得更久。", ["片后", "新华路", "散步"]],
+        ["MAP 光影展后", "Museum of Art Pudong", "陆家嘴滨江", "日落前", "美术馆、江面和极简空间适合承接更安静的电影灵感。", ["光影", "美术馆", "江边"]],
+        ["Yuyintang music documentary night", "Yuyintang Music Town", "Changning", "活动夜", "音乐公园和剧场 troupe 信号可以生成音乐纪录片式的首页推荐。", ["音乐纪录片", "地下", "活动"]],
+        ["The Pearl tribute poster walk", "The Pearl", "虹口", "周末夜", "复古剧场和 tribute show 海报适合做一张很有戏的电影卡。", ["复古剧场", "海报", "音乐电影"]],
+        ["Suzhou Creek afterimage", "Sihang Warehouse river wall", "苏州河", "夜色", "仓库墙、桥和水面反光能把电影 mood 拉回真实街区。", ["反光", "仓库", "桥"]]
+      ]
+    },
+    series: {
+      meta: "小剧场、跨界演出、章节感",
+      layers: ["theatre", "music", "quest"],
+      line: "今天适合把一集内容落到一场现场。",
+      items: [
+        ["Theatre YOUNG crossover season", "Theatre YOUNG", "杨浦", "演出夜", "跨界剧场、电子音乐和青年创作能让 series 推荐不只停在屏幕里。", ["跨界", "小剧场", "青年"]],
+        ["Lumens live music video game", "Theatre YOUNG", "控江路", "周末", "现场音乐、互动科技和游戏感，适合做一条像剧集支线的路线。", ["互动", "电子", "舞台"]],
+        ["Vivat Football theatre night", "Theatre YOUNG", "杨浦", "演出前后", "足球、电子音乐和身体剧场混合，可以给 series mood 更意外的入口。", ["身体", "电子", "足球"]],
+        ["A Hunger Artist GOAT Unit", "GOAT Unit", "Theatre YOUNG", "演出夜", "新作者单元的锋利感，适合用户不想看大众内容时刷到。", ["新作者", "实验", "小场"]],
+        ["Draft My Life musical route", "Theatre YOUNG", "控江路", "夜晚", "原创音乐剧和后街散步，会让一晚像一集完整故事。", ["音乐剧", "后街", "章节"]],
+        ["Hong Kong Repertory Theatre debut", "Theatre YOUNG", "杨浦", "演出季", "香港剧团来访信号让上海剧场卡更有流动性。", ["剧团", "来访", "剧场"]],
+        ["Shanghai Dramatic Arts Centre rehearsal mood", "Shanghai Dramatic Arts Centre", "安福路", "下午", "安福路剧场和街角咖啡可以生成更日常的 series 灵感。", ["剧场", "安福路", "排练感"]],
+        ["YOUNG after-show river walk", "杨浦滨江", "Theatre YOUNG 周边", "散场后", "散场后往滨江走，不赶路，像把剧情延长十分钟。", ["散场", "滨江", "夜路"]],
+        ["Black box small audience episode", "黑盒小剧场", "上海街区", "演出夜", "小观众席、近距离和短时长，适合把剧集感变成一晚。", ["黑盒", "近距离", "短剧"]]
+      ]
+    },
+    design: {
+      meta: "建筑书店、舞台空间、夜间系统",
+      layers: ["design", "architecture", "bookstore"].map((id) => id === "design" ? "fashion" : id),
+      line: "今天适合看文化空间怎么被设计出来。",
+      items: [
+        ["Sinan Books church-in-church", "Sinan Books Poetry Store", "皋兰路", "午后", "旧教堂里的诗歌书店，把建筑、钢结构和阅读揉在一起。", ["诗歌", "教堂", "结构"]],
+        ["Muyunji mosaic hallway", "Muyunji", "黑石公寓", "下午", "原始马赛克地面、拱形入口和 AI 阅读，让书店变成空间设计样本。", ["马赛克", "AI 阅读", "历史"]],
+        ["Archipelago blue-gray riverside", "Archipelago Books", "西岸", "日落前", "灰蓝色墙面呼应水岸，适合看设计如何接住城市边界。", ["水岸", "灰蓝", "书店"]],
+        ["dododo monorail shelves", "dododo book", "Power Station of Art", "看展后", "轨道感圆形书架和亮色设计，会让首页 design 卡更鲜活。", ["轨道", "亮色", "艺术书"]],
+        ["Banana Fish workshop office", "Banana Fish Books", "红宝石路", "下午", "书店、画廊、办公室和 workshop 的混合，让空间不只是销售。", ["工作坊", "画廊", "独立出版"]],
+        ["Yuyintang underground ecosystem", "Yuyintang Music Town", "Changning", "夜晚", "地下音乐公园把演出、酒、剧团和餐饮做成一个夜间系统。", ["地下", "夜经济", "系统"]],
+        ["REACTOR vinyl lending wall", "REACTOR", "Haisu Cultural Plaza", "深夜前", "techno club 加黑胶借阅库，是很明确的声音空间设计。", ["黑胶墙", "techno", "声音"]],
+        ["Blue Note seating distance", "Blue Note Jazz Club", "虹口", "晚间", "爵士舞台、座位距离和灯光会让设计变成被听见的东西。", ["舞台", "座位", "灯光"]],
+        ["Theatre YOUNG community field", "Theatre YOUNG", "杨浦", "演出季", "剧场被定位为社区和年轻艺术重力场，适合做设计/城市更新推荐。", ["社区", "剧场", "更新"]]
+      ]
+    },
+    artist: {
+      meta: "年轻创作者、摄影、独立出版",
+      layers: ["art", "photography", "music"],
+      line: "今天适合去找还在现场生成的作品。",
+      items: [
+        ["Yuyintang emerging bands incubator", "Yuyintang public creative space", "Changning", "下午", "向年轻音乐人开放的创作空间，让艺术家推荐更贴近正在发生的人。", ["新乐队", "孵化", "创作"]],
+        ["fRUITYSHOP DJ collaboration wall", "fRUITYSHOP Record Store", "长乐路", "下午", "DJ crew、音乐设备和服装品牌合作让唱片店像小型文化工作室。", ["DJ", "合作", "唱片"]],
+        ["Banana Fish zine makers", "Banana Fish Books", "红宝石路", "下午", "自出版和独立杂志让艺术家入口不必只靠美术馆。", ["zine", "自出版", "艺术书"]],
+        ["Paper Moon topic curators", "Paper Moon", "天平路", "午后", "女性议题书店的小空间适合靠近更明确的策展立场。", ["女性议题", "策展", "小空间"]],
+        ["Theatre YOUNG young creators", "Theatre YOUNG", "杨浦", "演出夜", "年轻创作者和公共剧场放在一起，适合生成有现场感的艺术家卡。", ["青年艺术", "剧场", "现场"]],
+        ["Fotografiska image makers", "Fotografiska Shanghai", "苏州河", "傍晚", "影像展厅和河岸光线能让艺术家灵感从照片开始。", ["影像", "摄影", "河岸"]],
+        ["Power Station artist book corner", "Power Station of Art", "黄浦滨江", "看展后", "艺术书和大体量展厅组合，适合用户从作品走到书页。", ["艺术书", "展厅", "滨江"]],
+        ["West Bund artist afternoon", "West Bund Museum", "西岸", "下午", "西岸场馆密度高，适合随机刷到一条艺术家半日线。", ["西岸", "美术馆", "半日"]],
+        ["Rhino old-document shelf", "Rhino Bookstore", "北苏州路", "傍晚", "旧书的文献性可以把艺术家灵感变成资料挖掘。", ["旧书", "文献", "资料"]]
+      ]
+    }
+  },
+  chengdu: {
+    music: {
+      meta: "livehouse、亚文化、街巷散场",
+      layers: ["music", "drink", "night"],
+      line: "今天适合从一个现场走进成都的街巷。",
+      items: [
+        ["NU SPACE sub-culture center", "NU SPACE", "奎星楼街", "演出夜", "从咖啡工作空间长成 livehouse 和亚文化中心，是成都音乐首页的强锚点。", ["亚文化", "livehouse", "奎星楼"]],
+        ["NU SPACE bookstore-livehouse", "纽空间 NU SPACE", "奎星楼街9号", "夜晚", "书店和 livehouse 在同一条街上，让音乐推荐天然带阅读边界。", ["书店", "现场", "夜路"]],
+        ["Little Bar Fangqin back row", "Little Bar Fangqin", "玉林", "夜晚", "成都小酒馆现场和玉林夜风，可以把推荐做得不游客。", ["小酒馆", "后排", "玉林"]],
+        ["MAO Livehouse Chengdu warm-up", "MAO Livehouse Chengdu", "成都现场街区", "晚间", "更热烈的现场适合给首页音乐池增加能量。", ["热烈", "乐队", "夜晚"]],
+        ["CH8 冇独空间 aftershow", "CH8 冇独空间", "成都夜路", "散场后", "小型空间的散场更适合做一条短路线。", ["小空间", "散场", "夜路"]],
+        ["Zhenghuo Art Center sound night", "正火艺术中心", "成都", "周末", "艺术中心和现场演出组合，可以把音乐和艺术池打通。", ["艺术中心", "现场", "周末"]],
+        ["MiNTOWN creative workshop set", "MiNTOWN 明堂", "奎星楼", "下午到夜晚", "明堂艺术社区让音乐推荐更像一段创意街区探索。", ["创意社区", "明堂", "街区"]],
+        ["Dongjiao factory echo", "Dongjiao Memory", "建设南支路", "傍晚", "旧厂房回声和演出入口给音乐 mood 一点工业质感。", ["旧厂房", "回声", "演出"]],
+        ["Kuixinglou pre-gig noodles", "Kuixinglou Street", "奎星楼", "演出前", "先吃一碗，再进 livehouse，路线会比单点推荐更像成都。", ["演出前", "小吃", "街巷"]]
+      ]
+    },
+    reading: {
+      meta: "独立书店、公共活动、社区桌面",
+      layers: ["bookstore", "tea", "coffee"],
+      line: "今天适合去一间会发生讨论的书店。",
+      items: [
+        ["You Xing public event table", "You Xing Bookstore", "成都社区街巷", "周末", "书、咖啡、免费公共活动和社区感，是成都阅读池最真实的信号。", ["公共活动", "咖啡", "社区"]],
+        ["You Xing reprieve story", "You Xing Bookstore", "成都", "晚上", "被用户和支持者挽回的书店故事，让推荐有一点真实重量。", ["公共空间", "用户支持", "事件"]],
+        ["Laishuxia gingko entrance", "Laishuxia Bookstore", "成都中心街区", "下午", "女性主义书店和门口银杏树，让阅读卡有清楚画面。", ["女性主义", "银杏", "书店"]],
+        ["Laishuxia panel night", "Laishuxia Bookstore", "成都", "活动夜", "书店作为公共讨论空间，比单纯买书更能体现项目闪光点。", ["panel", "讨论", "公共生活"]],
+        ["Comic Book Ren imported shelves", "Comic Book Ren", "天府动漫城", "周末", "17000+ 进口漫画和活动信号，给阅读池补上二次元入口。", ["漫画", "进口书", "同好"]],
+        ["Dunbar lecture bar stools", "Dunbar lecture bar", "成都街区", "傍晚", "lecture bar 让阅读变成户外谈话，而不是安静消费。", ["讲座", "户外", "对话"]],
+        ["UTE Bookshop craft beer page", "UTE Bookshop", "双楠", "夜前", "书、咖啡和 craft beer 的混合空间可以承接年轻用户的随机探索。", ["书店", "craft beer", "双楠"]],
+        ["AA Bookstore small-stack afternoon", "AA Bookstore", "华兴上街", "下午", "小书店比大店更容易让用户觉得自己找到了一处地方。", ["小书店", "街区", "慢读"]],
+        ["Fangsuo after commercial noise", "Fangsuo Chengdu", "太古里", "工作日下午", "商业街区里的长书架适合当一个安静切口。", ["长书架", "太古里", "安静"]]
+      ]
+    },
+    film: {
+      meta: "放映、老厂区、影像活动",
+      layers: ["cinema", "architecture", "music"],
+      line: "今天适合去一个不是标准影院的影像现场。",
+      items: [
+        ["NU SPACE viewing session", "NU SPACE", "奎星楼", "活动夜", "seminar 和 viewing session 信号让电影推荐不只局限在影院。", ["放映", "seminar", "混合空间"]],
+        ["峨影1958 old studio night", "峨影 1958", "成都电影街区", "夜晚", "老影厂和散场街区能让电影卡有真实城市质感。", ["老影厂", "电影夜", "散场"]],
+        ["Dongjiao Memory screen wall", "Dongjiao Memory", "旧厂区", "傍晚", "厂房墙面和活动空间适合做影像散步。", ["厂房", "影像", "墙面"]],
+        ["A4 moving-image afternoon", "A4 Art Museum", "麓湖", "下午", "湖边展览里的影像作品能把电影 mood 放慢。", ["影像艺术", "湖边", "展览"]],
+        ["You Xing documentary talk", "You Xing Bookstore", "成都", "活动夜", "独立书店的讲座桌可以承接纪录片式的城市问题。", ["纪录片", "讲座", "书店"]],
+        ["Laishuxia film discussion", "Laishuxia Bookstore", "成都", "周末", "女性主义书店适合生成小型放映和讨论感。", ["影像讨论", "女性议题", "周末"]],
+        ["Comic Book Ren anime screening", "Comic Book Ren", "天府动漫城", "周末", "漫画店和动画城让电影推荐有更轻松的二次元入口。", ["动画", "漫画", "放映"]],
+        ["Chengdu City Music Hall film score", "Chengdu City Music Hall", "城市中心", "夜晚", "电影配乐感可以把音乐厅纳入 film mood。", ["电影配乐", "音乐厅", "夜晚"]],
+        ["Sichuan Grand Theatre stage-to-screen", "Sichuan Grand Theatre", "天府广场", "演出夜", "正式剧场和片后散步能给电影池更完整的夜间动线。", ["剧场", "片后", "广场"]]
+      ]
+    },
+    series: {
+      meta: "漫画章节、公共谈话、连载感",
+      layers: ["anime", "bookstore", "theatre"],
+      line: "今天适合把一集故事翻成一段线下章节。",
+      items: [
+        ["Comic Book Ren chapter one", "Comic Book Ren", "天府动漫城", "周末", "漫画章节和上楼入口天然适合 series mood。", ["漫画", "章节", "上楼"]],
+        ["Comic Book Ren event wall", "Comic Book Ren", "成都", "活动日", "活动墙、签名本和同好人群，让剧集推荐有真实社群。", ["活动", "同好", "漫画"]],
+        ["You Xing Saturday lecture", "You Xing Bookstore", "成都", "周六", "高频公共活动像一集一集更新的城市栏目。", ["讲座", "公共生活", "周六"]],
+        ["Laishuxia feminist panel", "Laishuxia Bookstore", "成都", "活动夜", "panel 讨论能把剧集感转成真实对话。", ["panel", "女性主义", "对话"]],
+        ["Dunbar outdoor episode", "Dunbar lecture bar", "街区树下", "傍晚", "户外讲座像一集城市谈话节目。", ["户外", "讲座", "树下"]],
+        ["NU SPACE long night arc", "NU SPACE", "奎星楼", "演出夜", "演出前、开场、散场后，天然是一集三幕结构。", ["三幕", "现场", "散场"]],
+        ["Dongjiao performance chapter", "Dongjiao Memory", "旧厂区", "周末", "厂区演出和市集组合适合做连续探索。", ["旧厂房", "演出", "市集"]],
+        ["Sichuan Grand Theatre formal episode", "Sichuan Grand Theatre", "天府广场", "晚上", "正式演出给 series mood 一个更完整的夜晚。", ["正式演出", "剧场", "夜晚"]],
+        ["Chengdu Museum city-history arc", "Chengdu Museum", "天府广场", "下午", "城市历史展像一条长叙事，适合慢慢进入。", ["城市史", "展览", "章节"]]
+      ]
+    },
+    design: {
+      meta: "旧厂房、湖边展厅、书店空间",
+      layers: ["architecture", "art", "bookstore"],
+      line: "今天适合看成都如何把空间变得松弛。",
+      items: [
+        ["Dongjiao factory facade", "Dongjiao Memory", "建设南支路", "周末", "旧厂房立面、演出入口和市集能做一条很成都的设计线。", ["旧厂房", "立面", "市集"]],
+        ["A4 lakeside white space", "A4 Art Museum", "麓湖", "午后", "湖边展厅和低饱和街区让设计感不那么用力。", ["湖边", "展厅", "低饱和"]],
+        ["Luxelakes Eco Art Center slow grid", "Luxelakes Eco Art Center", "麓湖", "下午", "湖面、步道和艺术中心适合做安静的设计卡。", ["湖面", "艺术中心", "慢走"]],
+        ["Fangsuo vertical bookshelf", "Fangsuo Chengdu", "太古里", "下午", "商业空间里的长书架和展陈能给设计 mood 加一个大众但有效的入口。", ["书架", "展陈", "商业空间"]],
+        ["UTE bookshop beer table", "UTE Bookshop", "双楠", "傍晚", "书、咖啡和 craft beer 混合的小店设计，比景点更有生活感。", ["混合空间", "craft beer", "书店"]],
+        ["AA Bookstore street-front stack", "AA Bookstore", "华兴上街", "下午", "街边小书店的尺度适合给设计池降噪。", ["小尺度", "街边", "书店"]],
+        ["Comic Book Ren third-floor layout", "Comic Book Ren", "天府动漫城", "周末", "上楼、展柜和进口漫画架能构成明确的动线。", ["展柜", "上楼", "漫画"]],
+        ["MiNTOWN creative workshop courtyard", "MiNTOWN 明堂", "奎星楼", "下午", "工作坊、现场和小院落让设计感更像社区。", ["小院", "工作坊", "社区"]],
+        ["Chengdu Museum evening facade", "Chengdu Museum", "天府广场", "傍晚", "城市博物馆外立面和广场尺度适合做建筑观察。", ["外立面", "博物馆", "广场"]]
+      ]
+    },
+    artist: {
+      meta: "视听现场、独立书店、青年创作",
+      layers: ["art", "music", "bookstore"],
+      line: "今天适合靠近成都仍在生成的创作者场。",
+      items: [
+        ["NU SPACE hybrid audiovisual", "NU SPACE", "奎星楼", "演出夜", "混合视听现场让艺术家推荐从画廊走到 livehouse。", ["视听", "livehouse", "实验"]],
+        ["A4 resident afternoon", "A4 Art Museum", "麓湖", "下午", "湖边艺术馆适合生成更安静的艺术家灵感。", ["驻留感", "湖边", "展览"]],
+        ["Comic Book Ren creator shelf", "Comic Book Ren", "天府动漫城", "周末", "漫画作者、签名本和同好活动让创作者入口更年轻。", ["漫画作者", "签名本", "同好"]],
+        ["Laishuxia community curator", "Laishuxia Bookstore", "成都", "活动夜", "书店主理人的选书立场本身就是一种策展。", ["主理人", "选书", "女性主义"]],
+        ["You Xing public intellectual table", "You Xing Bookstore", "成都", "晚上", "记者、学者和作家的活动桌能让 artist mood 更像思想现场。", ["公共讨论", "作家", "学者"]],
+        ["Dongjiao street performer residue", "Dongjiao Memory", "旧厂区", "周末", "演出入口、墙面和人群残响能生成创作者路线。", ["表演", "厂区", "残响"]],
+        ["Luxelakes outdoor installation", "Luxelakes", "麓湖", "日落前", "户外装置和湖边空间适合轻一点的艺术家卡。", ["装置", "湖边", "户外"]],
+        ["Blue Roof studio memory", "Blue Roof Museum", "成都", "下午", "艺术聚落记忆能给首页加一点非商业艺术气。", ["艺术聚落", "工作室", "下午"]],
+        ["Times Art Museum Chengdu quiet show", "Times Art Museum Chengdu", "成都", "午后", "小型展览和安静街区适合刷到不大众的艺术家灵感。", ["小展", "安静", "艺术"]]
+      ]
+    }
+  },
+  abudhabi: {
+    music: {
+      meta: "公开演出、音乐教育、文化节",
+      layers: ["music", "theatre", "art"],
+      line: "今天适合听见阿布扎比的舞台和社区声。",
+      items: [
+        ["Berklee public performance night", "Berklee Abu Dhabi", "Cultural District", "演出夜", "音乐教育和公开表演让音乐推荐有真实文化支点。", ["Berklee", "公开演出", "音乐教育"]],
+        ["NYUAD Arts Center Season 12 opener", "The Arts Center at NYU Abu Dhabi", "Saadiyat", "夜晚", "新一季有全球音乐、舞蹈、实验剧场和独立电影信号。", ["Season 12", "全球音乐", "Saadiyat"]],
+        ["Dirty Dozen brass second-line", "NYUAD Arts Center", "Saadiyat", "演出夜", "New Orleans brass 和 funk 信号能让音乐池更鲜活。", ["brass", "funk", "现场"]],
+        ["Fanfaraï brass street roots", "NYUAD Arts Center", "Saadiyat", "夜晚", "Arab-Berber、Afro-Cuban、Latin 和 jazz 线索适合做跨文化音乐卡。", ["brass", "跨文化", "jazz"]],
+        ["ADMAF Spiritual Series", "ADMAF Spiritual Series", "Abu Dhabi", "节庆夜", "精神音乐和节庆演出把城市音乐感做得更庄重。", ["spiritual", "concert", "ADMAF"]],
+        ["Abu Dhabi Festival classical route", "Abu Dhabi Festival", "Abu Dhabi", "演出季", "大型文化节能给首页音乐推荐补上城市级舞台。", ["festival", "classical", "城市舞台"]],
+        ["Cultural Foundation auditorium set", "Cultural Foundation Auditorium", "Al Hosn", "傍晚", "老城文化中心里的 auditorium 适合接住更本地的演出。", ["auditorium", "老城", "表演"]],
+        ["Manarat terrace sound", "Manarat Al Saadiyat", "Saadiyat", "日落后", "艺术中心露台和活动日程可以生成更轻的音乐夜。", ["露台", "艺术中心", "日落"]],
+        ["Etihad Arena big-night contrast", "Etihad Arena", "Yas", "大型演出夜", "大型演出后接一条安静海边路，能让推荐有强弱对比。", ["大型演出", "Yas", "海风"]]
+      ]
+    },
+    reading: {
+      meta: "library room、二手书、文化中心",
+      layers: ["bookstore", "coffee", "wellness"],
+      line: "今天适合找一张真正能停下来的桌子。",
+      items: [
+        ["The Third Place library room", "The Third Place Cafe", "Corniche Road", "上午", "library room、后院和社区咖啡让阅读推荐有日常锚点。", ["library room", "后院", "社区"]],
+        ["Cafe Arabia three-floor browse", "Cafe Arabia library floor", "Al Mushrif", "午后", "三层空间、书和艺术让阅读卡更像第三空间。", ["三层", "书", "艺术"]],
+        ["Cultural Foundation library pause", "Cultural Foundation Library", "Al Hosn", "下午", "Learning/library、performing arts 和 visual arts 被整合在同一文化中心。", ["library", "文化中心", "学习"]],
+        ["Bookends pre-loved stack", "Bookends UAE", "Abu Dhabi / UAE", "周末", "二手书平台和线下 book sale 信号适合补上 thrift reading 感。", ["二手书", "pre-loved", "book sale"]],
+        ["House of Prose return-credit shelf", "House of Prose", "Abu Dhabi", "下午", "二手书和回收信用机制让阅读推荐更像本地生活。", ["used books", "回收", "本地"]],
+        ["Kinokuniya quiet aisle", "Kinokuniya The Galleria", "Al Maryah", "傍晚", "购物中心里的长书架适合做安静退场。", ["长书架", "安静", "Al Maryah"]],
+        ["Louvre museum shop reading", "Louvre Abu Dhabi Museum Shop", "Saadiyat", "看展后", "展后书店能把艺术体验延长到阅读。", ["museum shop", "展后", "艺术书"]],
+        ["Qasr Al Hosn store story shelf", "Qasr Al Hosn Store", "Al Hosn", "上午", "老城和手工艺叙事适合承接历史阅读。", ["历史", "手工艺", "老城"]],
+        ["Children's Library storytelling", "Cultural Foundation Children's Library", "Al Hosn", "周末", "儿童图书馆和故事活动让阅读池有家庭但不俗套的入口。", ["storytelling", "library", "家庭"]]
+      ]
+    },
+    film: {
+      meta: "独立电影、城市影像、艺术中心放映",
+      layers: ["cinema", "art", "theatre"],
+      line: "今天适合把电影变成共享注意力。",
+      items: [
+        ["CineMAS shared attention", "CineMAS at Manarat", "Saadiyat", "电影节期间", "CineMAS 明确把电影写成 place、memory 和 each other。", ["CineMAS", "独立电影", "共享"]],
+        ["CineMAS mobile filmmaking walk", "Saadiyat Cultural District", "Saadiyat", "International Museum Day", "移动 filmmaking walk 让电影 mood 直接变成城市路线。", ["filmmaking walk", "Saadiyat", "城市影像"]],
+        ["Golden Hour short showcase", "Manarat Al Saadiyat", "Saadiyat", "傍晚", "短片 showcase 和金色时刻很适合生成电影首页卡。", ["shorts", "golden hour", "Manarat"]],
+        ["CinemaNa Arab cinema night", "The Arts Center at NYUAD", "Saadiyat", "放映夜", "CinemaNa contemporary Arab cinema 给电影池补上地区影像。", ["Arab cinema", "放映", "NYUAD"]],
+        ["NYUAD Screening Room quiet seat", "NYUAD Screening Room", "Saadiyat", "夜晚", "艺术中心内的 screening room 让电影推荐更学院也更小众。", ["screening room", "学院", "电影"]],
+        ["Manarat Family Reel", "Manarat Al Saadiyat", "Saadiyat", "午后", "国际电影策展和艺术中心活动让家庭向内容也不显大众。", ["Family Reel", "策展", "午后"]],
+        ["Taparelle silent film DJ close", "Taparelle", "Saadiyat", "闭幕夜", "无声电影加 live DJ 的收束让电影和音乐自然交叉。", ["silent film", "DJ", "闭幕"]],
+        ["Louvre film night by the sea", "Louvre Abu Dhabi", "Saadiyat", "夜晚", "海边博物馆放映能让电影 mood 更有空间记忆。", ["博物馆", "海边", "放映"]],
+        ["Cultural Foundation storytelling screen", "Cultural Foundation", "Al Hosn", "周末", "performing arts 和 storytelling 项目适合生成更本地的影像感。", ["storytelling", "文化中心", "本地"]]
+      ]
+    },
+    series: {
+      meta: "黑盒、剧场、连续演出",
+      layers: ["theatre", "music", "cinema"],
+      line: "今天适合把一集内容交给真实舞台。",
+      items: [
+        ["NYUAD Black Box episode", "NYUAD Black Box", "Saadiyat", "演出夜", "灵活黑盒空间适合把 series mood 从屏幕拉到现场。", ["Black Box", "实验", "现场"]],
+        ["Red Theater long-form night", "The Arts Center Red Theater", "NYUAD", "夜晚", "大剧场、音乐、舞蹈和电影能力让推荐跨类型。", ["Red Theater", "舞台", "跨类型"]],
+        ["Blue Hall intimate chapter", "NYUAD Blue Hall", "Saadiyat", "晚间", "150 人小厅适合一集很近的音乐或朗读。", ["小厅", "朗读", "音乐"]],
+        ["The Butterfly rave episode", "NYUAD Arts Center", "Saadiyat", "Season 12", "高能舞蹈和 Detroit techno 信号可以做一张很不游客的剧集卡。", ["rave", "dance", "techno"]],
+        ["Untitled 14km identity arc", "NYUAD Arts Center", "Saadiyat", "Season 12", "跨学科舞蹈剧场和身份议题给 series mood 更深的叙事。", ["身份", "舞蹈剧场", "叙事"]],
+        ["Näss hip-hop pulse", "NYUAD Arts Center", "Saadiyat", "演出季", "North African rhythm 和 hip hop 的剧场能量适合做一集现场。", ["hip hop", "North Africa", "dance"]],
+        ["Cultural Foundation performance summer", "Cultural Foundation", "Al Hosn", "夏季", "performances 和 storytelling 让老城文化中心像剧集场景。", ["performing arts", "storytelling", "老城"]],
+        ["Abu Dhabi Festival chapter night", "Abu Dhabi Festival", "Abu Dhabi", "演出季", "城市级艺术节能给 series mood 补上更长线的文化章节。", ["festival", "章节", "演出"]],
+        ["Manarat cinema-to-talk evening", "Manarat Al Saadiyat", "Saadiyat", "活动夜", "电影、talk 和展览接在一起，像一集城市文化节目。", ["talk", "cinema", "展览"]]
+      ]
+    },
+    design: {
+      meta: "仓库艺术、容器街、文化建筑",
+      layers: ["workshop", "architecture", "art"],
+      line: "今天适合看文化空间如何让人留下来。",
+      items: [
+        ["Warehouse421 creative community", "Warehouse421", "Mina Zayed", "下午", "仓库艺术空间服务创意社区、协作和社会文化活动。", ["warehouse", "社区", "协作"]],
+        ["421 Spring public program", "421 Arts Campus", "Mina Zayed", "Spring 2026", "40+ public events 的信号让设计推荐更像可参与日程。", ["public program", "Mina", "活动"]],
+        ["421 artist residency studio", "421 Artist Residency", "MiZa", "下午", "驻留工作室和实验时间适合生成创作者空间设计卡。", ["residency", "studio", "实验"]],
+        ["MiZa container row", "The Alley at MiZa", "Mina Zayed", "傍晚", "container alley、pop-up 和 workshop 让空间像可更换界面。", ["container", "pop-up", "workshop"]],
+        ["Manarat Art Studio material table", "Manarat Al Saadiyat Art Studio", "Saadiyat", "上午", "日常 workshop 和 resident artist 信号让设计池更可触摸。", ["材料", "studio", "workshop"]],
+        ["Cultural Foundation universal space", "Cultural Foundation", "Al Hosn", "下午", "learning、performing arts 和 visual arts 被整合进同一现代文化建筑。", ["universal space", "library", "auditorium"]],
+        ["Qasr Al Hosn craft geometry", "Qasr Al Hosn", "Al Hosn", "上午", "手工艺、老城墙和现代文化设施适合做设计路线。", ["手工艺", "老城", "几何"]],
+        ["Louvre dome rain of light", "Louvre Abu Dhabi Dome", "Saadiyat", "日落前", "穹顶光影是阿布扎比设计池不可少的空间锚。", ["穹顶", "光影", "海面"]],
+        ["Third Place backyard expansion", "The Third Place Cafe", "Corniche Road", "上午", "前露台、library room、function space 和后院体现社区型空间扩展。", ["后院", "library room", "社区"]]
+      ]
+    },
+    artist: {
+      meta: "驻留、摄影、公共项目",
+      layers: ["art", "photography", "workshop"],
+      line: "今天适合靠近还没完全被大众知道的创作现场。",
+      items: [
+        ["Al Qomra photography circle", "Al Qomra Photography Meetup", "Manarat Al Saadiyat", "bi-weekly", "摄影 meetup 把艺术家推荐从名人转向真实社群。", ["摄影", "meetup", "社群"]],
+        ["421 residency cohort", "421 Arts Campus", "Mina Zayed", "驻留季", "艺术家驻留支持 UAE 和 SWANA 创作者，适合小众艺术家入口。", ["residency", "SWANA", "创作者"]],
+        ["Warehouse421 process glimpse", "Warehouse421", "Mina Zayed", "下午", "展览和活动展示创作过程，比只看作品更能激发探索。", ["过程", "展览", "工作坊"]],
+        ["NYUAD Project Space student work", "NYUAD Project Space", "Saadiyat", "下午", "学生和教师策展让艺术家卡更年轻。", ["学生展", "实验", "校园"]],
+        ["ADMAF Awards emerging voice", "ADMAF Awards", "Abu Dhabi", "活动季", "奖项和教育项目让创作者生态可被看见。", ["awards", "education", "创作者"]],
+        ["Manarat resident artist workshop", "Manarat Art Studio", "Saadiyat", "上午", "resident artists 和 workshop 让用户能靠近创作过程。", ["resident artist", "workshop", "材料"]],
+        ["Cultural Foundation exhibition room", "Cultural Foundation Exhibition Hall", "Al Hosn", "午后", "视觉艺术展厅和公共活动能给艺术家推荐一个老城锚点。", ["exhibition", "Al Hosn", "公共活动"]],
+        ["Berklee student performance", "Berklee Abu Dhabi", "Cultural District", "演出夜", "学生和专业音乐人同城活动，适合生成更年轻的艺术家卡。", ["student", "performance", "music"]],
+        ["MiZa pop-up maker table", "MiZa maker containers", "Mina Zayed", "傍晚", "pop-up、maker table 和街区活动让创作不只在展厅里。", ["maker", "pop-up", "街区"]]
+      ]
+    }
+  }
+};
+
+const homepageDeepCultureMoodEntries = Object.fromEntries(
+  Object.entries(homepageDeepCultureSignals).map(([cityKey, moodMap]) => [
+    cityKey,
+    Object.fromEntries(
+      Object.entries(moodMap).map(([moodId, group]) => [
+        moodId,
+        homepageDeepCultureEntries(cityKey, moodId, group)
+      ])
+    )
+  ])
+);
+
+function homepageDeepCultureEntries(cityKey, moodId, group) {
+  const kicker = homepageDeepCultureKickers[moodId] || cityMoodSpots[cityKey]?.[moodId]?.kicker || "在城市重新探索";
+  return group.items.map(([title, placeName, area, time, desc, tags]) => {
+    return inspirationItem(title, group.meta, group.layers, group.line, [kicker, placeName, area, time, desc, tags]);
+  });
+}
+
+loadPublicSourceSeedData();
+loadNicheFeedbackSeedData();
+loadHomepageCulturalMoodEntries();
+loadHomepageDeepCultureMoodEntries();
+
+function loadPublicSourceSeedData() {
+  mergePublicPois();
+  mergePublicPlaces();
+  mergePublicRoutes();
+  mergePublicLiveFeeds();
+  mergePublicMoodEntries();
+}
+
+function mergePublicPois() {
+  Object.entries(publicSourcePois).forEach(([cityKey, layerMap]) => {
+    Object.entries(layerMap).forEach(([layerId, names]) => {
+      const existing = cityPoiPools[cityKey]?.[layerId] || [];
+      cityPoiPools[cityKey] = cityPoiPools[cityKey] || {};
+      cityPoiPools[cityKey][layerId] = uniqueStops([...existing, ...names]);
+    });
+  });
+}
+
+function mergePublicPlaces() {
+  Object.entries(publicSourcePlaces).forEach(([cityKey, places]) => {
+    const city = cities[cityKey];
+    if (!city) return;
+    const seen = new Set(city.places.map((item) => item.id));
+    places.forEach((item) => {
+      if (seen.has(item.id)) return;
+      seen.add(item.id);
+      city.places.push(item);
+    });
+  });
+}
+
+function mergePublicRoutes() {
+  Object.entries(publicSourceRoutes).forEach(([cityKey, routes]) => {
+    const city = cities[cityKey];
+    if (!city) return;
+    const seen = new Set(city.routes.map((item) => item.id));
+    routes.forEach((item) => {
+      if (seen.has(item.id)) return;
+      seen.add(item.id);
+      city.routes.push(item);
+    });
+  });
+}
+
+function mergePublicLiveFeeds() {
+  Object.entries(publicSourceLiveFeeds).forEach(([cityKey, feeds]) => {
+    const existing = mockLiveFeeds[cityKey] || [];
+    const seen = new Set(existing.map((item) => item.title));
+    feeds.forEach((item) => {
+      if (seen.has(item.title)) return;
+      seen.add(item.title);
+      existing.push(item);
+    });
+    mockLiveFeeds[cityKey] = existing;
+  });
+}
+
+function mergePublicMoodEntries() {
+  Object.entries(publicSourceMoodEntries).forEach(([cityKey, moodMap]) => {
+    inspirationPools[cityKey] = inspirationPools[cityKey] || {};
+    Object.entries(moodMap).forEach(([moodId, entries]) => {
+      const existing = inspirationPools[cityKey][moodId] || [];
+      const seen = new Set(existing.map((item) => item.title));
+      entries.forEach((item) => {
+        if (seen.has(item.title)) return;
+        seen.add(item.title);
+        existing.push(item);
+      });
+      inspirationPools[cityKey][moodId] = existing;
+    });
+  });
+}
+
+function loadNicheFeedbackSeedData() {
+  mergeNicheFeedbackPois();
+  mergeNicheFeedbackPlaces();
+  mergeNicheFeedbackRoutes();
+  mergeNicheFeedbackLiveFeeds();
+  mergeNicheFeedbackMoodEntries();
+}
+
+function mergeNicheFeedbackPois() {
+  Object.entries(nicheFeedbackPois).forEach(([cityKey, layerMap]) => {
+    Object.entries(layerMap).forEach(([layerId, names]) => {
+      const existing = cityPoiPools[cityKey]?.[layerId] || [];
+      cityPoiPools[cityKey] = cityPoiPools[cityKey] || {};
+      cityPoiPools[cityKey][layerId] = uniqueStops([...existing, ...names]);
+    });
+  });
+}
+
+function mergeNicheFeedbackPlaces() {
+  Object.entries(nicheFeedbackPlaces).forEach(([cityKey, places]) => {
+    const city = cities[cityKey];
+    if (!city) return;
+    const seen = new Set(city.places.map((item) => item.id));
+    places.forEach((item) => {
+      if (seen.has(item.id)) return;
+      seen.add(item.id);
+      city.places.push(item);
+    });
+  });
+}
+
+function mergeNicheFeedbackRoutes() {
+  Object.entries(nicheFeedbackRoutes).forEach(([cityKey, routes]) => {
+    const city = cities[cityKey];
+    if (!city) return;
+    const seen = new Set(city.routes.map((item) => item.id));
+    routes.forEach((item) => {
+      if (seen.has(item.id)) return;
+      seen.add(item.id);
+      city.routes.push(item);
+    });
+  });
+}
+
+function mergeNicheFeedbackLiveFeeds() {
+  Object.entries(nicheFeedbackLiveFeeds).forEach(([cityKey, feeds]) => {
+    const existing = mockLiveFeeds[cityKey] || [];
+    const seen = new Set(existing.map((item) => item.title));
+    feeds.forEach((item) => {
+      if (seen.has(item.title)) return;
+      seen.add(item.title);
+      existing.push(item);
+    });
+    mockLiveFeeds[cityKey] = existing;
+  });
+}
+
+function mergeNicheFeedbackMoodEntries() {
+  Object.entries(nicheFeedbackMoodEntries).forEach(([cityKey, moodMap]) => {
+    inspirationPools[cityKey] = inspirationPools[cityKey] || {};
+    Object.entries(moodMap).forEach(([moodId, entries]) => {
+      const existing = inspirationPools[cityKey][moodId] || [];
+      const seen = new Set(existing.map((item) => item.title));
+      entries.forEach((item) => {
+        if (seen.has(item.title)) return;
+        seen.add(item.title);
+        existing.push(item);
+      });
+      inspirationPools[cityKey][moodId] = existing;
+    });
+  });
+}
+
+function loadHomepageCulturalMoodEntries() {
+  mergeHomepageCulturalMoodEntries();
+}
+
+function mergeHomepageCulturalMoodEntries() {
+  Object.entries(homepageCulturalMoodEntries).forEach(([cityKey, moodMap]) => {
+    inspirationPools[cityKey] = inspirationPools[cityKey] || {};
+    Object.entries(moodMap).forEach(([moodId, entries]) => {
+      const existing = inspirationPools[cityKey][moodId] || [];
+      const seen = new Set(existing.map((item) => item.title));
+      entries.forEach((item) => {
+        if (seen.has(item.title)) return;
+        seen.add(item.title);
+        existing.push(item);
+      });
+      inspirationPools[cityKey][moodId] = existing;
+    });
+  });
+}
+
+function loadHomepageDeepCultureMoodEntries() {
+  mergeHomepageDeepCultureMoodEntries();
+}
+
+function mergeHomepageDeepCultureMoodEntries() {
+  Object.entries(homepageDeepCultureMoodEntries).forEach(([cityKey, moodMap]) => {
+    inspirationPools[cityKey] = inspirationPools[cityKey] || {};
+    Object.entries(moodMap).forEach(([moodId, entries]) => {
+      const existing = inspirationPools[cityKey][moodId] || [];
+      const seen = new Set(existing.map((item) => item.title));
+      entries.forEach((item) => {
+        if (seen.has(item.title)) return;
+        seen.add(item.title);
+        existing.push(item);
+      });
+      inspirationPools[cityKey][moodId] = existing;
+    });
+  });
+}
 
 const state = {
   city: "shanghai",
