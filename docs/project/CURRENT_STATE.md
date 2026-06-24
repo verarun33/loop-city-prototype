@@ -22,14 +22,19 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 ## 当前已知可用基线
 
-阶段 1、阶段 2A、阶段 2B、阶段 2C 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
+阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
 
 最新功能基线：
 
-阶段 2C 分享 native bridge 已完成。精确提交请用 `git log -1 --oneline` 查看。
+阶段 2D TestFlight 准备审计已建立。精确提交请用 `git log -1 --oneline` 查看。
 
 近期关键提交：
 
+- `740413f 记录 TestFlight 准备清单`
+- `95d347c 新增 TestFlight readiness 失败检查`
+- `137e670 规划 TestFlight 准备审计实施`
+- `37b40bb 规划 TestFlight 准备审计`
+- `8740549 完成分享 bridge 阶段状态`
 - `fffdb1b 实现 iOS 分享 bridge handler`
 - `e484302 接入 Web 原生分享 bridge adapter`
 - `aa44fd4 记录分享 native bridge 协议`
@@ -66,10 +71,12 @@ npm run ui:check
 npm run check
 npm test
 npm run ios:check
+npm run ios:release-check
 npm run ios:build
 ```
 
 `npm run ios:build` 会先跑 `ios:check`，然后用关闭签名的 iOS Simulator 目标构建 Xcode 工程。
+`npm run ios:release-check` 是 repo 级 TestFlight 准备审计，会提示当前 `DEVELOPMENT_TEAM` 仍为空；这个 warning 是人工签名待办，不是脚本失败。
 
 ## 开发纪律
 
@@ -100,6 +107,8 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 
 阶段 2C 已完成：分享 native bridge 已接入。路线详情和城市通行证详情可以通过轻量分享入口触发 `share.open`，iOS app 模式打开系统分享面板，并通过 `loopnative:share-result` 回传完成、取消或失败；浏览器模式保留 `navigator.share` 和复制 fallback。
 
+阶段 2D 已完成：TestFlight 准备审计已建立。项目现在有 `npm run ios:release-check` 用于 repo 级发布前检查，并有 `docs/release/ios-testflight-readiness.md` 明确区分自动检查项和人工发布待办。当前仍未配置 Apple Developer Team，也未上传 TestFlight build。
+
 相关文档：
 
 - `docs/superpowers/specs/2026-06-24-camera-photo-native-bridge-design.md`
@@ -108,6 +117,9 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `docs/superpowers/plans/2026-06-24-location-native-bridge-implementation.md`
 - `docs/superpowers/specs/2026-06-24-share-native-bridge-design.md`
 - `docs/superpowers/plans/2026-06-24-share-native-bridge-implementation.md`
+- `docs/superpowers/specs/2026-06-24-testflight-readiness-design.md`
+- `docs/superpowers/plans/2026-06-24-testflight-readiness-implementation.md`
+- `docs/release/ios-testflight-readiness.md`
 
 最近完整验证时间：2026-06-24。
 
@@ -118,9 +130,10 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `npm run check`
 - `npm test`
 - `npm run ios:check`
+- `npm run ios:release-check`
 - `npm run ios:build`
 
-下一步可继续规划照片记录真实后端持久化、TestFlight 准备或推送提醒。
+下一步可继续规划照片记录真实后端持久化、真实签名配置、TestFlight 人工材料或推送提醒。
 
 ## 新窗口启动提示
 
