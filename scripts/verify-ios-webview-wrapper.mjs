@@ -59,6 +59,11 @@ for (const expected of ["location.request", "loopnative:location-result", "CLLoc
     throw new Error(`WebViewScreen.swift 必须实现 native location bridge：${expected}`);
   }
 }
+for (const expected of ["share.open", "loopnative:share-result", "UIActivityViewController"]) {
+  if (!webViewScreen.includes(expected)) {
+    throw new Error(`WebViewScreen.swift 必须实现 native share bridge：${expected}`);
+  }
+}
 
 const script = readFileSync(join(root, "script.js"), "utf8");
 for (const expected of ["installNativeShellBridge", "loopnative:ready", "nativeShell"]) {
@@ -81,6 +86,11 @@ for (const expected of ["loopnative:photo-result", "invalid-payload", "encode-fa
 for (const expected of ["loopnative:location-result", "denied", "restricted", "timeout", "invalid-payload"]) {
   if (!bridgeRegistry.includes(expected)) {
     throw new Error(`native-bridge-registry.md 必须记录 location bridge 结果：${expected}`);
+  }
+}
+for (const expected of ["loopnative:share-result", "cancelled", "invalid-payload", "unavailable", "failed"]) {
+  if (!bridgeRegistry.includes(expected)) {
+    throw new Error(`native-bridge-registry.md 必须记录 share bridge 结果：${expected}`);
   }
 }
 
