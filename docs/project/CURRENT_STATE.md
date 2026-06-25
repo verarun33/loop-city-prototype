@@ -1,6 +1,6 @@
 # LOOP 城市回路 Apple App 当前状态
 
-日期：2026-06-24
+日期：2026-06-25
 负责人：Vera / Codex
 项目路径：`/Users/veraxian/Documents/城市回路`
 Git 解析后的路径：`/Users/veraxian/Documents/city loop`
@@ -22,14 +22,17 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 ## 当前已知可用基线
 
-阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
+阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
 
 最新功能基线：
 
-照片记录后端持久化已完成设计和实施计划，尚未执行代码实现。精确提交请用 `git log -1 --oneline` 查看。
+照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。默认 API base 为空，因此 Web 线上原型和 iOS 离线包不会误向不存在的后端发送请求；配置 API base 后，原生相机/相册回传的 data URL 照片会在本地乐观保存后异步同步到 dev API。
 
 近期关键提交：
 
+- `0e4869b 接入照片记录 Web 同步 adapter`
+- `dc97b3d 实现照片记录 dev API`
+- `53563c3 新增照片记录持久化失败检查`
 - `6b01b4b 规划照片记录持久化实施`
 - `85f8a02 规划照片记录后端持久化`
 - `4eafbc3 记录 TestFlight 人工材料草稿`
@@ -77,6 +80,7 @@ npm run data:check
 npm run ui:check
 npm run check
 npm test
+npm run photo:persistence-check
 npm run ios:check
 npm run ios:release-check
 npm run ios:build
@@ -118,7 +122,13 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 
 阶段 2E 已完成：TestFlight / App Store 人工材料草稿已建立。`docs/release/ios-app-store-materials.md` 记录 App Store Connect 基础信息、TestFlight Beta 信息、App Review notes、截图清单、隐私标签草稿和人工确认项；`npm run ios:release-check` 会检查材料文档存在和关键栏目。
 
-照片记录后端持久化已完成设计和实施计划，但尚未执行代码实现。设计选择是先做 Phase 3A dev backend + Web sync adapter，默认 API base 为空、不影响线上原型；继续实现前需要 Vera 确认接受“dev backend 不是生产云端”的阶段边界。
+阶段 3A 已完成：照片记录 dev backend 与 Web sync adapter 已接入。
+
+- `server.mjs` 提供 `POST /api/photo-records`、`GET /api/photo-records?userId=...` 和 `GET /api/photo-records/photos/<file>`。
+- dev 存储路径是 `.loop-data/photo-records.json` 和 `.loop-data/photos/`，并已被 `.gitignore` 忽略。
+- Web 层新增 `photoRecordApiBase()`、`buildPhotoRecordPayload()` 和 `syncPhotoRecord()`；默认 API base 为空，不影响线上原型。
+- 本地保存仍是乐观路径：即使同步失败，用户当前照片记录不会丢失，照片对象会保留 `syncStatus` / `syncError`。
+- 这仍不是生产云端。生产 API base、真实账号、对象存储、删除/导出和隐私标签最终版仍属于后续阶段。
 
 相关文档：
 
@@ -137,7 +147,7 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `docs/superpowers/specs/2026-06-24-photo-record-persistence-design.md`
 - `docs/superpowers/plans/2026-06-24-photo-record-persistence-implementation.md`
 
-最近完整验证时间：2026-06-24。
+最近完整验证时间：2026-06-25。
 
 已通过：
 
@@ -145,11 +155,16 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `npm run ui:check`
 - `npm run check`
 - `npm test`
+- `npm run photo:persistence-check`
 - `npm run ios:check`
 - `npm run ios:release-check`
 - `npm run ios:build`
 
-下一步可继续执行照片记录持久化 Phase 3A、规划真实签名配置、截图生产或推送提醒。
+额外手动 smoke：
+
+- 启动本地 dev server 后，HTTP 验证 `POST /api/photo-records`、重复 `clientPhotoId` 返回 `409 DUPLICATE_PHOTO`、`GET /api/photo-records?userId=...` 和照片文件读取均通过。
+
+下一步可继续规划 Phase 3B 生产 API base / 真实账号、真实签名配置、截图生产或推送提醒。
 
 ## 新窗口启动提示
 
