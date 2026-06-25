@@ -69,11 +69,21 @@ for (const expected of ["share.open", "loopnative:share-result", "UIActivityView
     throw new Error(`WebViewScreen.swift 必须实现 native share bridge：${expected}`);
   }
 }
+for (const expected of ["notification.schedule", "loopnative:notification-result", "UNUserNotificationCenter", "NativeNotificationRequest"]) {
+  if (!webViewScreen.includes(expected)) {
+    throw new Error(`WebViewScreen.swift 必须实现 native notification bridge：${expected}`);
+  }
+}
 
 const script = readFileSync(join(root, "script.js"), "utf8");
 for (const expected of ["installNativeShellBridge", "loopnative:ready", "nativeShell"]) {
   if (!script.includes(expected)) {
     throw new Error(`script.js must include native shell bridge hook: ${expected}`);
+  }
+}
+for (const expected of ["notification.schedule", "requestNativeNotificationReminder", "handleNativeNotificationResult"]) {
+  if (!script.includes(expected)) {
+    throw new Error(`script.js 必须实现 notification bridge adapter：${expected}`);
   }
 }
 
@@ -96,6 +106,11 @@ for (const expected of ["loopnative:location-result", "denied", "restricted", "t
 for (const expected of ["loopnative:share-result", "cancelled", "invalid-payload", "unavailable", "failed"]) {
   if (!bridgeRegistry.includes(expected)) {
     throw new Error(`native-bridge-registry.md 必须记录 share bridge 结果：${expected}`);
+  }
+}
+for (const expected of ["notification.schedule", "loopnative:notification-result", "denied", "invalid-payload", "failed"]) {
+  if (!bridgeRegistry.includes(expected)) {
+    throw new Error(`native-bridge-registry.md 必须记录 notification bridge：${expected}`);
   }
 }
 
