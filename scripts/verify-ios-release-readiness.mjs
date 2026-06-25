@@ -10,6 +10,9 @@ const appIconContentsPath = join(appRoot, "LoopCityWebViewApp", "Assets.xcassets
 const appIconPath = join(appRoot, "LoopCityWebViewApp", "Assets.xcassets", "AppIcon.appiconset", "loop-city-app-icon-1024.png");
 const readinessDocPath = join(root, "docs", "release", "ios-testflight-readiness.md");
 const materialsDocPath = join(root, "docs", "release", "ios-app-store-materials.md");
+const packageJsonPath = join(root, "package.json");
+const smokeScriptPath = join(root, "scripts", "ios-simulator-smoke.mjs");
+const gitignorePath = join(root, ".gitignore");
 
 const warnings = [];
 
@@ -38,6 +41,9 @@ const project = readRequired(projectPath, "Xcode project");
 const appIconContents = readRequired(appIconContentsPath, "AppIcon Contents.json");
 const readinessDoc = readRequired(readinessDocPath, "TestFlight readiness 文档");
 const materialsDoc = readRequired(materialsDocPath, "App Store materials 文档");
+const packageJson = readRequired(packageJsonPath, "package.json");
+const smokeScript = readRequired(smokeScriptPath, "iOS Simulator smoke 脚本");
+const gitignore = readRequired(gitignorePath, ".gitignore");
 
 requireIncludes(info, "<string>LOOP 城市回路</string>", "CFBundleDisplayName");
 requireIncludes(info, "NSCameraUsageDescription", "Info.plist");
@@ -76,6 +82,18 @@ for (const expected of [
 ]) {
   requireIncludes(materialsDoc, expected, "ios-app-store-materials.md");
 }
+
+requireIncludes(packageJson, "\"ios:smoke\"", "package.json");
+
+for (const expected of ["xcodebuild", "simctl", "install", "launch", "screenshot"]) {
+  requireIncludes(smokeScript, expected, "ios-simulator-smoke.mjs");
+}
+
+for (const expected of [".loop-build/", ".loop-artifacts/"]) {
+  requireIncludes(gitignore, expected, ".gitignore");
+}
+
+requireIncludes(readinessDoc, "npm run ios:smoke", "ios-testflight-readiness.md");
 
 for (const warning of warnings) {
   console.warn(`Warning: ${warning}`);
