@@ -49,6 +49,11 @@ for (const expected of ["WKUserContentController", "WKUserScript", "LoopNative",
     throw new Error(`WebViewScreen.swift must include native bridge piece: ${expected}`);
   }
 }
+for (const expected of ["loopApiBaseURL", "LOOP_API_BASE_URL", "dataset.apiBase"]) {
+  if (!webViewScreen.includes(expected)) {
+    throw new Error(`WebViewScreen.swift 必须实现 API base 注入：${expected}`);
+  }
+}
 for (const expected of ["camera.capture", "photo.pick", "loopnative:photo-result", "UIImagePickerController", "PHPickerViewController"]) {
   if (!webViewScreen.includes(expected)) {
     throw new Error(`WebViewScreen.swift 必须实现 native photo bridge：${expected}`);
@@ -105,6 +110,9 @@ for (const expected of ["NSCameraUsageDescription", "NSPhotoLibraryUsageDescript
   if (!info.includes(expected)) {
     throw new Error(`Info.plist must include ${expected}`);
   }
+}
+if (!info.includes("LoopAPIBaseURL")) {
+  throw new Error("Info.plist must include LoopAPIBaseURL");
 }
 
 const project = readFileSync(join(appRoot, "LoopCityWebViewApp.xcodeproj", "project.pbxproj"), "utf8");
