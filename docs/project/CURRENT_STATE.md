@@ -22,14 +22,17 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 ## 当前已知可用基线
 
-阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
+阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A、阶段 3B-0 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
 
 最新功能基线：
 
-照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。默认 API base 为空，因此 Web 线上原型和 iOS 离线包不会误向不存在的后端发送请求；配置 API base 后，原生相机/相册回传的 data URL 照片会在本地乐观保存后异步同步到 dev API。
+照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。阶段 3B-0 已新增 iOS API base 注入入口：`Info.plist` 的 `LoopAPIBaseURL` 默认空值，不会改变线上原型或 iOS 离线包行为；未来配置生产/staging API base 后，原生会在 document start 注入给 Web adapter。
 
 近期关键提交：
 
+- `c0d4c12 实现 iOS API base 注入`
+- `6080e81 新增 iOS API base 注入失败检查`
+- `ddefe1a 规划 iOS API base 注入`
 - `0e4869b 接入照片记录 Web 同步 adapter`
 - `dc97b3d 实现照片记录 dev API`
 - `53563c3 新增照片记录持久化失败检查`
@@ -130,6 +133,13 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - 本地保存仍是乐观路径：即使同步失败，用户当前照片记录不会丢失，照片对象会保留 `syncStatus` / `syncError`。
 - 这仍不是生产云端。生产 API base、真实账号、对象存储、删除/导出和隐私标签最终版仍属于后续阶段。
 
+阶段 3B-0 已完成：iOS API base 注入入口已建立。
+
+- `Info.plist` 新增 `LoopAPIBaseURL`，默认空字符串。
+- `WebViewScreen.swift` 会在 document start 注入 `window.LOOP_API_BASE_URL` 和 `document.documentElement.dataset.apiBase`。
+- `npm run ios:check` 会检查 `LoopAPIBaseURL`、`loopApiBaseURL`、`LOOP_API_BASE_URL` 和 `dataset.apiBase`，防止配置入口丢失。
+- 当前仍未配置真实生产 API 域名，也未接真实账号系统。
+
 相关文档：
 
 - `docs/superpowers/specs/2026-06-24-camera-photo-native-bridge-design.md`
@@ -146,6 +156,8 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `docs/release/ios-app-store-materials.md`
 - `docs/superpowers/specs/2026-06-24-photo-record-persistence-design.md`
 - `docs/superpowers/plans/2026-06-24-photo-record-persistence-implementation.md`
+- `docs/superpowers/specs/2026-06-25-ios-api-base-injection-design.md`
+- `docs/superpowers/plans/2026-06-25-ios-api-base-injection-implementation.md`
 
 最近完整验证时间：2026-06-25。
 
@@ -164,7 +176,7 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 
 - 启动本地 dev server 后，HTTP 验证 `POST /api/photo-records`、重复 `clientPhotoId` 返回 `409 DUPLICATE_PHOTO`、`GET /api/photo-records?userId=...` 和照片文件读取均通过。
 
-下一步可继续规划 Phase 3B 生产 API base / 真实账号、真实签名配置、截图生产或推送提醒。
+下一步可继续规划真实账号 / 生产照片 API、真实签名配置、截图生产或推送提醒。
 
 ## 新窗口启动提示
 

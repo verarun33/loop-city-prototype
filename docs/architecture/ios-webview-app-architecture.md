@@ -80,6 +80,13 @@ npm run ios:check
 
 Web app 监听 `loopnative:ready`，标记 `document.documentElement.dataset.nativeShell`，并发送 `ready`。
 
+原生也会在 document start 注入可选 API base：
+
+- `Info.plist` 里的 `LoopAPIBaseURL` 是配置来源。
+- 默认值为空，表示不启用后端同步。
+- 非空时会写入 `window.LOOP_API_BASE_URL` 和 `document.documentElement.dataset.apiBase`。
+- Web 层仍通过 `photoRecordApiBase()` 读取配置，不需要新增 bridge message。
+
 当前原生消息：
 
 - `haptic`：触发 `UIImpactFeedbackGenerator(style: .light)`。
