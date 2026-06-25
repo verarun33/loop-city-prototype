@@ -22,14 +22,17 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 ## 当前已知可用基线
 
-阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A、阶段 3B-0 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
+阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A、阶段 3B-0、阶段 3B-1 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
 
 最新功能基线：
 
-照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。阶段 3B-0 已新增 iOS API base 注入入口：`Info.plist` 的 `LoopAPIBaseURL` 默认空值，不会改变线上原型或 iOS 离线包行为；未来配置生产/staging API base 后，原生会在 document start 注入给 Web adapter。
+照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。阶段 3B-0 已新增 iOS API base 注入入口；阶段 3B-1 已新增 Web 照片同步重试队列。`Info.plist` 的 `LoopAPIBaseURL` 默认空值，不会改变线上原型或 iOS 离线包行为；未来配置生产/staging API base 后，原生会在 document start 注入给 Web adapter，并由 Web 层补发可同步的本地照片。
 
 近期关键提交：
 
+- `6ad18fd 接入照片同步重试队列`
+- `42c76b2 新增照片同步重试失败检查`
+- `0ea0838 规划照片同步重试队列`
 - `c0d4c12 实现 iOS API base 注入`
 - `6080e81 新增 iOS API base 注入失败检查`
 - `ddefe1a 规划 iOS API base 注入`
@@ -140,6 +143,14 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `npm run ios:check` 会检查 `LoopAPIBaseURL`、`loopApiBaseURL`、`LOOP_API_BASE_URL` 和 `dataset.apiBase`，防止配置入口丢失。
 - 当前仍未配置真实生产 API 域名，也未接真实账号系统。
 
+阶段 3B-1 已完成：照片同步重试队列已建立。
+
+- Web 层新增 `collectPendingPhotoSyncs()`、`retryPendingPhotoSync()` 和 `schedulePhotoSyncRetry()`。
+- API base 为空时不发请求；API base 存在时会补发 `syncStatus !== "synced"` 且仍保留 `data:image/...` 的本地照片。
+- 新照片记录会保存 `routeId`；旧照片记录会从 `rec-photo-<day>-<routeId>` 兼容解析 routeId。
+- 同一张照片用 `photoSyncInFlight` 避免并发重复上传；服务端返回 `409 DUPLICATE_PHOTO` 时本地视为已同步。
+- 同一浏览器会话里失败后最多自动短重试 3 次，避免 API 长时间不可用时形成过密请求循环。
+
 相关文档：
 
 - `docs/superpowers/specs/2026-06-24-camera-photo-native-bridge-design.md`
@@ -158,6 +169,8 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `docs/superpowers/plans/2026-06-24-photo-record-persistence-implementation.md`
 - `docs/superpowers/specs/2026-06-25-ios-api-base-injection-design.md`
 - `docs/superpowers/plans/2026-06-25-ios-api-base-injection-implementation.md`
+- `docs/superpowers/specs/2026-06-25-photo-sync-retry-design.md`
+- `docs/superpowers/plans/2026-06-25-photo-sync-retry-implementation.md`
 
 最近完整验证时间：2026-06-25。
 

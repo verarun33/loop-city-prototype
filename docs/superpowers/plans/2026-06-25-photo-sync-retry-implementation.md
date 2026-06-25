@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add a lightweight Web retry queue for pending photo syncs so local photo records can be retried when an API base becomes available again.
+**Goal:** Add a lightweight Web retry queue for pending or unsynced photo syncs so local photo records can be retried when an API base becomes available again.
 
 **Architecture:** Keep `savePhotoRecord()` as the optimistic local write. Add small retry helpers around the existing `syncPhotoRecord()` adapter, using raw `state.records[].photos` metadata and a `photoSyncInFlight` set to prevent duplicate concurrent uploads.
 
@@ -121,7 +121,7 @@ function collectPendingPhotoSyncs() {
     const routeItem = routeContextForPhotoRecord(record);
     if (!routeItem.id) return [];
     return photos
-      .filter((photo) => photo?.syncStatus === "pending" && String(photo.url || "").startsWith("data:image/"))
+      .filter((photo) => photo?.syncStatus !== "synced" && String(photo.url || "").startsWith("data:image/"))
       .map((photo) => ({ record, photo, routeItem }));
   });
 }
