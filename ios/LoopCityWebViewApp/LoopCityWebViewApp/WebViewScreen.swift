@@ -1,4 +1,5 @@
 import CoreLocation
+import Foundation
 import PhotosUI
 import SwiftUI
 import UniformTypeIdentifiers
@@ -68,9 +69,36 @@ struct WebViewScreen: UIViewRepresentable {
             return manager
         }()
 
+        private static var loopApiBaseURL: String {
+            guard let value = Bundle.main.object(forInfoDictionaryKey: "LoopAPIBaseURL") as? String else {
+                return ""
+            }
+            return value.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        private static var loopApiBaseURLLiteral: String {
+            javaScriptStringLiteral(loopApiBaseURL)
+        }
+
+        private static func javaScriptStringLiteral(_ value: String) -> String {
+            guard
+                let data = try? JSONSerialization.data(withJSONObject: [value], options: []),
+                let arrayLiteral = String(data: data, encoding: .utf8),
+                arrayLiteral.count >= 2
+            else {
+                return "\"\""
+            }
+            return String(arrayLiteral.dropFirst().dropLast())
+        }
+
         static let nativeBootstrapScript = WKUserScript(
             source: """
             (() => {
+              const apiBase = \(loopApiBaseURLLiteral);
+              window.LOOP_API_BASE_URL = apiBase;
+              if (apiBase) {
+                document.documentElement.dataset.apiBase = apiBase;
+              }
               if (window.LoopNative) return;
               const bridge = Object.freeze({
                 platform: "ios",

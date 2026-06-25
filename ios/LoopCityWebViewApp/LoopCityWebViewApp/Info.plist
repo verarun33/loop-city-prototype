@@ -22,6 +22,8 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LoopAPIBaseURL</key>
+	<string></string>
 	<key>NSCameraUsageDescription</key>
 	<string>LOOP 会在后续版本用于保存你的城市打卡照片。</string>
 	<key>NSPhotoLibraryUsageDescription</key>
