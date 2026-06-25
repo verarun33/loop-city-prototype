@@ -5844,6 +5844,7 @@ function savePhotoRecord(routeItem, source = "camera", photoAsset = null) {
     existing.photos = [...existingPhotos, photo];
     existing.photo = true;
     existing.photoSource = sourceText;
+    existing.routeId = existing.routeId || routeItem.id;
     existing.updatedAt = new Date().toISOString();
     existing.note = `${routeItem.title} 已保存 ${existing.photos.length} 个站点照片。`;
     return { saved: true, record: existing, photo };
@@ -5853,6 +5854,7 @@ function savePhotoRecord(routeItem, source = "camera", photoAsset = null) {
     day,
     dateISO,
     title: routeItem.title,
+    routeId: routeItem.id,
     photo: true,
     photoSource: sourceText,
     photos: [photo],
@@ -7114,6 +7116,9 @@ const nativeLocationRequests = new Map();
 let nativeLocationRequestCounter = 0;
 const nativeShareRequests = new Map();
 let nativeShareRequestCounter = 0;
+const PHOTO_SYNC_RETRY_DELAY_MS = 1800;
+const photoSyncInFlight = new Set();
+let photoSyncRetryTimer = null;
 
 function photoRecordApiBase() {
   let localApiBase = "";
@@ -7126,10 +7131,31 @@ function photoRecordApiBase() {
   return String(configured || "").replace(/\/+$/, "");
 }
 
+function routeIdForPhotoRecord(record) {
+  if (record?.routeId) return record.routeId;
+  const match = String(record?.id || "").match(/^rec-photo-\d+-(.+)$/);
+  return match?.[1] || "";
+}
+
+function photoSyncClientId(record, photo) {
+  return `${record.id}-${photo.stopIndex}-${Math.abs(stableHash(photo.station || ""))}`;
+}
+
+function routeContextForPhotoRecord(record) {
+  const routeId = routeIdForPhotoRecord(record);
+  return routeById(routeId, record.city || state.city) || {
+    id: routeId,
+    title: record.title || "照片记录",
+    city: record.city || state.city,
+    layer: record.layer || "",
+    stops: Array.isArray(record.stops) ? record.stops : []
+  };
+}
+
 function buildPhotoRecordPayload(routeItem, source, photoAsset, record, photo) {
   return {
     clientRecordId: record.id,
-    clientPhotoId: `${record.id}-${photo.stopIndex}-${Math.abs(stableHash(photo.station))}`,
+    clientPhotoId: photoSyncClientId(record, photo),
     userId: state.currentUser?.id || "prototype-user",
     city: record.city || routeItem.city || state.city,
     routeId: routeItem.id,
@@ -7150,6 +7176,9 @@ async function syncPhotoRecord(payload, record, photo) {
   const apiBase = photoRecordApiBase();
   if (!apiBase || !payload.imageDataUrl.startsWith("data:image/")) return;
 
+  const clientPhotoId = payload.clientPhotoId || photoSyncClientId(record, photo);
+  if (photoSyncInFlight.has(clientPhotoId)) return;
+  photoSyncInFlight.add(clientPhotoId);
   photo.syncStatus = "pending";
   try {
     const response = await fetch(`${apiBase}/api/photo-records`, {
@@ -7158,17 +7187,60 @@ async function syncPhotoRecord(payload, record, photo) {
       body: JSON.stringify(payload)
     });
     const data = await response.json().catch(() => ({}));
+    if (response.status === 409 && data.error === "DUPLICATE_PHOTO") {
+      photo.syncStatus = "synced";
+      delete photo.syncError;
+      delete photo.syncAttempts;
+      record.updatedAt = new Date().toISOString();
+      persistUserState();
+      return;
+    }
     if (!response.ok || !data.ok) throw new Error(data.error || "PHOTO_SYNC_FAILED");
     photo.syncStatus = "synced";
     photo.remotePhotoUrl = data.record?.photoUrl || "";
     delete photo.syncError;
+    delete photo.syncAttempts;
     record.updatedAt = new Date().toISOString();
     persistUserState();
   } catch (error) {
     photo.syncStatus = "pending";
+    photo.syncAttempts = Math.min((Number(photo.syncAttempts) || 0) + 1, 3);
     photo.syncError = error?.message || "PHOTO_SYNC_FAILED";
     persistUserState();
+    if (photo.syncAttempts < 3) schedulePhotoSyncRetry(PHOTO_SYNC_RETRY_DELAY_MS * photo.syncAttempts);
+  } finally {
+    photoSyncInFlight.delete(clientPhotoId);
   }
+}
+
+function collectPendingPhotoSyncs() {
+  if (!photoRecordApiBase()) return [];
+  return state.records.flatMap((record) => {
+    const photos = Array.isArray(record.photos) ? record.photos : [];
+    const routeItem = routeContextForPhotoRecord(record);
+    if (!routeItem.id) return [];
+    return photos
+      .filter((photo) => photo?.syncStatus !== "synced" && String(photo.url || "").startsWith("data:image/"))
+      .map((photo) => ({ record, photo, routeItem }));
+  });
+}
+
+async function retryPendingPhotoSync() {
+  const pending = collectPendingPhotoSyncs();
+  for (const item of pending) {
+    const clientPhotoId = photoSyncClientId(item.record, item.photo);
+    if (photoSyncInFlight.has(clientPhotoId)) continue;
+    const payload = buildPhotoRecordPayload(item.routeItem, item.photo.source || "camera", null, item.record, item.photo);
+    await syncPhotoRecord(payload, item.record, item.photo);
+  }
+}
+
+function schedulePhotoSyncRetry(delayMs = PHOTO_SYNC_RETRY_DELAY_MS) {
+  if (photoSyncRetryTimer || !photoRecordApiBase()) return;
+  photoSyncRetryTimer = window.setTimeout(() => {
+    photoSyncRetryTimer = null;
+    void retryPendingPhotoSync();
+  }, delayMs);
 }
 
 function nativeBridgeCanPost(messageName) {
@@ -7399,6 +7471,7 @@ function installNativeShellBridge() {
     if (LOOP_NATIVE_BRIDGE_MESSAGES.includes("ready")) {
       native.post("ready", { href: window.location.href, dataVersion: LOOP_DATA_VERSION });
     }
+    schedulePhotoSyncRetry();
   };
 
   window.addEventListener("loopnative:ready", markNativeShell, { once: true });
@@ -7408,9 +7481,11 @@ function installNativeShellBridge() {
 window.addEventListener("loopnative:photo-result", handleNativePhotoResult);
 window.addEventListener("loopnative:location-result", handleNativeLocationResult);
 window.addEventListener("loopnative:share-result", handleNativeShareResult);
+window.addEventListener("online", schedulePhotoSyncRetry);
 installNativeShellBridge();
 installAppInteractionGuards();
 resetPrototypeStorageIfNeeded();
 initAuth();
 bindEvents();
+schedulePhotoSyncRetry();
 render();
