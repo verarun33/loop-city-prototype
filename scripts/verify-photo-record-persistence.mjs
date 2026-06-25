@@ -27,6 +27,12 @@ for (const expected of [
   "photoRecordApiBase",
   "buildPhotoRecordPayload",
   "syncPhotoRecord",
+  "collectPendingPhotoSyncs",
+  "retryPendingPhotoSync",
+  "schedulePhotoSyncRetry",
+  "photoSyncInFlight",
+  "routeIdForPhotoRecord",
+  "window.addEventListener(\"online\"",
   "syncStatus",
   "remotePhotoUrl"
 ]) {
