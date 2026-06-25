@@ -5797,8 +5797,13 @@ function confirmCheckinAction(routeItem, locationAsset = null) {
 }
 
 function confirmPhotoAction(routeItem, source = "camera") {
-  const saved = savePhotoRecord(routeItem, source);
+  const result = savePhotoRecord(routeItem, source);
+  const saved = Boolean(result.saved);
   state.photoTaken = saved || state.photoTaken;
+  if (saved && result.record && result.photo) {
+    const payload = buildPhotoRecordPayload(routeItem, source, null, result.record, result.photo);
+    void syncPhotoRecord(payload, result.record, result.photo);
+  }
   showToast(saved ? `${currentActionStop(routeItem).name} 的照片已保存到我的 LOOP。` : "这一站已经保存过照片，每个站点只能保留一张。");
   persistUserState();
   renderRouteDetail();
@@ -5828,21 +5833,22 @@ function savePhotoRecord(routeItem, source = "camera", photoAsset = null) {
     url: photoUrl,
     mimeType: photoAsset?.mimeType || "",
     width: photoAsset?.width || 0,
-    height: photoAsset?.height || 0
+    height: photoAsset?.height || 0,
+    capturedAt: photoAsset?.capturedAt || new Date().toISOString()
   };
   const existing = state.records.find((record) => record.id === recordId);
   if (existing) {
     const existingPhotos = Array.isArray(existing.photos) ? existing.photos : [];
     const existingPhoto = existingPhotos.some((item) => item.stopIndex === stop.index || item.station === stop.name);
-    if (existingPhoto) return false;
+    if (existingPhoto) return { saved: false, record: existing, photo: null };
     existing.photos = [...existingPhotos, photo];
     existing.photo = true;
     existing.photoSource = sourceText;
     existing.updatedAt = new Date().toISOString();
     existing.note = `${routeItem.title} 已保存 ${existing.photos.length} 个站点照片。`;
-    return true;
+    return { saved: true, record: existing, photo };
   }
-  state.records.unshift({
+  const record = {
     id: recordId,
     day,
     dateISO,
@@ -5858,8 +5864,9 @@ function savePhotoRecord(routeItem, source = "camera", photoAsset = null) {
     duration: routeItem.duration || "即时记录",
     budget: "照片记录",
     note: `${sourceText}已保存：${stop.name} 会出现在今天、本周、本月、全年和所有站点里。`
-  });
-  return true;
+  };
+  state.records.unshift(record);
+  return { saved: true, record, photo };
 }
 
 function continueFeaturedPass(routeItem) {
@@ -7108,6 +7115,62 @@ let nativeLocationRequestCounter = 0;
 const nativeShareRequests = new Map();
 let nativeShareRequestCounter = 0;
 
+function photoRecordApiBase() {
+  let localApiBase = "";
+  try {
+    localApiBase = localStorage.getItem("loop.apiBase") || "";
+  } catch {
+    localApiBase = "";
+  }
+  const configured = window.LOOP_API_BASE_URL || document.documentElement.dataset.apiBase || localApiBase || "";
+  return String(configured || "").replace(/\/+$/, "");
+}
+
+function buildPhotoRecordPayload(routeItem, source, photoAsset, record, photo) {
+  return {
+    clientRecordId: record.id,
+    clientPhotoId: `${record.id}-${photo.stopIndex}-${Math.abs(stableHash(photo.station))}`,
+    userId: state.currentUser?.id || "prototype-user",
+    city: record.city || routeItem.city || state.city,
+    routeId: routeItem.id,
+    routeTitle: routeItem.title,
+    layer: record.layer || routeItem.layer || "",
+    station: photo.station,
+    stopIndex: photo.stopIndex,
+    source: photo.source || source,
+    capturedAt: photo.capturedAt || photoAsset?.capturedAt || new Date().toISOString(),
+    mimeType: photo.mimeType || photoAsset?.mimeType || "image/jpeg",
+    width: photo.width || photoAsset?.width || 0,
+    height: photo.height || photoAsset?.height || 0,
+    imageDataUrl: photo.url || photoAsset?.imageDataUrl || ""
+  };
+}
+
+async function syncPhotoRecord(payload, record, photo) {
+  const apiBase = photoRecordApiBase();
+  if (!apiBase || !payload.imageDataUrl.startsWith("data:image/")) return;
+
+  photo.syncStatus = "pending";
+  try {
+    const response = await fetch(`${apiBase}/api/photo-records`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) throw new Error(data.error || "PHOTO_SYNC_FAILED");
+    photo.syncStatus = "synced";
+    photo.remotePhotoUrl = data.record?.photoUrl || "";
+    delete photo.syncError;
+    record.updatedAt = new Date().toISOString();
+    persistUserState();
+  } catch (error) {
+    photo.syncStatus = "pending";
+    photo.syncError = error?.message || "PHOTO_SYNC_FAILED";
+    persistUserState();
+  }
+}
+
 function nativeBridgeCanPost(messageName) {
   const native = window.LoopNative;
   return Boolean(
@@ -7305,6 +7368,7 @@ function handleNativePhotoResult(event) {
     mimeType: detail.mimeType || "image/jpeg",
     width: Number(detail.width) || 0,
     height: Number(detail.height) || 0,
+    capturedAt: detail.capturedAt || new Date().toISOString(),
     stopIndex: request.stopIndex,
     station: request.station
   };
@@ -7312,8 +7376,13 @@ function handleNativePhotoResult(event) {
     showToast("照片格式暂时无法保存。");
     return;
   }
-  const saved = savePhotoRecord(routeItem, request.source, photoAsset);
+  const result = savePhotoRecord(routeItem, request.source, photoAsset);
+  const saved = Boolean(result.saved);
   state.photoTaken = saved || state.photoTaken;
+  if (saved && result.record && result.photo) {
+    const payload = buildPhotoRecordPayload(routeItem, request.source, photoAsset, result.record, result.photo);
+    void syncPhotoRecord(payload, result.record, result.photo);
+  }
   showToast(saved ? `${photoAsset.station} 的照片已保存到我的 LOOP。` : "这一站已经保存过照片，每个站点只能保留一张。");
   persistUserState();
   renderRouteDetail();
