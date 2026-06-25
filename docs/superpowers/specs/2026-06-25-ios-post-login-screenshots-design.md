@@ -161,10 +161,10 @@ applyScreenshotScenario();
 
 - `LOOP_IOS_SMOKE_SCENARIO`
 
-如果设置，则 `simctl launch` 时传给 app：
+如果设置，则通过 `SIMCTL_CHILD_` 环境变量传给 app。当前 `simctl launch` 帮助信息明确说明，启动 app 的环境变量要在调用环境里使用 `SIMCTL_CHILD_` 前缀，而不是 `launch --env` 参数：
 
 ```sh
-xcrun simctl launch --env LOOP_SCREENSHOT_SCENARIO "<scenario>" <udid> <bundleId>
+SIMCTL_CHILD_LOOP_SCREENSHOT_SCENARIO="<scenario>" xcrun simctl launch <udid> <bundleId>
 ```
 
 如果不设置，继续保持现有 smoke 行为。
@@ -177,7 +177,7 @@ xcrun simctl launch --env LOOP_SCREENSHOT_SCENARIO "<scenario>" <udid> <bundleId
 flowchart LR
   A["ios-screenshot-pack.mjs"] --> B["设置设备和场景环境变量"]
   B --> C["ios-simulator-smoke.mjs"]
-  C --> D["simctl launch --env LOOP_SCREENSHOT_SCENARIO"]
+  C --> D["SIMCTL_CHILD_LOOP_SCREENSHOT_SCENARIO + simctl launch"]
   D --> E["WebViewScreen.swift"]
   E --> F["index.html?loopScreenshotScenario=..."]
   F --> G["script.js applyScreenshotScenario"]
@@ -200,7 +200,7 @@ flowchart LR
 
 - `script.js` 包含 `loopScreenshotScenario`、场景白名单、`applyScreenshotScenario`。
 - `WebViewScreen.swift` 包含 `LOOP_SCREENSHOT_SCENARIO` 和查询参数拼接。
-- `ios-simulator-smoke.mjs` 包含 `LOOP_IOS_SMOKE_SCENARIO` 和 `--env` launch。
+- `ios-simulator-smoke.mjs` 包含 `LOOP_IOS_SMOKE_SCENARIO` 和 `SIMCTL_CHILD_LOOP_SCREENSHOT_SCENARIO`。
 - `ios-screenshot-pack.mjs` 包含默认场景列表和 `<scenario>.png` 输出。
 
 实现后运行：
