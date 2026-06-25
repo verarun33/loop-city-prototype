@@ -22,14 +22,17 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 ## 当前已知可用基线
 
-阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A、阶段 3B-0、阶段 3B-1 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
+阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A、阶段 3B-0、阶段 3B-1、阶段 3C-0 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
 
 最新功能基线：
 
-照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。阶段 3B-0 已新增 iOS API base 注入入口；阶段 3B-1 已新增 Web 照片同步重试队列。`Info.plist` 的 `LoopAPIBaseURL` 默认空值，不会改变线上原型或 iOS 离线包行为；未来配置生产/staging API base 后，原生会在 document start 注入给 Web adapter，并由 Web 层补发可同步的本地照片。
+照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。阶段 3B-0 已新增 iOS API base 注入入口；阶段 3B-1 已新增 Web 照片同步重试队列；阶段 3C-0 已新增 iOS 本地通知 bridge。`Info.plist` 的 `LoopAPIBaseURL` 默认空值，不会改变线上原型或 iOS 离线包行为；未来配置生产/staging API base 后，原生会在 document start 注入给 Web adapter，并由 Web 层补发可同步的本地照片。
 
 近期关键提交：
 
+- `b79b405 接入本地通知 native bridge`
+- `b3fafe8 新增通知 bridge 失败检查`
+- `16fab32 规划本地通知 native bridge`
 - `6ad18fd 接入照片同步重试队列`
 - `42c76b2 新增照片同步重试失败检查`
 - `0ea0838 规划照片同步重试队列`
@@ -151,6 +154,14 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - 同一张照片用 `photoSyncInFlight` 避免并发重复上传；服务端返回 `409 DUPLICATE_PHOTO` 时本地视为已同步。
 - 同一浏览器会话里失败后最多自动短重试 3 次，避免 API 长时间不可用时形成过密请求循环。
 
+阶段 3C-0 已完成：iOS 本地通知 native bridge 已接入。
+
+- Web bridge registry 新增 `notification.schedule`，原生到 Web 新增 `loopnative:notification-result`。
+- “我的 -> 设置 -> 通知”在 iOS app 模式会请求系统通知授权并安排一条本地路线提醒；浏览器模式保留轻量说明 toast。
+- iOS 使用 `UNUserNotificationCenter` 和本地 `UNTimeIntervalNotificationTrigger`，不接 APNs 远程推送，也不增加 Push Notifications capability。
+- `scripts/verify-ios-webview-wrapper.mjs` 会检查 Web adapter、Swift handler 和 bridge registry，防止通知 bridge 漏同步。
+- Simulator build 能验证编译和 bridge 契约；真机通知弹窗和实际提醒仍需要后续 TestFlight/真机 smoke。
+
 相关文档：
 
 - `docs/superpowers/specs/2026-06-24-camera-photo-native-bridge-design.md`
@@ -171,6 +182,8 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `docs/superpowers/plans/2026-06-25-ios-api-base-injection-implementation.md`
 - `docs/superpowers/specs/2026-06-25-photo-sync-retry-design.md`
 - `docs/superpowers/plans/2026-06-25-photo-sync-retry-implementation.md`
+- `docs/superpowers/specs/2026-06-25-local-notification-bridge-design.md`
+- `docs/superpowers/plans/2026-06-25-local-notification-bridge-implementation.md`
 
 最近完整验证时间：2026-06-25。
 
@@ -189,7 +202,7 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 
 - 启动本地 dev server 后，HTTP 验证 `POST /api/photo-records`、重复 `clientPhotoId` 返回 `409 DUPLICATE_PHOTO`、`GET /api/photo-records?userId=...` 和照片文件读取均通过。
 
-下一步可继续规划真实账号 / 生产照片 API、真实签名配置、截图生产或推送提醒。
+下一步可继续规划真实账号 / 生产照片 API、真实签名配置、截图生产、真机通知 smoke 或远程推送策略。
 
 ## 新窗口启动提示
 
