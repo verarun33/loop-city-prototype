@@ -2,6 +2,7 @@
 .env
 .playwright-cli/
 .superpowers/
+.loop-data/
 node_modules/
 xcuserdata/
 *.xcuserstate

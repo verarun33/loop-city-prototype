@@ -8,6 +8,7 @@
     "data:check": "node scripts/verify-loop-data.mjs",
     "ui:check": "node scripts/verify-mobile-profile-ui.mjs",
     "check": "node --check script.js && node --check server.mjs",
+    "photo:persistence-check": "node scripts/verify-photo-record-persistence.mjs",
     "test": "npm run data:check && npm run ui:check && node scripts/verify-featured-pass.mjs",
     "ios:icon": "swift scripts/generate-ios-app-icon.swift",
     "ios:sync": "node scripts/sync-ios-web-assets.mjs",
