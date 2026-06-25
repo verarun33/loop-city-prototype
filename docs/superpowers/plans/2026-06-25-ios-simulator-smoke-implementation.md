@@ -101,6 +101,8 @@ function runAllowingAlreadyBooted(command, args) {}
 function listDevices() {}
 function chooseDevice(devices) {}
 function ensureFile(path, label) {}
+function decodePngMetrics(path) {}
+async function waitForRenderedScreenshot(udid) {}
 ```
 
 脚本必须执行：
@@ -141,7 +143,7 @@ Run:
 npm run ios:smoke
 ```
 
-Expected: PASS，并生成 `.loop-artifacts/ios-smoke/loop-city-ios-smoke.png`。
+Expected: PASS，并生成 `.loop-artifacts/ios-smoke/loop-city-ios-smoke.png`；如果先截到白屏或启动过渡黑屏，脚本会继续轮询直到像素分布显示 WebView 首屏已渲染。
 
 - [ ] **Step 6: 提交实现**
 

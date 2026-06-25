@@ -62,15 +62,15 @@
 4. 执行 `xcrun simctl bootstatus <UDID> -b`。
 5. 执行 `xcrun simctl install <UDID> <app path>`。
 6. 执行 `xcrun simctl launch <UDID> com.verarun.loopcity.webview`。
-7. 短暂等待，执行 `xcrun simctl io <UDID> screenshot <png path>`。
-8. 检查截图文件存在且大小大于 0。
+7. 执行 `xcrun simctl io <UDID> screenshot <png path>`，并轮询直到截图内容区域不像白屏或系统启动过渡黑屏。
+8. 检查截图文件存在、大小合理，并通过 PNG 像素分布确认首屏已经渲染出 LOOP 内容。
 
 ## 验证
 
 新增失败检查先要求：
 
 - `package.json` 存在 `ios:smoke`。
-- `scripts/ios-simulator-smoke.mjs` 存在，并包含关键命令：`xcodebuild`、`simctl install`、`simctl launch`、`simctl io`、`screenshot`。
+- `scripts/ios-simulator-smoke.mjs` 存在，并包含关键命令和判定：`xcodebuild`、`simctl install`、`simctl launch`、`simctl io`、`screenshot`、`waitForRenderedScreenshot`、`decodePngMetrics`。
 - `docs/release/ios-testflight-readiness.md` 记录 Simulator smoke 命令。
 - `.gitignore` 忽略 `.loop-build/` 和 `.loop-artifacts/`。
 
@@ -98,5 +98,5 @@ npm run ios:smoke
 ## 风险
 
 - Simulator 设备名会随 Xcode 版本变化，所以脚本需要自动回退到可用 iPhone。
-- 首次启动 simulator 可能较慢，所以 `bootstatus -b` 必须等待设备真正可用。
-- 截图只能证明渲染出画面，不证明每个 WebView 功能都正常；功能契约仍由现有 `ios:check`、Web smoke 和后续真机 smoke 覆盖。
+- 首次启动 simulator 可能较慢，所以 `bootstatus -b` 必须等待设备真正可用，截图也必须用条件等待而不是固定延迟。
+- 截图像素判定只能证明首屏渲染出 LOOP 内容，不证明每个 WebView 功能都正常；功能契约仍由现有 `ios:check`、Web smoke 和后续真机 smoke 覆盖。

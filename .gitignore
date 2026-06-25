@@ -3,6 +3,8 @@
 .playwright-cli/
 .superpowers/
 .loop-data/
+.loop-build/
+.loop-artifacts/
 node_modules/
 xcuserdata/
 *.xcuserstate

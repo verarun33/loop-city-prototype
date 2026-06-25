@@ -85,7 +85,18 @@ for (const expected of [
 
 requireIncludes(packageJson, "\"ios:smoke\"", "package.json");
 
-for (const expected of ["xcodebuild", "simctl", "install", "launch", "screenshot"]) {
+for (const expected of [
+  "xcodebuild",
+  "simctl",
+  "install",
+  "launch",
+  "screenshot",
+  "waitForRenderedScreenshot",
+  "decodePngMetrics",
+  "contentSampleCrop",
+  "darkRatio",
+  "colorfulRatio"
+]) {
   requireIncludes(smokeScript, expected, "ios-simulator-smoke.mjs");
 }
 

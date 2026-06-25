@@ -24,12 +24,19 @@ npm run ios:release-check
 ## 当前本地状态
 
 - Simulator 构建命令：`npm run ios:build`
+- Simulator 启动 smoke：`npm run ios:smoke`
 - 当前构建方式：`CODE_SIGNING_ALLOWED=NO`
 - 当前显示名：`LOOP 城市回路`
 - 当前版本号：`0.1`
 - 当前 build 号：`1`
 - 当前 Bundle ID：`com.verarun.loopcity.webview`
 - 当前 Apple Developer Team：尚未配置，`DEVELOPMENT_TEAM` 为空。
+
+### iOS Simulator smoke
+
+`npm run ios:smoke` 会在本机 simulator 中构建、安装并启动 WebView app，截图输出到 `.loop-artifacts/ios-smoke/loop-city-ios-smoke.png`。
+
+这个命令用于 repo 级启动 smoke，不代表 TestFlight 上传、真实签名或真机权限验证完成。
 
 ## TestFlight 前人工待办
 
