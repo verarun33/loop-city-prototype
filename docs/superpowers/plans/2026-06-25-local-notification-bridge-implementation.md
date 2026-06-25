@@ -222,20 +222,11 @@ private func handleNotificationSchedule(payload: [String: Any]) {
         return
     }
 
-    let center = UNUserNotificationCenter.current()
-    center.requestAuthorization(options: [.alert, .sound, .badge]) { [weak self] granted, error in
-        Task { @MainActor in
-            guard let self else { return }
-            if let error {
-                self.sendNotificationResult(
-                    requestId: request.requestId,
-                    reason: "failed",
-                    message: error.localizedDescription
-                )
-                return
-            }
+    Task { @MainActor in
+        do {
+            let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
             guard granted else {
-                self.sendNotificationResult(
+                sendNotificationResult(
                     requestId: request.requestId,
                     reason: "denied",
                     message: "通知权限未开启"
@@ -252,24 +243,19 @@ private func handleNotificationSchedule(payload: [String: Any]) {
             let identifier = "loop-\(request.requestId)"
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: request.delaySeconds, repeats: false)
             let notification = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-            center.add(notification) { error in
-                Task { @MainActor in
-                    if let error {
-                        self.sendNotificationResult(
-                            requestId: request.requestId,
-                            reason: "failed",
-                            message: error.localizedDescription
-                        )
-                        return
-                    }
-                    self.sendNotificationResult(
-                        requestId: request.requestId,
-                        scheduled: true,
-                        authorizationStatus: "authorized",
-                        identifier: identifier
-                    )
-                }
-            }
+            try await UNUserNotificationCenter.current().add(notification)
+            sendNotificationResult(
+                requestId: request.requestId,
+                scheduled: true,
+                authorizationStatus: "authorized",
+                identifier: identifier
+            )
+        } catch {
+            sendNotificationResult(
+                requestId: request.requestId,
+                reason: "failed",
+                message: error.localizedDescription
+            )
         }
     }
 }

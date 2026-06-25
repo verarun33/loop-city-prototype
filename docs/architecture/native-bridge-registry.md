@@ -112,6 +112,26 @@ Payload：
 
 原生行为：打开 `UIActivityViewController`。完成、取消或失败后派发 `loopnative:share-result`。
 
+### `notification.schedule`
+
+方向：Web 到原生
+
+用途：请求 iOS 获取通知授权，并安排一条本地路线提醒。
+
+Payload：
+
+```json
+{
+  "requestId": "notification-1",
+  "kind": "route-reminder",
+  "title": "LOOP 城市回路",
+  "body": "明天可以继续完成一条城市路线。",
+  "delaySeconds": 86400
+}
+```
+
+原生行为：通过 `UNUserNotificationCenter` 请求本地通知授权。授权后安排一条不重复的本地通知，并派发 `loopnative:notification-result`。这是本地通知，不是 APNs 远程推送。
+
 ## 预留消息
 
 当前没有预留消息。
@@ -235,5 +255,42 @@ Payload：
 - `cancelled`
 - `invalid-payload`
 - `unavailable`
+- `failed`
+- `unknown`
+
+### `loopnative:notification-result`
+
+方向：原生到 Web
+
+用途：返回本地通知授权和排程结果。
+
+成功 detail：
+
+```json
+{
+  "requestId": "notification-1",
+  "ok": true,
+  "scheduled": true,
+  "authorizationStatus": "authorized",
+  "identifier": "loop-notification-1"
+}
+```
+
+失败 detail：
+
+```json
+{
+  "requestId": "notification-1",
+  "ok": false,
+  "scheduled": false,
+  "reason": "denied",
+  "message": "通知权限未开启"
+}
+```
+
+允许的失败原因：
+
+- `denied`
+- `invalid-payload`
 - `failed`
 - `unknown`

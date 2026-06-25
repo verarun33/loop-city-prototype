@@ -3,6 +3,7 @@ import Foundation
 import PhotosUI
 import SwiftUI
 import UniformTypeIdentifiers
+import UserNotifications
 import WebKit
 
 struct WebViewScreen: UIViewRepresentable {
@@ -175,6 +176,30 @@ struct WebViewScreen: UIViewRepresentable {
             }
         }
 
+        private struct NativeNotificationRequest {
+            let requestId: String
+            let kind: String
+            let title: String
+            let body: String
+            let delaySeconds: TimeInterval
+
+            init?(payload: [String: Any]) {
+                guard
+                    let requestId = payload["requestId"] as? String, !requestId.isEmpty,
+                    let title = payload["title"] as? String, !title.isEmpty,
+                    let body = payload["body"] as? String, !body.isEmpty
+                else {
+                    return nil
+                }
+                self.requestId = requestId
+                self.kind = payload["kind"] as? String ?? "route-reminder"
+                self.title = title
+                self.body = body
+                let delay = payload["delaySeconds"] as? Double ?? 86400
+                self.delaySeconds = min(max(delay, 60), 604800)
+            }
+        }
+
         func attach(_ webView: WKWebView) {
             self.webView = webView
         }
@@ -238,6 +263,8 @@ struct WebViewScreen: UIViewRepresentable {
                 handleLocationRequest(payload: payload)
             case "share.open":
                 handleShareOpen(payload: payload)
+            case "notification.schedule":
+                handleNotificationSchedule(payload: payload)
             default:
                 break
             }
@@ -357,6 +384,54 @@ struct WebViewScreen: UIViewRepresentable {
                 }
             }
             presentShareController(controller, request: request)
+        }
+
+        private func handleNotificationSchedule(payload: [String: Any]) {
+            guard let request = NativeNotificationRequest(payload: payload) else {
+                sendNotificationResult(
+                    requestId: payload["requestId"] as? String ?? "",
+                    reason: "invalid-payload",
+                    message: "通知请求缺少 requestId、title 或 body"
+                )
+                return
+            }
+
+            Task { @MainActor in
+                do {
+                    let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
+                    guard granted else {
+                        sendNotificationResult(
+                            requestId: request.requestId,
+                            reason: "denied",
+                            message: "通知权限未开启"
+                        )
+                        return
+                    }
+
+                    let content = UNMutableNotificationContent()
+                    content.title = request.title
+                    content.body = request.body
+                    content.sound = .default
+                    content.userInfo = ["kind": request.kind]
+
+                    let identifier = "loop-\(request.requestId)"
+                    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: request.delaySeconds, repeats: false)
+                    let notification = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+                    try await UNUserNotificationCenter.current().add(notification)
+                    sendNotificationResult(
+                        requestId: request.requestId,
+                        scheduled: true,
+                        authorizationStatus: "authorized",
+                        identifier: identifier
+                    )
+                } catch {
+                    sendNotificationResult(
+                        requestId: request.requestId,
+                        reason: "failed",
+                        message: error.localizedDescription
+                    )
+                }
+            }
         }
 
         private func requestCurrentLocation() {
@@ -512,6 +587,33 @@ struct WebViewScreen: UIViewRepresentable {
             dispatchShareResult(payload)
         }
 
+        private func sendNotificationResult(
+            requestId: String,
+            scheduled: Bool,
+            authorizationStatus: String,
+            identifier: String
+        ) {
+            let payload: [String: Any] = [
+                "requestId": requestId,
+                "ok": true,
+                "scheduled": scheduled,
+                "authorizationStatus": authorizationStatus,
+                "identifier": identifier
+            ]
+            dispatchNotificationResult(payload)
+        }
+
+        private func sendNotificationResult(requestId: String, reason: String, message: String) {
+            let payload: [String: Any] = [
+                "requestId": requestId,
+                "ok": false,
+                "scheduled": false,
+                "reason": reason,
+                "message": message
+            ]
+            dispatchNotificationResult(payload)
+        }
+
         private func resizedImage(_ image: UIImage, maxDimension: CGFloat) -> UIImage {
             let size = image.size
             let longest = max(size.width, size.height)
@@ -554,6 +656,17 @@ struct WebViewScreen: UIViewRepresentable {
                 return
             }
             let script = "window.dispatchEvent(new CustomEvent('loopnative:share-result', { detail: \(json) }));"
+            webView?.evaluateJavaScript(script)
+        }
+
+        private func dispatchNotificationResult(_ payload: [String: Any]) {
+            guard
+                let data = try? JSONSerialization.data(withJSONObject: payload),
+                let json = String(data: data, encoding: .utf8)
+            else {
+                return
+            }
+            let script = "window.dispatchEvent(new CustomEvent('loopnative:notification-result', { detail: \(json) }));"
             webView?.evaluateJavaScript(script)
         }
     }

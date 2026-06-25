@@ -6833,9 +6833,13 @@ function renderSettingsPanel() {
         openCitySheet();
         return;
       }
+      if (action === "notify") {
+        if (requestNativeNotificationReminder()) return;
+        showToast("iOS app 中会使用本地通知提醒你继续探索。");
+        return;
+      }
       const messages = {
         interests: "兴趣偏好编辑会接到首次设置里的兴趣选择。",
-        notify: "通知设置会包含路线提醒和通行证到期提醒。",
         privacy: "隐私设置会管理探索记录、照片和订单可见范围。",
         account: "账号设置会管理登录、退出和未来会员身份。"
       };
@@ -7108,7 +7112,7 @@ function installAppInteractionGuards() {
   }, { capture: true, passive: false });
 }
 
-const LOOP_NATIVE_BRIDGE_MESSAGES = Object.freeze(["ready", "haptic", "camera.capture", "photo.pick", "location.request", "share.open"]);
+const LOOP_NATIVE_BRIDGE_MESSAGES = Object.freeze(["ready", "haptic", "camera.capture", "photo.pick", "location.request", "share.open", "notification.schedule"]);
 const LOOP_SHARE_URL = "https://verarun33.github.io/loop-city-prototype/";
 const nativePhotoRequests = new Map();
 let nativePhotoRequestCounter = 0;
@@ -7116,6 +7120,8 @@ const nativeLocationRequests = new Map();
 let nativeLocationRequestCounter = 0;
 const nativeShareRequests = new Map();
 let nativeShareRequestCounter = 0;
+const nativeNotificationRequests = new Map();
+let nativeNotificationRequestCounter = 0;
 const PHOTO_SYNC_RETRY_DELAY_MS = 1800;
 const photoSyncInFlight = new Set();
 let photoSyncRetryTimer = null;
@@ -7411,6 +7417,40 @@ function handleNativeShareResult(event) {
   else showToast(detail.message || "暂时无法分享，请稍后再试。");
 }
 
+function notificationReminderPayload() {
+  nativeNotificationRequestCounter += 1;
+  const requestId = `notification-${Date.now()}-${nativeNotificationRequestCounter}`;
+  nativeNotificationRequests.set(requestId, { createdAt: Date.now(), kind: "route-reminder" });
+  return {
+    requestId,
+    kind: "route-reminder",
+    title: "LOOP 城市回路",
+    body: "明天可以继续完成一条城市路线。",
+    delaySeconds: 86400
+  };
+}
+
+function requestNativeNotificationReminder() {
+  if (!nativeBridgeCanPost("notification.schedule")) return false;
+  const payload = notificationReminderPayload();
+  window.LoopNative.post("notification.schedule", payload);
+  showToast("正在打开系统通知授权...");
+  return true;
+}
+
+function handleNativeNotificationResult(event) {
+  const detail = event.detail || {};
+  const requestId = detail.requestId || "";
+  if (!nativeNotificationRequests.has(requestId)) return;
+  nativeNotificationRequests.delete(requestId);
+  if (detail.ok && detail.scheduled) {
+    showToast("已为你开启一条本地路线提醒。");
+    return;
+  }
+  if (detail.reason === "denied") showToast("通知权限未开启，暂时不能发送提醒。");
+  else showToast(detail.message || "通知提醒暂时无法开启。");
+}
+
 function shareActiveRoute() {
   const routeItem = state.activeRoute;
   if (!routeItem) {
@@ -7481,6 +7521,7 @@ function installNativeShellBridge() {
 window.addEventListener("loopnative:photo-result", handleNativePhotoResult);
 window.addEventListener("loopnative:location-result", handleNativeLocationResult);
 window.addEventListener("loopnative:share-result", handleNativeShareResult);
+window.addEventListener("loopnative:notification-result", handleNativeNotificationResult);
 window.addEventListener("online", schedulePhotoSyncRetry);
 installNativeShellBridge();
 installAppInteractionGuards();
