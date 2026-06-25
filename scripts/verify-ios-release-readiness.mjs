@@ -12,6 +12,7 @@ const readinessDocPath = join(root, "docs", "release", "ios-testflight-readiness
 const materialsDocPath = join(root, "docs", "release", "ios-app-store-materials.md");
 const packageJsonPath = join(root, "package.json");
 const smokeScriptPath = join(root, "scripts", "ios-simulator-smoke.mjs");
+const screenshotPackScriptPath = join(root, "scripts", "ios-screenshot-pack.mjs");
 const gitignorePath = join(root, ".gitignore");
 
 const warnings = [];
@@ -43,6 +44,7 @@ const readinessDoc = readRequired(readinessDocPath, "TestFlight readiness 文档
 const materialsDoc = readRequired(materialsDocPath, "App Store materials 文档");
 const packageJson = readRequired(packageJsonPath, "package.json");
 const smokeScript = readRequired(smokeScriptPath, "iOS Simulator smoke 脚本");
+const screenshotPackScript = readRequired(screenshotPackScriptPath, "iOS screenshot pack 脚本");
 const gitignore = readRequired(gitignorePath, ".gitignore");
 
 requireIncludes(info, "<string>LOOP 城市回路</string>", "CFBundleDisplayName");
@@ -84,6 +86,8 @@ for (const expected of [
 }
 
 requireIncludes(packageJson, "\"ios:smoke\"", "package.json");
+requireIncludes(packageJson, "\"ios:screenshots\"", "package.json");
+requireIncludes(smokeScript, "LOOP_IOS_SMOKE_SCREENSHOT_PATH", "ios-simulator-smoke.mjs");
 
 for (const expected of [
   "xcodebuild",
@@ -105,6 +109,12 @@ for (const expected of [".loop-build/", ".loop-artifacts/"]) {
 }
 
 requireIncludes(readinessDoc, "npm run ios:smoke", "ios-testflight-readiness.md");
+requireIncludes(readinessDoc, "npm run ios:screenshots", "ios-testflight-readiness.md");
+requireIncludes(materialsDoc, ".loop-artifacts/ios-screenshots/", "ios-app-store-materials.md");
+
+for (const expected of ["LOOP_IOS_SCREENSHOT_DEVICES", "manifest.json", "ios-screenshots", "spawnSync"]) {
+  requireIncludes(screenshotPackScript, expected, "ios-screenshot-pack.mjs");
+}
 
 for (const warning of warnings) {
   console.warn(`Warning: ${warning}`);
