@@ -15,13 +15,17 @@ const preferredDeviceName = process.env.LOOP_IOS_SMOKE_DEVICE || defaultDeviceNa
 const derivedDataPath = join(root, ".loop-build", "ios-smoke", "DerivedData");
 const appPath = join(derivedDataPath, "Build", "Products", "Debug-iphonesimulator", "LoopCityWebViewApp.app");
 const screenshotDir = join(root, ".loop-artifacts", "ios-smoke");
-const screenshotPath = join(screenshotDir, "loop-city-ios-smoke.png");
+const screenshotPath =
+  process.env.LOOP_IOS_SMOKE_SCREENSHOT_PATH || join(screenshotDir, "loop-city-ios-smoke.png");
 const minimumScreenshotBytes = Number(process.env.LOOP_IOS_SMOKE_MIN_SCREENSHOT_BYTES || 200000);
-const screenshotTimeoutMs = Number(process.env.LOOP_IOS_SMOKE_SCREENSHOT_TIMEOUT_MS || 20000);
+const screenshotTimeoutMs = Number(process.env.LOOP_IOS_SMOKE_SCREENSHOT_TIMEOUT_MS || 60000);
+const bootStatusTimeoutMs = Number(process.env.LOOP_IOS_SMOKE_BOOTSTATUS_TIMEOUT_MS || 120000);
 const screenshotPollMs = 1000;
 const maximumBlankLightRatio = 0.9;
-const maximumBlankDarkRatio = 0.8;
+const maximumBlankDarkRatio = 0.45;
 const minimumColorfulRatio = 0.02;
+const minimumCreamRatio = 0.25;
+const minimumBlueRatio = 0.02;
 const contentSampleCrop = {
   startX: 0.18,
   endX: 0.82,
@@ -72,6 +76,39 @@ function listDevices() {
   const output = run("xcrun", ["simctl", "list", "devices", "available", "--json"], { capture: true });
   const parsed = JSON.parse(output);
   return Object.values(parsed.devices || {}).flat();
+}
+
+function isDeviceBooted(udid) {
+  const output = run("xcrun", ["simctl", "list", "devices", "booted", "--json"], { capture: true });
+  const parsed = JSON.parse(output);
+  return Object.values(parsed.devices || {})
+    .flat()
+    .some((device) => device.udid === udid && device.state === "Booted");
+}
+
+function waitForBootedDevice(udid) {
+  const result = spawnSync("xcrun", ["simctl", "bootstatus", udid, "-b"], {
+    cwd: root,
+    encoding: "utf8",
+    stdio: "pipe",
+    timeout: bootStatusTimeoutMs
+  });
+
+  const output = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+  if (result.status === 0) {
+    if (output) console.log(output);
+    return;
+  }
+
+  if (result.error?.code === "ETIMEDOUT" || result.signal === "SIGTERM") {
+    if (isDeviceBooted(udid)) {
+      console.log(`Simulator bootstatus timed out after ${bootStatusTimeoutMs}ms; device is Booted, continuing.`);
+      return;
+    }
+  }
+
+  if (result.error) throw result.error;
+  throw new Error(`命令失败：xcrun simctl bootstatus ${udid} -b${output ? `\n${output}` : ""}`);
 }
 
 function chooseDevice(devices) {
@@ -171,6 +208,8 @@ function decodePngMetrics(path) {
   let light = 0;
   let dark = 0;
   let colorful = 0;
+  let cream = 0;
+  let bluePixels = 0;
   const startY = Math.floor(height * contentSampleCrop.startY);
   const endY = Math.floor(height * contentSampleCrop.endY);
   const startX = Math.floor(width * contentSampleCrop.startX);
@@ -190,6 +229,8 @@ function decodePngMetrics(path) {
       if (luminance > 238) light += 1;
       if (luminance < 28) dark += 1;
       if (max - min > 45) colorful += 1;
+      if (red > 220 && green > 210 && blue > 185) cream += 1;
+      if (blue > 120 && red < 90 && green < 160) bluePixels += 1;
     }
   }
 
@@ -197,12 +238,14 @@ function decodePngMetrics(path) {
     size: png.length,
     lightRatio: light / samples,
     darkRatio: dark / samples,
-    colorfulRatio: colorful / samples
+    colorfulRatio: colorful / samples,
+    creamRatio: cream / samples,
+    blueRatio: bluePixels / samples
   };
 }
 
 function formatMetrics(metrics) {
-  return `size=${metrics.size}, light=${metrics.lightRatio.toFixed(3)}, dark=${metrics.darkRatio.toFixed(3)}, colorful=${metrics.colorfulRatio.toFixed(3)}`;
+  return `size=${metrics.size}, light=${metrics.lightRatio.toFixed(3)}, dark=${metrics.darkRatio.toFixed(3)}, colorful=${metrics.colorfulRatio.toFixed(3)}, cream=${metrics.creamRatio.toFixed(3)}, blue=${metrics.blueRatio.toFixed(3)}`;
 }
 
 function screenshotMetricsLookRendered(metrics) {
@@ -210,7 +253,9 @@ function screenshotMetricsLookRendered(metrics) {
     metrics.size >= minimumScreenshotBytes &&
     metrics.lightRatio < maximumBlankLightRatio &&
     metrics.darkRatio < maximumBlankDarkRatio &&
-    metrics.colorfulRatio >= minimumColorfulRatio
+    metrics.colorfulRatio >= minimumColorfulRatio &&
+    metrics.creamRatio >= minimumCreamRatio &&
+    metrics.blueRatio >= minimumBlueRatio
   );
 }
 
@@ -260,7 +305,7 @@ async function main() {
   ensureFile(appPath, "iOS app");
 
   runAllowingAlreadyBooted("xcrun", ["simctl", "boot", device.udid]);
-  run("xcrun", ["simctl", "bootstatus", device.udid, "-b"]);
+  waitForBootedDevice(device.udid);
   run("xcrun", ["simctl", "install", device.udid, appPath]);
   run("xcrun", ["simctl", "launch", device.udid, bundleId]);
   await waitForRenderedScreenshot(device.udid);

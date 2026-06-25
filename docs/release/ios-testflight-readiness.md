@@ -25,6 +25,7 @@ npm run ios:release-check
 
 - Simulator 构建命令：`npm run ios:build`
 - Simulator 启动 smoke：`npm run ios:smoke`
+- App Store 截图包命令：`npm run ios:screenshots`
 - 当前构建方式：`CODE_SIGNING_ALLOWED=NO`
 - 当前显示名：`LOOP 城市回路`
 - 当前版本号：`0.1`
@@ -37,6 +38,12 @@ npm run ios:release-check
 `npm run ios:smoke` 会在本机 simulator 中构建、安装并启动 WebView app，截图输出到 `.loop-artifacts/ios-smoke/loop-city-ios-smoke.png`。
 
 这个命令用于 repo 级启动 smoke，不代表 TestFlight 上传、真实签名或真机权限验证完成。
+
+### iOS 截图包
+
+`npm run ios:screenshots` 会复用 simulator smoke，为当前可用 iPhone Simulator 生成登录首屏截图基线，输出到 `.loop-artifacts/ios-screenshots/`，并写入 `manifest.json`。
+
+这个命令用于整理 App Store 截图材料底座，不代表最终 App Store 提交截图完成。
 
 ## TestFlight 前人工待办
 

@@ -15,6 +15,7 @@
     "ios:check": "npm run ios:sync && node scripts/verify-ios-webview-wrapper.mjs",
     "ios:build": "npm run ios:check && xcodebuild -project ios/LoopCityWebViewApp/LoopCityWebViewApp.xcodeproj -scheme LoopCityWebViewApp -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build",
     "ios:smoke": "node scripts/ios-simulator-smoke.mjs",
+    "ios:screenshots": "node scripts/ios-screenshot-pack.mjs",
     "ios:release-check": "npm run ios:check && node scripts/verify-ios-release-readiness.mjs"
   }
 }
