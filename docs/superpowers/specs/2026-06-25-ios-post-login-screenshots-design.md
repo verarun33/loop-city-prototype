@@ -113,7 +113,7 @@ applyScreenshotScenario();
 
 - 读取 `new URLSearchParams(window.location.search).get("loopScreenshotScenario")`。
 - 对场景名做白名单校验。
-- `login` 不做登录，保持现状。
+- `login` 清除当前 auth session，并显示登录门，避免前一个截图场景留下 demo 登录态。
 - 其他场景调用现有 `ensureDemoUser()` 和 `setAuthenticatedUser(demoUser, true)`。
 - 根据场景调用 `switchView("home")`、`switchView("atlas")` 或 `switchView("folio")`。
 - `profile-records` 在 `folio` 渲染后滚动 `dom.appFrame`，让记录区 sticky 表头贴近顶部。
