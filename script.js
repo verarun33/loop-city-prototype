@@ -20,6 +20,7 @@ const DEMO_PASSWORD = "loop2026";
 const DEMO_PREVIEW_PASS_TARGET = 3;
 const DEMO_PREVIEW_INTEREST_MAP_TARGET = 3;
 const PROFILE_RECORD_PAGE_SIZE = 6;
+const SCREENSHOT_SCENARIOS = Object.freeze(["login", "home", "atlas", "folio", "profile-records"]);
 
 const cityArt = {
   shanghai:
@@ -3028,6 +3029,57 @@ function loginWithCredentials(accountValue, passwordValue, remember = true) {
   if (!user || user.password !== encodePassword(passwordValue)) return setAuthMessage("账号或密码不正确。", "error");
   setAuthenticatedUser(user, remember);
   showToast("已登录。");
+}
+
+function screenshotScenarioFromURL() {
+  try {
+    return new URLSearchParams(window.location.search).get("loopScreenshotScenario") || "";
+  } catch {
+    return "";
+  }
+}
+
+function knownScreenshotScenario(value) {
+  return SCREENSHOT_SCENARIOS.includes(value) ? value : "";
+}
+
+function scrollProfileRecordsForScreenshot() {
+  const stickyHead = document.querySelector(".profile-record-sticky-head");
+  if (!stickyHead) return;
+  const frameBox = dom.appFrame.getBoundingClientRect();
+  const headBox = stickyHead.getBoundingClientRect();
+  const targetTop = dom.appFrame.scrollTop + headBox.top - frameBox.top - 2;
+  dom.appFrame.scrollTo({ top: Math.max(0, targetTop), behavior: "auto" });
+  syncRecordScrollFloat();
+}
+
+function afterScreenshotRender(callback) {
+  requestAnimationFrame(() => requestAnimationFrame(callback));
+}
+
+function applyScreenshotScenario() {
+  const requestedScenario = screenshotScenarioFromURL().trim().toLowerCase();
+  const scenario = knownScreenshotScenario(requestedScenario) || "login";
+  if (!requestedScenario) return;
+  document.documentElement.dataset.screenshotScenarioRequested = requestedScenario;
+
+  if (scenario === "login") {
+    clearSession();
+    showAuthGate("login");
+    document.documentElement.dataset.screenshotScenario = "login";
+    return;
+  }
+
+  const demoUser = ensureDemoUser();
+  setAuthenticatedUser(demoUser, true);
+  if (scenario === "home") switchView("home");
+  else if (scenario === "atlas") switchView("atlas");
+  else switchView("folio");
+
+  afterScreenshotRender(() => {
+    if (scenario === "profile-records") scrollProfileRecordsForScreenshot();
+    document.documentElement.dataset.screenshotScenario = scenario;
+  });
 }
 
 function continueRegisterAccount() {
@@ -7530,3 +7582,4 @@ initAuth();
 bindEvents();
 schedulePhotoSyncRetry();
 render();
+applyScreenshotScenario();
