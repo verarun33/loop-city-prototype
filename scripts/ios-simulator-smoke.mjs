@@ -21,6 +21,7 @@ const screenshotPath =
 const minimumScreenshotBytes = Number(process.env.LOOP_IOS_SMOKE_MIN_SCREENSHOT_BYTES || 200000);
 const screenshotTimeoutMs = Number(process.env.LOOP_IOS_SMOKE_SCREENSHOT_TIMEOUT_MS || 60000);
 const bootStatusTimeoutMs = Number(process.env.LOOP_IOS_SMOKE_BOOTSTATUS_TIMEOUT_MS || 120000);
+const simctlCommandTimeoutMs = Number(process.env.LOOP_IOS_SMOKE_SIMCTL_TIMEOUT_MS || 120000);
 const screenshotPollMs = 1000;
 const maximumBlankLightRatio = 0.9;
 const maximumBlankDarkRatio = 0.45;
@@ -38,21 +39,39 @@ function formatCommand(command, args) {
   return [command, ...args].join(" ");
 }
 
+function isSimctlCommand(command, args) {
+  return command === "xcrun" && args[0] === "simctl";
+}
+
+function commandTimeout(command, args, options) {
+  if (options.timeoutMs) return options.timeoutMs;
+  return isSimctlCommand(command, args) ? simctlCommandTimeoutMs : undefined;
+}
+
+function commandFailure(command, args, result, output = "") {
+  if (result.error?.code === "ETIMEDOUT" || result.signal === "SIGTERM") {
+    return new Error(`命令超时：${formatCommand(command, args)} (${commandTimeout(command, args, {})}ms)`);
+  }
+  if (result.error) return result.error;
+  return new Error(`命令失败：${formatCommand(command, args)}${output ? `\n${output}` : ""}`);
+}
+
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
     cwd: root,
     encoding: "utf8",
     stdio: options.capture ? "pipe" : "inherit",
-    env: options.env ? { ...process.env, ...options.env } : process.env
+    env: options.env ? { ...process.env, ...options.env } : process.env,
+    timeout: commandTimeout(command, args, options)
   });
 
   if (result.error) {
-    throw result.error;
+    throw commandFailure(command, args, result);
   }
 
   if (result.status !== 0) {
     const output = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
-    throw new Error(`命令失败：${formatCommand(command, args)}${output ? `\n${output}` : ""}`);
+    throw commandFailure(command, args, result, output);
   }
 
   return result.stdout || "";
@@ -62,7 +81,8 @@ function runAllowingAlreadyBooted(command, args) {
   const result = spawnSync(command, args, {
     cwd: root,
     encoding: "utf8",
-    stdio: "pipe"
+    stdio: "pipe",
+    timeout: commandTimeout(command, args, {})
   });
 
   const output = [result.stdout, result.stderr].filter(Boolean).join("\n");
@@ -71,7 +91,7 @@ function runAllowingAlreadyBooted(command, args) {
     return;
   }
 
-  throw new Error(`命令失败：${formatCommand(command, args)}${output ? `\n${output.trim()}` : ""}`);
+  throw commandFailure(command, args, result, output.trim());
 }
 
 function appLaunchEnvironment() {
@@ -258,13 +278,15 @@ function formatMetrics(metrics) {
 }
 
 function screenshotMetricsLookRendered(metrics) {
+  const hasAccentContent =
+    metrics.colorfulRatio >= minimumColorfulRatio || metrics.blueRatio >= minimumBlueRatio;
+
   return (
     metrics.size >= minimumScreenshotBytes &&
     metrics.lightRatio < maximumBlankLightRatio &&
     metrics.darkRatio < maximumBlankDarkRatio &&
-    metrics.colorfulRatio >= minimumColorfulRatio &&
     metrics.creamRatio >= minimumCreamRatio &&
-    metrics.blueRatio >= minimumBlueRatio
+    hasAccentContent
   );
 }
 

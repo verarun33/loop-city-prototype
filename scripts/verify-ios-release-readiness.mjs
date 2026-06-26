@@ -90,6 +90,8 @@ requireIncludes(packageJson, "\"ios:screenshots\"", "package.json");
 requireIncludes(smokeScript, "LOOP_IOS_SMOKE_SCREENSHOT_PATH", "ios-simulator-smoke.mjs");
 requireIncludes(smokeScript, "LOOP_IOS_SMOKE_SCENARIO", "ios-simulator-smoke.mjs");
 requireIncludes(smokeScript, "SIMCTL_CHILD_LOOP_SCREENSHOT_SCENARIO", "ios-simulator-smoke.mjs");
+requireIncludes(smokeScript, "LOOP_IOS_SMOKE_SIMCTL_TIMEOUT_MS", "ios-simulator-smoke.mjs");
+requireIncludes(smokeScript, "simctlCommandTimeoutMs", "ios-simulator-smoke.mjs");
 
 for (const expected of [
   "xcodebuild",
@@ -100,6 +102,7 @@ for (const expected of [
   "waitForRenderedScreenshot",
   "decodePngMetrics",
   "contentSampleCrop",
+  "hasAccentContent",
   "darkRatio",
   "colorfulRatio"
 ]) {
