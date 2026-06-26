@@ -38,6 +38,38 @@ struct WebViewScreen: UIViewRepresentable {
 
     func updateUIView(_ uiView: WKWebView, context: Context) {}
 
+    private var sanitizedScreenshotScenario: String {
+        let rawValue: String
+        if let environmentValue = ProcessInfo.processInfo.environment["LOOP_SCREENSHOT_SCENARIO"] {
+            rawValue = environmentValue
+        } else {
+            rawValue = ""
+        }
+        let trimmed = rawValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !trimmed.isEmpty else {
+            return ""
+        }
+        guard trimmed.range(of: #"^[a-z0-9-]+$"#, options: .regularExpression) != nil else {
+            return ""
+        }
+        return trimmed
+    }
+
+    private func screenshotScenarioLaunchURL(for indexURL: URL) -> URL {
+        let scenario = sanitizedScreenshotScenario
+        guard !scenario.isEmpty else {
+            return indexURL
+        }
+        guard var components = URLComponents(url: indexURL, resolvingAgainstBaseURL: false) else {
+            return indexURL
+        }
+        components.queryItems = [URLQueryItem(name: "loopScreenshotScenario", value: scenario)]
+        if let url = components.url {
+            return url
+        }
+        return indexURL
+    }
+
     private func loadLocalPrototype(in webView: WKWebView) {
         guard
             let webDirectory = Bundle.main.resourceURL?.appendingPathComponent("Web", isDirectory: true),
@@ -54,7 +86,7 @@ struct WebViewScreen: UIViewRepresentable {
             return
         }
 
-        webView.loadFileURL(indexURL, allowingReadAccessTo: webDirectory)
+        webView.loadFileURL(screenshotScenarioLaunchURL(for: indexURL), allowingReadAccessTo: webDirectory)
     }
 
     @MainActor

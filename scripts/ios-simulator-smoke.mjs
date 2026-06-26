@@ -12,6 +12,7 @@ const scheme = "LoopCityWebViewApp";
 const bundleId = "com.verarun.loopcity.webview";
 const defaultDeviceName = "iPhone 17 Pro";
 const preferredDeviceName = process.env.LOOP_IOS_SMOKE_DEVICE || defaultDeviceName;
+const screenshotScenario = String(process.env.LOOP_IOS_SMOKE_SCENARIO || "").trim();
 const derivedDataPath = join(root, ".loop-build", "ios-smoke", "DerivedData");
 const appPath = join(derivedDataPath, "Build", "Products", "Debug-iphonesimulator", "LoopCityWebViewApp.app");
 const screenshotDir = join(root, ".loop-artifacts", "ios-smoke");
@@ -41,7 +42,8 @@ function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
     cwd: root,
     encoding: "utf8",
-    stdio: options.capture ? "pipe" : "inherit"
+    stdio: options.capture ? "pipe" : "inherit",
+    env: options.env ? { ...process.env, ...options.env } : process.env
   });
 
   if (result.error) {
@@ -70,6 +72,13 @@ function runAllowingAlreadyBooted(command, args) {
   }
 
   throw new Error(`命令失败：${formatCommand(command, args)}${output ? `\n${output.trim()}` : ""}`);
+}
+
+function appLaunchEnvironment() {
+  if (!screenshotScenario) return {};
+  return {
+    SIMCTL_CHILD_LOOP_SCREENSHOT_SCENARIO: screenshotScenario
+  };
 }
 
 function listDevices() {
@@ -307,7 +316,7 @@ async function main() {
   runAllowingAlreadyBooted("xcrun", ["simctl", "boot", device.udid]);
   waitForBootedDevice(device.udid);
   run("xcrun", ["simctl", "install", device.udid, appPath]);
-  run("xcrun", ["simctl", "launch", device.udid, bundleId]);
+  run("xcrun", ["simctl", "launch", device.udid, bundleId], { env: appLaunchEnvironment() });
   await waitForRenderedScreenshot(device.udid);
 
   ensureFile(screenshotPath, "iOS smoke 截图");
