@@ -1,6 +1,6 @@
 # LOOP 城市回路 Apple App 当前状态
 
-日期：2026-06-25
+日期：2026-06-26
 负责人：Vera / Codex
 项目路径：`/Users/veraxian/Documents/城市回路`
 Git 解析后的路径：`/Users/veraxian/Documents/city loop`
@@ -22,14 +22,18 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 ## 当前已知可用基线
 
-阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A、阶段 3B-0、阶段 3B-1、阶段 3C-0、阶段 3D-0、阶段 3D-1 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
+阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A、阶段 3B-0、阶段 3B-1、阶段 3C-0、阶段 3D-0、阶段 3D-1、阶段 3D-2 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
 
 最新功能基线：
 
-照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。阶段 3B-0 已新增 iOS API base 注入入口；阶段 3B-1 已新增 Web 照片同步重试队列；阶段 3C-0 已新增 iOS 本地通知 bridge；阶段 3D-0 已新增 iOS Simulator smoke，能构建、安装、启动 WebView app，并保存经过像素分布检查的首屏截图；阶段 3D-1 已新增 iOS 截图包自动化底座，可以生成 Pro Max / Pro 登录首屏基线截图和 manifest。`Info.plist` 的 `LoopAPIBaseURL` 默认空值，不会改变线上原型或 iOS 离线包行为；未来配置生产/staging API base 后，原生会在 document start 注入给 Web adapter，并由 Web 层补发可同步的本地照片。
+照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。阶段 3B-0 已新增 iOS API base 注入入口；阶段 3B-1 已新增 Web 照片同步重试队列；阶段 3C-0 已新增 iOS 本地通知 bridge；阶段 3D-0 已新增 iOS Simulator smoke，能构建、安装、启动 WebView app，并保存经过像素分布检查的首屏截图；阶段 3D-1 已新增 iOS 截图包自动化底座；阶段 3D-2 已新增登录后截图场景，可以生成 login、home、atlas、folio、profile-records 五类 App Store 候选基线截图和 manifest。`Info.plist` 的 `LoopAPIBaseURL` 默认空值，不会改变线上原型或 iOS 离线包行为；未来配置生产/staging API base 后，原生会在 document start 注入给 Web adapter，并由 Web 层补发可同步的本地照片。
 
 近期关键提交：
 
+- `abdb528 扩展 iOS 截图包登录后场景`
+- `7082c20 接入 Web 登录后截图场景`
+- `2369900 接入 iOS 截图场景参数`
+- `6d25403 新增 iOS 登录后截图失败检查`
 - `993700c 接入 iOS 截图包自动化`
 - `7c060ce 新增 iOS 截图包失败检查`
 - `38ef666 规划 iOS 截图包实施`
@@ -108,7 +112,7 @@ npm run ios:screenshots
 `npm run ios:build` 会先跑 `ios:check`，然后用关闭签名的 iOS Simulator 目标构建 Xcode 工程。
 `npm run ios:release-check` 是 repo 级 TestFlight 准备审计，会提示当前 `DEVELOPMENT_TEAM` 仍为空；这个 warning 是人工签名待办，不是脚本失败。
 `npm run ios:smoke` 会在可用 iPhone Simulator 中构建、安装并启动 app，截图输出到 `.loop-artifacts/ios-smoke/loop-city-ios-smoke.png`，并通过 PNG 像素分布避免白屏、黑屏、系统切换帧或尚未出现 LOOP 品牌色的页面误判。
-`npm run ios:screenshots` 会复用 simulator smoke，默认为 `iPhone 17 Pro Max` 和 `iPhone 17 Pro` 生成登录首屏基线截图，并写入 `.loop-artifacts/ios-screenshots/manifest.json`。
+`npm run ios:screenshots` 会复用 simulator smoke，默认为 `iPhone 17 Pro Max` 和 `iPhone 17 Pro` 生成 `login`、`home`、`atlas`、`folio`、`profile-records` 五个截图场景，并写入 `.loop-artifacts/ios-screenshots/manifest.json`。可以用 `LOOP_IOS_SCREENSHOT_DEVICES` 和 `LOOP_IOS_SCREENSHOT_SCENARIOS` 缩小设备或场景范围。
 
 ## 开发纪律
 
@@ -184,10 +188,20 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 
 阶段 3D-1 已完成：iOS App Store 截图包自动化底座已建立。
 
-- `npm run ios:screenshots` 会复用 simulator smoke，默认生成 `iPhone 17 Pro Max` 和 `iPhone 17 Pro` 的登录首屏截图。
+- 该阶段让 `npm run ios:screenshots` 复用 simulator smoke，并先建立 `iPhone 17 Pro Max` 和 `iPhone 17 Pro` 的登录首屏截图能力。
 - 输出目录是 `.loop-artifacts/ios-screenshots/`，并生成 `manifest.json`。
 - 当前输出过的基线尺寸是 `1320x2868`（iPhone 17 Pro Max）和 `1206x2622`（iPhone 17 Pro）。
-- 这仍不是最终 App Store 截图；后续需要补登录后首页、地图、通行证、我的和记录页面。
+- 当前默认截图矩阵已在阶段 3D-2 扩展为五个场景；这仍不是最终 App Store 截图设计稿，只是自动化基线。
+
+阶段 3D-2 已完成：iOS 登录后截图场景已建立。
+
+- SwiftUI WebView 外壳会读取 `LOOP_SCREENSHOT_SCENARIO`，并把它转换成本地 `index.html?loopScreenshotScenario=...` 启动参数。
+- Web 层新增 `SCREENSHOT_SCENARIOS` 和 `applyScreenshotScenario()`，支持 `login`、`home`、`atlas`、`folio`、`profile-records`。
+- `login` 场景会显式清空本地会话，保证能截图登录态入口；其他场景会用 demo user 进入登录后页面。
+- `profile-records` 会进入“我的”的今日探索记录区域，用于验证 sticky 表头和记录卡片列表。
+- `scripts/ios-simulator-smoke.mjs` 支持 `LOOP_IOS_SMOKE_SCENARIO`，通过 `SIMCTL_CHILD_LOOP_SCREENSHOT_SCENARIO` 注入给 iOS app；同时为 `simctl` 子命令增加 `LOOP_IOS_SMOKE_SIMCTL_TIMEOUT_MS`，避免 Simulator 安装通道卡死时无限等待。
+- `scripts/ios-screenshot-pack.mjs` 默认按设备和场景生成截图矩阵；manifest 记录 `devices`、`screens` 和每张截图的尺寸。
+- 本机旧 `iPhone 17 Pro` Simulator 曾出现 `simctl install` 长时间卡住；已删除并重建该设备，新的 UDID 是 `CE964621-1AFE-450D-90A6-4424796395DA`。
 
 相关文档：
 
@@ -215,8 +229,10 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `docs/superpowers/plans/2026-06-25-ios-simulator-smoke-implementation.md`
 - `docs/superpowers/specs/2026-06-25-ios-screenshot-pack-design.md`
 - `docs/superpowers/plans/2026-06-25-ios-screenshot-pack-implementation.md`
+- `docs/superpowers/specs/2026-06-25-ios-post-login-screenshots-design.md`
+- `docs/superpowers/plans/2026-06-25-ios-post-login-screenshots-implementation.md`
 
-最近完整验证时间：2026-06-25。
+最近完整验证时间：2026-06-26。
 
 已通过：
 
@@ -234,10 +250,10 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 额外手动 smoke：
 
 - 启动本地 dev server 后，HTTP 验证 `POST /api/photo-records`、重复 `clientPhotoId` 返回 `409 DUPLICATE_PHOTO`、`GET /api/photo-records?userId=...` 和照片文件读取均通过。
-- `npm run ios:smoke` 已在本机 `iPhone 17 Pro` Simulator 上构建、安装并启动 app，最终截图为 LOOP 登录首屏；脚本曾捕获白屏、黑屏、系统切换帧和未完成品牌帧，并通过像素分布轮询等到真实 WebView 首屏后才通过。
-- `npm run ios:screenshots` 已在本机 `iPhone 17 Pro Max` 和 `iPhone 17 Pro` Simulator 上生成登录首屏基线截图，并写入 `.loop-artifacts/ios-screenshots/manifest.json`。
+- `npm run ios:smoke` 已在本机重建后的 `iPhone 17 Pro` Simulator（`CE964621-1AFE-450D-90A6-4424796395DA`）上构建、安装并启动 app，最终截图为 LOOP WebView 页面；脚本曾捕获白屏、黑屏、系统切换帧和未完成品牌帧，并通过像素分布轮询等到真实 WebView 页面后才通过。
+- `npm run ios:screenshots` 已在本机 `iPhone 17 Pro Max` 和 `iPhone 17 Pro` Simulator 上生成 `login`、`home`、`atlas`、`folio`、`profile-records` 五个场景的截图矩阵，并写入 `.loop-artifacts/ios-screenshots/manifest.json`。manifest 机器读数为 2 台设备、5 个场景、10 张 PNG。
 
-下一步可继续规划登录后截图页面自动化、真实账号 / 生产照片 API、真实签名配置、真机通知 smoke 或远程推送策略。
+下一步可继续规划截图文案/构图精修、真实账号 / 生产照片 API、真实签名配置、真机通知 smoke 或远程推送策略。
 
 ## 新窗口启动提示
 
