@@ -88,6 +88,8 @@ for (const expected of [
 requireIncludes(packageJson, "\"ios:smoke\"", "package.json");
 requireIncludes(packageJson, "\"ios:screenshots\"", "package.json");
 requireIncludes(smokeScript, "LOOP_IOS_SMOKE_SCREENSHOT_PATH", "ios-simulator-smoke.mjs");
+requireIncludes(smokeScript, "LOOP_IOS_SMOKE_SCENARIO", "ios-simulator-smoke.mjs");
+requireIncludes(smokeScript, "SIMCTL_CHILD_LOOP_SCREENSHOT_SCENARIO", "ios-simulator-smoke.mjs");
 
 for (const expected of [
   "xcodebuild",
@@ -112,7 +114,15 @@ requireIncludes(readinessDoc, "npm run ios:smoke", "ios-testflight-readiness.md"
 requireIncludes(readinessDoc, "npm run ios:screenshots", "ios-testflight-readiness.md");
 requireIncludes(materialsDoc, ".loop-artifacts/ios-screenshots/", "ios-app-store-materials.md");
 
-for (const expected of ["LOOP_IOS_SCREENSHOT_DEVICES", "manifest.json", "ios-screenshots", "spawnSync"]) {
+for (const expected of [
+  "LOOP_IOS_SCREENSHOT_DEVICES",
+  "LOOP_IOS_SCREENSHOT_SCENARIOS",
+  "defaultScreens",
+  "profile-records",
+  "manifest.json",
+  "ios-screenshots",
+  "spawnSync"
+]) {
   requireIncludes(screenshotPackScript, expected, "ios-screenshot-pack.mjs");
 }
 

@@ -54,6 +54,11 @@ for (const expected of ["loopApiBaseURL", "LOOP_API_BASE_URL", "dataset.apiBase"
     throw new Error(`WebViewScreen.swift 必须实现 API base 注入：${expected}`);
   }
 }
+for (const expected of ["LOOP_SCREENSHOT_SCENARIO", "loopScreenshotScenario", "screenshotScenarioLaunchURL"]) {
+  if (!webViewScreen.includes(expected)) {
+    throw new Error(`WebViewScreen.swift 必须支持截图场景参数：${expected}`);
+  }
+}
 for (const expected of ["camera.capture", "photo.pick", "loopnative:photo-result", "UIImagePickerController", "PHPickerViewController"]) {
   if (!webViewScreen.includes(expected)) {
     throw new Error(`WebViewScreen.swift 必须实现 native photo bridge：${expected}`);
@@ -79,6 +84,11 @@ const script = readFileSync(join(root, "script.js"), "utf8");
 for (const expected of ["installNativeShellBridge", "loopnative:ready", "nativeShell"]) {
   if (!script.includes(expected)) {
     throw new Error(`script.js must include native shell bridge hook: ${expected}`);
+  }
+}
+for (const expected of ["SCREENSHOT_SCENARIOS", "applyScreenshotScenario", "loopScreenshotScenario", "profile-records", "dataset.screenshotScenario"]) {
+  if (!script.includes(expected)) {
+    throw new Error(`script.js 必须实现截图场景启动器：${expected}`);
   }
 }
 for (const expected of ["notification.schedule", "requestNativeNotificationReminder", "handleNativeNotificationResult"]) {
