@@ -20,12 +20,17 @@ npm run ios:release-check
 - app icon asset 引用 `loop-city-app-icon-1024.png`，且文件是 PNG。
 - 本文档包含 TestFlight 前的人工待办。
 - TestFlight / App Store Connect 人工材料草稿存在，并包含核心栏目。
+- archive/export 准备脚本、ExportOptions 模板和 `docs/release/ios-archive-and-upload.md` 手册存在。
 
 ## 当前本地状态
 
 - Simulator 构建命令：`npm run ios:build`
 - Simulator 启动 smoke：`npm run ios:smoke`
 - App Store 截图包命令：`npm run ios:screenshots`
+- 真机归档准备检查：`npm run ios:archive:check`
+- 真机归档命令：`npm run ios:archive`
+- 导出命令：`npm run ios:export`
+- 归档和上传手册：`docs/release/ios-archive-and-upload.md`
 - 当前构建方式：`CODE_SIGNING_ALLOWED=NO`
 - 当前显示名：`LOOP 城市回路`
 - 当前版本号：`0.1`
@@ -49,6 +54,7 @@ npm run ios:release-check
 
 - Apple Developer Team：确认团队、Team ID、付费开发者账号状态。
 - 签名配置：为 `com.verarun.loopcity.webview` 或正式 Bundle ID 配置 Automatic Signing / provisioning profile。
+- 归档导出：设置 `LOOP_IOS_DEVELOPMENT_TEAM` 后运行 `npm run ios:archive` 和 `npm run ios:export`。
 - App Store Connect：创建 app record，确认 SKU、Bundle ID、名称、主语言和类别。
 - 隐私标签：根据最终数据流填写相机、相册、定位、分析、账号和后端数据使用情况。
 - 截图：准备 iPhone 尺寸截图，至少覆盖首页、地图/通行证、我的、记录或打卡流程。
@@ -60,6 +66,7 @@ npm run ios:release-check
 ## 不要误判
 
 - `npm run ios:build` 通过只说明 Simulator 无签名构建通过，不等于 TestFlight ready。
+- `npm run ios:archive:check` 通过只说明 repo 里有归档导出链路，不等于真实签名或上传通过。
 - `DEVELOPMENT_TEAM` 为空是当前已知人工待办，不能视为发布完成。
 - 当前权限文案可用于原型阶段；正式审核前需要按最终功能再读一遍。
 - 当前 Bundle ID 是否用于正式上架，需要 Vera 在 Apple Developer 和 App Store Connect 中确认。

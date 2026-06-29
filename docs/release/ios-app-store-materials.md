@@ -63,7 +63,25 @@ LOOP 城市回路当前采用 WebView-first 架构：主要产品界面由本地
 - 保留中文 UI。
 - 不展示真实个人隐私信息。
 
-自动截图包输出目录：`.loop-artifacts/ios-screenshots/`。当前只生成登录首屏基线，不代表最终 App Store 提交截图完成；后续仍需要补登录后首页、地图、通行证、我的和记录页面。
+自动截图包输出目录：`.loop-artifacts/ios-screenshots/`。当前截图包可以生成登录、今日、地图、我的和记录 sticky 表头场景；这仍是 App Store 截图材料底座，不代表最终提交截图已经审定。
+
+## 上传产物
+
+归档和导出手册：`docs/release/ios-archive-and-upload.md`
+
+设置 `LOOP_IOS_DEVELOPMENT_TEAM` 后，`npm run ios:archive` 默认生成：
+
+```text
+.loop-artifacts/ios-archive/LoopCityWebViewApp.xcarchive
+```
+
+`npm run ios:export` 默认生成可上传材料到：
+
+```text
+.loop-artifacts/ios-archive/export/
+```
+
+这些产物不进入 git。上传前仍需要在 App Store Connect 中确认 app record、Bundle ID、测试说明、截图、隐私标签和审核说明。
 
 ## 隐私标签草稿
 
