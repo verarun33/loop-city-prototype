@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>method</key>
+  <string>__LOOP_IOS_EXPORT_METHOD__</string>
+  <key>signingStyle</key>
+  <string>automatic</string>
+  <key>teamID</key>
+  <string>__LOOP_IOS_DEVELOPMENT_TEAM__</string>
+  <key>destination</key>
+  <string>export</string>
+  <!-- Bundle ID tracked by the archive script: __LOOP_IOS_BUNDLE_ID__ -->
+</dict>
+</plist>
