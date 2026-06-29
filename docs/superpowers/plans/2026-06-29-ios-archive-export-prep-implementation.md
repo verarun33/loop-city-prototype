@@ -185,11 +185,7 @@ Create `ios/LoopCityWebViewApp/ExportOptions.testflight.plist.template`:
   <string>__LOOP_IOS_DEVELOPMENT_TEAM__</string>
   <key>destination</key>
   <string>export</string>
-  <key>provisioningProfiles</key>
-  <dict>
-    <key>__LOOP_IOS_BUNDLE_ID__</key>
-    <string></string>
-  </dict>
+  <!-- Bundle ID tracked by the archive script: __LOOP_IOS_BUNDLE_ID__ -->
 </dict>
 </plist>
 ```
