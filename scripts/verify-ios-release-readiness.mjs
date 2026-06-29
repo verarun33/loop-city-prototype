@@ -13,6 +13,7 @@ const materialsDocPath = join(root, "docs", "release", "ios-app-store-materials.
 const packageJsonPath = join(root, "package.json");
 const smokeScriptPath = join(root, "scripts", "ios-simulator-smoke.mjs");
 const screenshotPackScriptPath = join(root, "scripts", "ios-screenshot-pack.mjs");
+const archiveReadinessScriptPath = join(root, "scripts", "verify-ios-archive-readiness.mjs");
 const gitignorePath = join(root, ".gitignore");
 
 const warnings = [];
@@ -45,6 +46,7 @@ const materialsDoc = readRequired(materialsDocPath, "App Store materials 文档"
 const packageJson = readRequired(packageJsonPath, "package.json");
 const smokeScript = readRequired(smokeScriptPath, "iOS Simulator smoke 脚本");
 const screenshotPackScript = readRequired(screenshotPackScriptPath, "iOS screenshot pack 脚本");
+const archiveReadinessScript = readRequired(archiveReadinessScriptPath, "iOS archive readiness 脚本");
 const gitignore = readRequired(gitignorePath, ".gitignore");
 
 requireIncludes(info, "<string>LOOP 城市回路</string>", "CFBundleDisplayName");
@@ -127,6 +129,10 @@ for (const expected of [
   "spawnSync"
 ]) {
   requireIncludes(screenshotPackScript, expected, "ios-screenshot-pack.mjs");
+}
+
+for (const expected of ["LOOP_IOS_DEVELOPMENT_TEAM", "ios-archive-and-upload.md", "ExportOptions.testflight.plist.template"]) {
+  requireIncludes(archiveReadinessScript, expected, "verify-ios-archive-readiness.mjs");
 }
 
 for (const warning of warnings) {
