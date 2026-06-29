@@ -298,20 +298,20 @@ Add:
 "ios:export": "node scripts/ios-archive.mjs export"
 ```
 
-- [ ] **Step 4: 验证 GREEN**
+- [ ] **Step 4: 验证 runner 行为**
 
 Run:
 
 ```sh
-npm run ios:archive:check
-npm run ios:release-check
+node --check scripts/ios-archive.mjs
 node scripts/ios-archive.mjs archive
 node scripts/ios-archive.mjs export
 ```
 
 Expected:
-- First two commands PASS.
-- Last two commands exit 1 with a clear `缺少 LOOP_IOS_DEVELOPMENT_TEAM` message.
+- `node --check` PASS.
+- `archive` and `export` exit 1 with a clear `缺少 LOOP_IOS_DEVELOPMENT_TEAM` message.
+- `npm run ios:archive:check` still fails until Task 3 creates `docs/release/ios-archive-and-upload.md`.
 
 - [ ] **Step 5: Commit implementation**
 
