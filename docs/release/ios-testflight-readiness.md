@@ -3,6 +3,22 @@
 日期：2026-06-24
 状态：Repo 级审计已建立，真实 TestFlight 发布尚未开始。
 
+## 当前是否需要 Vera 提供资料
+
+先运行：
+
+```sh
+npm run ios:inputs
+```
+
+这个命令会生成 `.loop-artifacts/ios-release-inputs/ios-release-inputs.json`，并把输入分成三类：
+
+- `neededNow`：当前继续开发就必须要的资料。
+- `beforeArchive`：真实归档、导出前才需要的资料。
+- `beforeAppStore`：创建或提交 App Store Connect 记录前才需要的资料。
+
+当前原则：如果 `needed now: 0`，就继续开发，不要把 Team ID、SKU、支持 URL、隐私政策 URL 等上架资料提前变成阻塞项。
+
 ## 当前自动检查
 
 运行：
@@ -27,6 +43,7 @@ npm run ios:release-check
 - Simulator 构建命令：`npm run ios:build`
 - Simulator 启动 smoke：`npm run ios:smoke`
 - App Store 截图包命令：`npm run ios:screenshots`
+- 发布输入缺口检查：`npm run ios:inputs`
 - 真机归档准备检查：`npm run ios:archive:check`
 - 真机归档命令：`npm run ios:archive`
 - 导出命令：`npm run ios:export`
@@ -52,6 +69,8 @@ npm run ios:release-check
 
 ## TestFlight 前人工待办
 
+这些是发布路径上的人工项，不是当前继续开发的阻塞项。先用 `npm run ios:inputs` 看它们属于哪个阶段，再决定是否找 Vera 补资料。
+
 - Apple Developer Team：确认团队、Team ID、付费开发者账号状态。
 - 签名配置：为 `com.verarun.loopcity.webview` 或正式 Bundle ID 配置 Automatic Signing / provisioning profile。
 - 归档导出：设置 `LOOP_IOS_DEVELOPMENT_TEAM` 后运行 `npm run ios:archive` 和 `npm run ios:export`。
@@ -66,6 +85,7 @@ npm run ios:release-check
 ## 不要误判
 
 - `npm run ios:build` 通过只说明 Simulator 无签名构建通过，不等于 TestFlight ready。
+- `npm run ios:inputs` 的 `needed now: 0` 只说明当前开发不需要 Vera 额外输入，不等于上架资料已经全部完成。
 - `npm run ios:archive:check` 通过只说明 repo 里有归档导出链路，不等于真实签名或上传通过。
 - `DEVELOPMENT_TEAM` 为空是当前已知人工待办，不能视为发布完成。
 - 当前权限文案可用于原型阶段；正式审核前需要按最终功能再读一遍。

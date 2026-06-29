@@ -19,6 +19,14 @@ npm run ios:archive:check
 
 这个命令只做 repo 级静态检查，不会调用 Apple 账号，也不会生成真实归档。
 
+判断当前是否真的需要 Vera 提供发布资料：
+
+```sh
+npm run ios:inputs
+```
+
+如果输出 `needed now: 0`，说明可以继续开发；`beforeArchive` 和 `beforeAppStore` 里的缺口只是在进入真实归档、导出或 App Store Connect 提交前才需要处理。
+
 ## Team ID
 
 真实归档和导出必须先在本机设置 Apple Developer Team ID：
@@ -130,6 +138,7 @@ archive 不存在：... 请先运行 npm run ios:archive。
 
 ```sh
 npm test
+npm run ios:inputs
 npm run ios:release-check
 npm run ios:build
 ```

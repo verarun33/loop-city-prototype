@@ -22,14 +22,16 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 ## 当前已知可用基线
 
-阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A、阶段 3B-0、阶段 3B-1、阶段 3C-0、阶段 3D-0、阶段 3D-1、阶段 3D-2、阶段 3E-0 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
+阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A、阶段 3B-0、阶段 3B-1、阶段 3C-0、阶段 3D-0、阶段 3D-1、阶段 3D-2、阶段 3E-0、阶段 3E-1 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
 
 最新功能基线：
 
-照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。阶段 3B-0 已新增 iOS API base 注入入口；阶段 3B-1 已新增 Web 照片同步重试队列；阶段 3C-0 已新增 iOS 本地通知 bridge；阶段 3D-0 已新增 iOS Simulator smoke，能构建、安装、启动 WebView app，并保存经过像素分布检查的首屏截图；阶段 3D-1 已新增 iOS 截图包自动化底座；阶段 3D-2 已新增登录后截图场景，可以生成 login、home、atlas、folio、profile-records 五类 App Store 候选基线截图和 manifest；阶段 3E-0 已新增 iOS archive/export 准备链路和上传手册。`Info.plist` 的 `LoopAPIBaseURL` 默认空值，不会改变线上原型或 iOS 离线包行为；未来配置生产/staging API base 后，原生会在 document start 注入给 Web adapter，并由 Web 层补发可同步的本地照片。
+照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。阶段 3B-0 已新增 iOS API base 注入入口；阶段 3B-1 已新增 Web 照片同步重试队列；阶段 3C-0 已新增 iOS 本地通知 bridge；阶段 3D-0 已新增 iOS Simulator smoke，能构建、安装、启动 WebView app，并保存经过像素分布检查的首屏截图；阶段 3D-1 已新增 iOS 截图包自动化底座；阶段 3D-2 已新增登录后截图场景，可以生成 login、home、atlas、folio、profile-records 五类 App Store 候选基线截图和 manifest；阶段 3E-0 已新增 iOS archive/export 准备链路和上传手册；阶段 3E-1 已新增 `npm run ios:inputs`，用于区分当前继续开发必须要的输入、真实归档前才需要的输入和 App Store Connect 前才需要的输入。`Info.plist` 的 `LoopAPIBaseURL` 默认空值，不会改变线上原型或 iOS 离线包行为；未来配置生产/staging API base 后，原生会在 document start 注入给 Web adapter，并由 Web 层补发可同步的本地照片。
 
 近期关键提交：
 
+- `7cbf402 接入 iOS 发布输入检查器`
+- `974fb38 新增 iOS 发布输入失败检查`
 - `d5e4e95 记录 iOS 归档上传手册`
 - `67cafa9 接入 iOS 归档导出脚本`
 - `bf4e8be 新增 iOS 归档准备失败检查`
@@ -109,6 +111,7 @@ npm run photo:persistence-check
 npm run ios:check
 npm run ios:release-check
 npm run ios:archive:check
+npm run ios:inputs
 npm run ios:build
 npm run ios:archive
 npm run ios:export
@@ -118,6 +121,7 @@ npm run ios:screenshots
 
 `npm run ios:build` 会先跑 `ios:check`，然后用关闭签名的 iOS Simulator 目标构建 Xcode 工程。
 `npm run ios:release-check` 是 repo 级 TestFlight 准备审计，会提示当前 `DEVELOPMENT_TEAM` 仍为空；这个 warning 是人工签名待办，不是脚本失败。该命令会串联 `npm run ios:archive:check`，确认 archive/export 脚本、ExportOptions 模板和上传手册存在。
+`npm run ios:inputs` 会生成 `.loop-artifacts/ios-release-inputs/ios-release-inputs.json`，并输出 `needed now`、`before archive missing` 和 `before App Store missing`。当前开发阶段如果 `needed now: 0`，就不要把 Team ID、SKU、支持 URL、隐私政策 URL 等发布资料提前当作阻塞。
 `npm run ios:archive` 和 `npm run ios:export` 是真实签名归档/导出入口；它们需要先在本机设置 `LOOP_IOS_DEVELOPMENT_TEAM`，输出默认位于 `.loop-artifacts/ios-archive/`，不会进入 git。
 `npm run ios:smoke` 会在可用 iPhone Simulator 中构建、安装并启动 app，截图输出到 `.loop-artifacts/ios-smoke/loop-city-ios-smoke.png`，并通过 PNG 像素分布避免白屏、黑屏、系统切换帧或尚未出现 LOOP 品牌色的页面误判。
 `npm run ios:screenshots` 会复用 simulator smoke，默认为 `iPhone 17 Pro Max` 和 `iPhone 17 Pro` 生成 `login`、`home`、`atlas`、`folio`、`profile-records` 五个截图场景，并写入 `.loop-artifacts/ios-screenshots/manifest.json`。可以用 `LOOP_IOS_SCREENSHOT_DEVICES` 和 `LOOP_IOS_SCREENSHOT_SCENARIOS` 缩小设备或场景范围。
@@ -220,6 +224,14 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `LOOP_IOS_DEVELOPMENT_TEAM` 仍是人工环境变量，不写入 repo；当前没有上传 TestFlight build，也没有创建 App Store Connect app record。
 - `docs/release/ios-archive-and-upload.md` 记录 Team ID、archive、export、上传和常见失败处理。
 
+阶段 3E-1 已完成：iOS 发布输入缺口检查器已建立。
+
+- `npm run ios:inputs` 会读取 App Store materials、TestFlight readiness、archive 手册和 Xcode project，生成 `.loop-artifacts/ios-release-inputs/ios-release-inputs.json`。
+- 当前继续开发所需输入为 `needed now: 0`，所以不要在功能开发阶段反复找 Vera 要 Apple Developer Team ID、SKU、支持 URL、隐私政策 URL 等发布材料。
+- `LOOP_IOS_DEVELOPMENT_TEAM` 被归类为 `beforeArchive`：真实 archive/export 前需要，本地开发和 WebView app 继续开发不需要。
+- SKU、支持 URL、隐私政策 URL、Copyright 主体被归类为 `beforeAppStore`：创建或提交 App Store Connect 记录前再确认。
+- `npm run ios:release-check` 会检查 `ios:inputs` 命令和脚本存在，防止这个分流机制丢失。
+
 相关文档：
 
 - `docs/superpowers/specs/2026-06-24-camera-photo-native-bridge-design.md`
@@ -251,12 +263,14 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `docs/superpowers/specs/2026-06-29-ios-archive-export-prep-design.md`
 - `docs/superpowers/plans/2026-06-29-ios-archive-export-prep-implementation.md`
 - `docs/release/ios-archive-and-upload.md`
+- `docs/release/ios-testflight-readiness.md`
 
 最近阶段验证时间：2026-06-29。
 
 本阶段已通过：
 
 - `npm test`
+- `npm run ios:inputs`
 - `npm run ios:release-check`
 - `npm run ios:archive:check`
 - `npm run ios:build`
