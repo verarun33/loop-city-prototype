@@ -1,6 +1,6 @@
 # LOOP 城市回路 Apple App 当前状态
 
-日期：2026-06-26
+日期：2026-06-29
 负责人：Vera / Codex
 项目路径：`/Users/veraxian/Documents/城市回路`
 Git 解析后的路径：`/Users/veraxian/Documents/city loop`
@@ -22,14 +22,18 @@ LOOP / 城市回路正在从移动网页原型转成 Apple app，同时保留当
 
 ## 当前已知可用基线
 
-阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A、阶段 3B-0、阶段 3B-1、阶段 3C-0、阶段 3D-0、阶段 3D-1、阶段 3D-2 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
+阶段 1、阶段 2A、阶段 2B、阶段 2C、阶段 2D、阶段 2E、阶段 3A、阶段 3B-0、阶段 3B-1、阶段 3C-0、阶段 3D-0、阶段 3D-1、阶段 3D-2、阶段 3E-0 已完成。当前接力提交请用 `git log -1 --oneline` 查看。
 
 最新功能基线：
 
-照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。阶段 3B-0 已新增 iOS API base 注入入口；阶段 3B-1 已新增 Web 照片同步重试队列；阶段 3C-0 已新增 iOS 本地通知 bridge；阶段 3D-0 已新增 iOS Simulator smoke，能构建、安装、启动 WebView app，并保存经过像素分布检查的首屏截图；阶段 3D-1 已新增 iOS 截图包自动化底座；阶段 3D-2 已新增登录后截图场景，可以生成 login、home、atlas、folio、profile-records 五类 App Store 候选基线截图和 manifest。`Info.plist` 的 `LoopAPIBaseURL` 默认空值，不会改变线上原型或 iOS 离线包行为；未来配置生产/staging API base 后，原生会在 document start 注入给 Web adapter，并由 Web 层补发可同步的本地照片。
+照片记录 Phase 3A 已落地：项目现在有本地 dev backend、Web photo sync adapter 和 `npm run photo:persistence-check` 守门脚本。阶段 3B-0 已新增 iOS API base 注入入口；阶段 3B-1 已新增 Web 照片同步重试队列；阶段 3C-0 已新增 iOS 本地通知 bridge；阶段 3D-0 已新增 iOS Simulator smoke，能构建、安装、启动 WebView app，并保存经过像素分布检查的首屏截图；阶段 3D-1 已新增 iOS 截图包自动化底座；阶段 3D-2 已新增登录后截图场景，可以生成 login、home、atlas、folio、profile-records 五类 App Store 候选基线截图和 manifest；阶段 3E-0 已新增 iOS archive/export 准备链路和上传手册。`Info.plist` 的 `LoopAPIBaseURL` 默认空值，不会改变线上原型或 iOS 离线包行为；未来配置生产/staging API base 后，原生会在 document start 注入给 Web adapter，并由 Web 层补发可同步的本地照片。
 
 近期关键提交：
 
+- `d5e4e95 记录 iOS 归档上传手册`
+- `67cafa9 接入 iOS 归档导出脚本`
+- `bf4e8be 新增 iOS 归档准备失败检查`
+- `1748369 规划 iOS 归档导出准备`
 - `abdb528 扩展 iOS 截图包登录后场景`
 - `7082c20 接入 Web 登录后截图场景`
 - `2369900 接入 iOS 截图场景参数`
@@ -104,13 +108,17 @@ npm test
 npm run photo:persistence-check
 npm run ios:check
 npm run ios:release-check
+npm run ios:archive:check
 npm run ios:build
+npm run ios:archive
+npm run ios:export
 npm run ios:smoke
 npm run ios:screenshots
 ```
 
 `npm run ios:build` 会先跑 `ios:check`，然后用关闭签名的 iOS Simulator 目标构建 Xcode 工程。
-`npm run ios:release-check` 是 repo 级 TestFlight 准备审计，会提示当前 `DEVELOPMENT_TEAM` 仍为空；这个 warning 是人工签名待办，不是脚本失败。
+`npm run ios:release-check` 是 repo 级 TestFlight 准备审计，会提示当前 `DEVELOPMENT_TEAM` 仍为空；这个 warning 是人工签名待办，不是脚本失败。该命令会串联 `npm run ios:archive:check`，确认 archive/export 脚本、ExportOptions 模板和上传手册存在。
+`npm run ios:archive` 和 `npm run ios:export` 是真实签名归档/导出入口；它们需要先在本机设置 `LOOP_IOS_DEVELOPMENT_TEAM`，输出默认位于 `.loop-artifacts/ios-archive/`，不会进入 git。
 `npm run ios:smoke` 会在可用 iPhone Simulator 中构建、安装并启动 app，截图输出到 `.loop-artifacts/ios-smoke/loop-city-ios-smoke.png`，并通过 PNG 像素分布避免白屏、黑屏、系统切换帧或尚未出现 LOOP 品牌色的页面误判。
 `npm run ios:screenshots` 会复用 simulator smoke，默认为 `iPhone 17 Pro Max` 和 `iPhone 17 Pro` 生成 `login`、`home`、`atlas`、`folio`、`profile-records` 五个截图场景，并写入 `.loop-artifacts/ios-screenshots/manifest.json`。可以用 `LOOP_IOS_SCREENSHOT_DEVICES` 和 `LOOP_IOS_SCREENSHOT_SCENARIOS` 缩小设备或场景范围。
 
@@ -203,6 +211,15 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `scripts/ios-screenshot-pack.mjs` 默认按设备和场景生成截图矩阵；manifest 记录 `devices`、`screens` 和每张截图的尺寸。
 - 本机旧 `iPhone 17 Pro` Simulator 曾出现 `simctl install` 长时间卡住；已删除并重建该设备，新的 UDID 是 `CE964621-1AFE-450D-90A6-4424796395DA`。
 
+阶段 3E-0 已完成：iOS 归档、导出和 TestFlight 上传准备链路已建立。
+
+- `npm run ios:archive:check` 会检查 archive/export 命令、`scripts/ios-archive.mjs`、`ExportOptions.testflight.plist.template` 和 `docs/release/ios-archive-and-upload.md`。
+- `npm run ios:release-check` 现在会串联 archive readiness，防止发布准备文档和归档脚本脱节。
+- `npm run ios:archive` 会先跑 `npm run ios:check`，再用 `xcodebuild archive` 尝试生成 `.loop-artifacts/ios-archive/LoopCityWebViewApp.xcarchive`。
+- `npm run ios:export` 会从模板生成 `.loop-artifacts/ios-archive/ExportOptions.plist`，并尝试导出到 `.loop-artifacts/ios-archive/export/`。
+- `LOOP_IOS_DEVELOPMENT_TEAM` 仍是人工环境变量，不写入 repo；当前没有上传 TestFlight build，也没有创建 App Store Connect app record。
+- `docs/release/ios-archive-and-upload.md` 记录 Team ID、archive、export、上传和常见失败处理。
+
 相关文档：
 
 - `docs/superpowers/specs/2026-06-24-camera-photo-native-bridge-design.md`
@@ -231,10 +248,22 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `docs/superpowers/plans/2026-06-25-ios-screenshot-pack-implementation.md`
 - `docs/superpowers/specs/2026-06-25-ios-post-login-screenshots-design.md`
 - `docs/superpowers/plans/2026-06-25-ios-post-login-screenshots-implementation.md`
+- `docs/superpowers/specs/2026-06-29-ios-archive-export-prep-design.md`
+- `docs/superpowers/plans/2026-06-29-ios-archive-export-prep-implementation.md`
+- `docs/release/ios-archive-and-upload.md`
 
-最近完整验证时间：2026-06-26。
+最近阶段验证时间：2026-06-29。
 
-已通过：
+本阶段已通过：
+
+- `npm test`
+- `npm run ios:release-check`
+- `npm run ios:archive:check`
+- `npm run ios:build`
+
+历史完整验证时间：2026-06-26。
+
+历史完整验证已通过：
 
 - `npm run data:check`
 - `npm run ui:check`
@@ -247,13 +276,14 @@ Vera 明确要求每次任务默认使用 `superpowers:using-superpowers` 和 `k
 - `npm run ios:smoke`
 - `npm run ios:screenshots`
 
-额外手动 smoke：
+历史额外手动 smoke：
 
 - 启动本地 dev server 后，HTTP 验证 `POST /api/photo-records`、重复 `clientPhotoId` 返回 `409 DUPLICATE_PHOTO`、`GET /api/photo-records?userId=...` 和照片文件读取均通过。
 - `npm run ios:smoke` 已在本机重建后的 `iPhone 17 Pro` Simulator（`CE964621-1AFE-450D-90A6-4424796395DA`）上构建、安装并启动 app，最终截图为 LOOP WebView 页面；脚本曾捕获白屏、黑屏、系统切换帧和未完成品牌帧，并通过像素分布轮询等到真实 WebView 页面后才通过。
 - `npm run ios:screenshots` 已在本机 `iPhone 17 Pro Max` 和 `iPhone 17 Pro` Simulator 上生成 `login`、`home`、`atlas`、`folio`、`profile-records` 五个场景的截图矩阵，并写入 `.loop-artifacts/ios-screenshots/manifest.json`。manifest 机器读数为 2 台设备、5 个场景、10 张 PNG。
+- `node scripts/ios-archive.mjs archive` 和 `node scripts/ios-archive.mjs export` 在未设置 `LOOP_IOS_DEVELOPMENT_TEAM` 时会用中文明确失败；这是预期行为，说明 Team ID 没有被硬编码进 repo。
 
-下一步可继续规划截图文案/构图精修、真实账号 / 生产照片 API、真实签名配置、真机通知 smoke 或远程推送策略。
+下一步可继续由 Vera 提供 Apple Developer Team ID 后执行真实 `npm run ios:archive` / `npm run ios:export`，或继续规划截图文案/构图精修、真实账号 / 生产照片 API、真机通知 smoke 或远程推送策略。
 
 ## 新窗口启动提示
 
