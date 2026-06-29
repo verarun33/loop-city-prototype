@@ -13,6 +13,7 @@ const materialsDocPath = join(root, "docs", "release", "ios-app-store-materials.
 const packageJsonPath = join(root, "package.json");
 const smokeScriptPath = join(root, "scripts", "ios-simulator-smoke.mjs");
 const screenshotPackScriptPath = join(root, "scripts", "ios-screenshot-pack.mjs");
+const releaseInputsScriptPath = join(root, "scripts", "ios-release-inputs.mjs");
 const archiveReadinessScriptPath = join(root, "scripts", "verify-ios-archive-readiness.mjs");
 const gitignorePath = join(root, ".gitignore");
 
@@ -46,6 +47,7 @@ const materialsDoc = readRequired(materialsDocPath, "App Store materials 文档"
 const packageJson = readRequired(packageJsonPath, "package.json");
 const smokeScript = readRequired(smokeScriptPath, "iOS Simulator smoke 脚本");
 const screenshotPackScript = readRequired(screenshotPackScriptPath, "iOS screenshot pack 脚本");
+const releaseInputsScript = readRequired(releaseInputsScriptPath, "iOS release inputs 脚本");
 const archiveReadinessScript = readRequired(archiveReadinessScriptPath, "iOS archive readiness 脚本");
 const gitignore = readRequired(gitignorePath, ".gitignore");
 
@@ -89,6 +91,7 @@ for (const expected of [
 
 requireIncludes(packageJson, "\"ios:smoke\"", "package.json");
 requireIncludes(packageJson, "\"ios:screenshots\"", "package.json");
+requireIncludes(packageJson, "\"ios:inputs\"", "package.json");
 requireIncludes(smokeScript, "LOOP_IOS_SMOKE_SCREENSHOT_PATH", "ios-simulator-smoke.mjs");
 requireIncludes(smokeScript, "LOOP_IOS_SMOKE_SCENARIO", "ios-simulator-smoke.mjs");
 requireIncludes(smokeScript, "SIMCTL_CHILD_LOOP_SCREENSHOT_SCENARIO", "ios-simulator-smoke.mjs");
@@ -133,6 +136,10 @@ for (const expected of [
 
 for (const expected of ["LOOP_IOS_DEVELOPMENT_TEAM", "ios-archive-and-upload.md", "ExportOptions.testflight.plist.template"]) {
   requireIncludes(archiveReadinessScript, expected, "verify-ios-archive-readiness.mjs");
+}
+
+for (const expected of ["neededNow", "beforeArchive", "beforeAppStore", "LOOP_IOS_DEVELOPMENT_TEAM", "ios-release-inputs.json"]) {
+  requireIncludes(releaseInputsScript, expected, "ios-release-inputs.mjs");
 }
 
 for (const warning of warnings) {
